@@ -448,7 +448,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	/**
 	 * Creates a cohort definition in the WebAPI database.
-	 * 
+	 *
 	 * The values for createdBy and createdDate are automatically populated and
 	 * the function ignores parameter values for these fields.
 	 *

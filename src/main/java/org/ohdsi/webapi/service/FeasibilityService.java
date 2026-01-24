@@ -368,7 +368,7 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * DO NOT USE
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @return List<FeasibilityService.FeasibilityStudyListItem>
@@ -395,7 +395,7 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Creates the feasibility study
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param study The feasibility study

@@ -95,26 +95,43 @@ public final class JobUtils {
                 jobexec = toJobExecutionResource(jobExecution);
             }
             
-            //parameters starts at 12
+            // Parameters start at column 12
             String key = rs.getString(12);
 
-            if (!PROTECTED_PARAMS.contains(key)) {
+            if (key != null && !PROTECTED_PARAMS.contains(key)) {
                 String typeStr = rs.getString(13);
-                JobParameter<?> value = null;
-                
-                // Spring Batch 5: Simplified parameter creation
-                if ("STRING".equals(typeStr)) {
-                    value = new JobParameter<>(rs.getString(14), String.class);
-                } else if ("LONG".equals(typeStr)) {
-                    value = new JobParameter<>(rs.getLong(16), Long.class);
-                } else if ("DOUBLE".equals(typeStr)) {
-                    value = new JobParameter<>(rs.getDouble(17), Double.class);
-                } else if ("DATE".equals(typeStr)) {
-                    value = new JobParameter<>(rs.getTimestamp(15), java.util.Date.class);
+                String valueStr = rs.getString(14);
+                Object value = null;
+
+                if (valueStr != null) {
+                    if ("java.lang.String".equals(typeStr) || "STRING".equals(typeStr)) {
+                        value = valueStr;
+                    } else if ("java.lang.Long".equals(typeStr) || "LONG".equals(typeStr)) {
+                        try {
+                            value = Long.parseLong(valueStr);
+                        } catch (NumberFormatException e) {
+                            value = valueStr;
+                        }
+                    } else if ("java.lang.Double".equals(typeStr) || "DOUBLE".equals(typeStr)) {
+                        try {
+                            value = Double.parseDouble(valueStr);
+                        } catch (NumberFormatException e) {
+                            value = valueStr;
+                        }
+                    } else if ("java.util.Date".equals(typeStr) || "DATE".equals(typeStr)) {
+                        try {
+                            value = Long.parseLong(valueStr);
+                        } catch (NumberFormatException e) {
+                            value = valueStr;
+                        }
+                    } else {
+                        value = valueStr;
+                    }
                 }
 
-                // No need to assert that value is not null because it's an enum
-                map.put(key, value.getValue());//value);
+                if (value != null) {
+                    map.put(key, value);
+                }
             }
             
         }

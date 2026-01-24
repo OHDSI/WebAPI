@@ -30,6 +30,9 @@ public class UserService {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
+  @Value("${trexsql.enabled:false}")
+  private boolean trexsqlCacheEnabled;
+
   @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
 
@@ -48,6 +51,7 @@ public class UserService {
     public String name;
     public List<Permission> permissions;
     public Map<String, List<String>> permissionIdx;
+    public Boolean trexsqlCacheEnabled;
 
     public User() {}
 
@@ -105,7 +109,7 @@ public class UserService {
     user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
     user.permissionIdx = authorizer.queryUserPermissions(currentUser.getLogin()).permissions;
-    
+    user.trexsqlCacheEnabled = trexsqlCacheEnabled;
 
     return user;
   }

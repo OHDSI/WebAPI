@@ -49,13 +49,20 @@ public class DataAccessConfig {
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
-        properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
-        properties.setProperty("hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
-        properties.setProperty("hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
-        properties.setProperty("hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));
+        // Only set optional Hibernate properties when present to avoid null values
+        putIfPresent(properties, "hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        putIfPresent(properties, "hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        putIfPresent(properties, "hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
+        putIfPresent(properties, "hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
+        putIfPresent(properties, "hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));
         properties.setProperty("hibernate.id.new_generator_mappings", "true");
         return properties;
+    }
+
+    private static void putIfPresent(Properties target, String key, String value) {
+        if (value != null) {
+            target.setProperty(key, value);
+        }
     }
       
     @Bean({"primaryDataSource", "dataSource"})

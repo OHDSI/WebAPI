@@ -18,7 +18,7 @@
  */
 package org.ohdsi.webapi.shiro.filters.auth;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import java.util.Base64;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +44,7 @@ public class KerberosAuthFilter extends AuthenticatingFilter {
         AuthenticationToken authToken = null;
 
         if (authHeader != null) {
-            byte[] token = Base64.decode(authHeader.replaceAll("^Negotiate ", ""));
+            byte[] token = Base64.getDecoder().decode(authHeader.replaceAll("^Negotiate ", ""));
             authToken = new SpnegoToken(token);
         }
 

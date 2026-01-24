@@ -1,0 +1,108 @@
+name: Authentication Integration Tests
+
+on:
+  push:
+    branches: [master, webapi-3.0]
+  pull_request:
+    branches: [master, webapi-3.0]
+  workflow_dispatch:
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  auth-integration-test:
+    name: OIDC & JDBC Authentication Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build WebAPI Docker image
+        working-directory: docker/auth-test
+        run: |
+          docker compose build webapi
+
+      - name: Set up test environment
+        run: |
+          # Create test results directory
+          mkdir -p docker/auth-test/test-results
+          chmod 777 docker/auth-test/test-results
+
+      - name: Start infrastructure
+        working-directory: docker/auth-test
+        run: |
+          docker compose up -d postgres mock-oauth2
+
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 60 bash -c 'until docker compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do sleep 2; done'
+          echo "PostgreSQL is ready!"
+
+      - name: Start WebAPI
+        working-directory: docker/auth-test
+        run: |
+          docker compose up -d webapi
+
+          echo "Waiting for WebAPI to be healthy..."
+          timeout 300 bash -c 'until curl -sf http://localhost:18080/WebAPI/info > /dev/null 2>&1; do sleep 10; echo "Waiting for WebAPI..."; done'
+          echo "WebAPI is ready!"
+
+      - name: Setup test users
+        working-directory: docker/auth-test
+        run: |
+          docker compose up db-setup
+          echo "Test users created!"
+
+      - name: Run Newman tests
+        working-directory: docker/auth-test
+        run: |
+          # Run tests using Newman docker container
+          docker compose up newman
+
+          # Check test results
+          if [ -f test-results/auth-test-results.xml ]; then
+            echo "Test results generated successfully"
+          else
+            echo "Warning: Test results file not found"
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auth-test-results
+          path: docker/auth-test/test-results/
+          retention-days: 30
+
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: 'docker/auth-test/test-results/*.xml'
+          check_name: 'Auth Integration Test Results'
+          fail_on_failure: true
+
+      - name: Show logs on failure
+        if: failure()
+        working-directory: docker/auth-test
+        run: |
+          echo "=== WebAPI Logs ==="
+          docker compose logs webapi --tail=200
+          echo ""
+          echo "=== mock-oauth2 Logs ==="
+          docker compose logs mock-oauth2 --tail=100
+          echo ""
+          echo "=== Newman Logs ==="
+          docker compose logs newman --tail=100
+          echo ""
+          echo "=== DB Setup Logs ==="
+          docker compose logs db-setup --tail=50
+
+      - name: Cleanup
+        if: always()
+        working-directory: docker/auth-test
+        run: |
+          docker compose down -v --remove-orphans

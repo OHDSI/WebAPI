@@ -124,9 +124,17 @@ public class SourceService extends AbstractDaoService {
     public void checkConnection(Source source) {
 
         if (source.isCheckConnection()) {
-            final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-            jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+            forceCheckConnection(source);
         }
+    }
+
+    /**
+     * Force a connection check regardless of the source's checkConnection flag.
+     * Used when explicitly testing connection via API endpoint.
+     */
+    public void forceCheckConnection(Source source) {
+        final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
     }
 
     public Source getPrioritySourceForDaimon(SourceDaimon.DaimonType daimonType) {

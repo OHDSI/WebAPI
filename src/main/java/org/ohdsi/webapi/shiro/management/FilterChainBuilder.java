@@ -71,6 +71,12 @@ public class FilterChainBuilder {
 
     public FilterChainBuilder addPath(String path, String filters) {
         path = path.replaceAll("/+$", "");
+
+        // Prepend /WebAPI to match JAX-RS @ApplicationPath("/WebAPI")
+        if (!path.startsWith("/WebAPI") && !path.equals("/**") && !path.equals("/*")) {
+            path = "/WebAPI" + path;
+        }
+
         this.filterChain.put(path, filters);
 
         // If path ends with non wildcard character, need to add two paths -

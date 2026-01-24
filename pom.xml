@@ -5,15 +5,15 @@
 
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
-  <packaging>war</packaging>
+  <packaging>${packaging.type}</packaging>
   <version>3.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
+    <packaging.type>war</packaging.type>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>3.5.6</spring.boot.version>
-    <log4j2.version>2.24.3</log4j2.version>
     <!-- flyway.version removed - using Spring Boot 3.5.6 managed version (11.7.0) -->
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
@@ -36,22 +36,21 @@
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.release>21</maven.compiler.release>
 
-    <!-- Primary DataSource -->
-    <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
-    <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
-    <datasource.username>user</datasource.username>
-    <datasource.password>password</datasource.password>
+    <!-- Primary DataSource (default to Postgres for open source setup) -->
+    <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+    <datasource.url>jdbc:postgresql://localhost:5433/postgres?currentSchema=webapi</datasource.url>
+    <datasource.username>postgres</datasource.username>
+    <datasource.password>mypass</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>sql server</datasource.dialect>
-    <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
-    <datasource.dialect.source>sql server</datasource.dialect.source>
+    <datasource.dialect>postgresql</datasource.dialect>
+    <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+    <datasource.dialect.source>postgresql</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
-    <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
-    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>password</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+    <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
+    <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+    <flyway.datasource.username>${datasource.username}</flyway.datasource.username>
+    <flyway.datasource.password>${datasource.password}</flyway.datasource.password>
+    <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
@@ -300,6 +299,11 @@
 
     <!-- Shiny -->
     <shiny.enabled>false</shiny.enabled>
+
+    <!-- Trexsql -->
+    <trexsql.enabled>false</trexsql.enabled>
+    <trexsql.cache-path>./data/cache</trexsql.cache-path>
+    <trexsql.extensions-path></trexsql.extensions-path>
   </properties>
 
   <build>
@@ -335,6 +339,16 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
+        </includes>
+        <excludes>
+          <exclude>application-test.properties</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>application-test.properties</include>
         </includes>
       </testResource>
       <testResource>
@@ -392,8 +406,19 @@
             <configuration>
               <scripts>
                 <script><![CDATA[
-                  if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*")
-                  if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*")
+                  def ensureProperty(propName) {
+                    def value = session.userProperties.getProperty(propName)
+                    if (value == null || value.trim().isEmpty()) {
+                      value = "*"
+                      session.userProperties.setProperty(propName, value)
+                      project.properties.setProperty(propName, value)
+                      System.setProperty(propName, value)
+                    } else if (project.properties.getProperty(propName) == null || project.properties.getProperty(propName).trim().isEmpty()) {
+                      project.properties.setProperty(propName, value)
+                    }
+                  }
+                  ensureProperty("git.branch")
+                  ensureProperty("git.commit.id.abbrev")
                 ]]></script>
               </scripts>
             </configuration>
@@ -412,10 +437,10 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
-        <!-- executable-war via 'java -jar WebAPI-exec.war' currently fails with Jersey FileNotFound exception. TODO -->
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <jvmArguments>
             --add-opens java.base/java.lang=ALL-UNNAMED
@@ -425,8 +450,6 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </jvmArguments>
           <additionalProperties>
-            <git.branch>${git.branch}</git.branch>
-            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
             <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
             <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
             <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
@@ -470,15 +493,10 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <attachClasses>true</attachClasses>
+          <!-- Exclude TrexSQL sources by default (included when -Ptrexsql is active) -->
+          <excludes>
+            <exclude>**/trexsql/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -560,9 +578,18 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
+    </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
 
@@ -580,26 +607,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-api</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-web</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j-impl</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
       <dependency>
         <!-- Import dependency management from Spring Boot -->
         <groupId>org.springframework.boot</groupId>
@@ -650,12 +657,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
@@ -680,21 +681,19 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
+      <artifactId>spring-boot-starter-logging</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
 
-    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
-    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
-    <!-- WebAPI.war.original should not contain overridden libraries -->
+    <!-- Embedded Tomcat dependencies for executable JAR -->
+    <!-- Note: WAR packaging is available via 'mvn package -Pwar' profile -->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
@@ -707,7 +706,6 @@
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
@@ -753,12 +751,15 @@
         </exclusion>
       </exclusions>
     </dependency> -->
+    <!-- javax.servlet-api is now provided by spring-boot-starter-tomcat (Jakarta Servlet API) -->
+    <!-- This old javax.servlet dependency can be removed for JAR packaging -->
+    <!--
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
-      <scope>provided</scope>
     </dependency>
+    -->
     <dependency>
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
@@ -1000,6 +1001,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Override oauth2-oidc-sdk version for pac4j 6.x compatibility -->
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>oauth2-oidc-sdk</artifactId>
+      <version>11.20.1</version>
+    </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-http</artifactId>
@@ -1071,7 +1078,7 @@
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
-      <version>2.3.2.RELEASE</version>
+      <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1217,6 +1224,38 @@
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>trexsql</id>
+      <properties>
+        <trexsql.enabled>true</trexsql.enabled>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.github.p-hoffmann</groupId>
+          <artifactId>trexsql-ext</artifactId>
+          <version>v0.1.23</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <!-- Include TrexSQL sources when trexsql profile is active -->
+              <excludes combine.self="override"/>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <includeSystemScope>true</includeSystemScope>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>webapi-oracle</id>
       <properties>
@@ -1840,6 +1879,50 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>
+
+    <!-- WAR packaging profile - use with: mvn package -Pwar -->
+    <profile>
+      <id>war</id>
+      <properties>
+        <packaging.type>jar</packaging.type>
+      </properties>
+      <dependencies>
+        <!-- Mark embedded Tomcat as provided for external servlet container deployment -->
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tomcat</groupId>
+          <artifactId>tomcat-jdbc</artifactId>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+              <execution>
+                <id>build-war</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>war</goal>
+                </goals>
+                <configuration>
+                  <failOnMissingWebXml>false</failOnMissingWebXml>
+                  <attachClasses>true</attachClasses>
+                  <warName>WebAPI</warName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

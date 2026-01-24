@@ -55,14 +55,13 @@ public class TokenManager {
   }
 
   public static Claims getBody(String jwt) {
-
-    // Get untrusted subject for secret key retrieval
+    // Extract subject without signature verification to retrieve signing key
     String untrustedSubject = getUntrustedSubject(jwt);
     if (untrustedSubject == null) {
         throw new UnsupportedJwtException("Cannot extract subject from the token");
     }
 
-    // Pick all secret keys: latest one + previous keys, which were just invalidated (to overcome concurrency issue)
+    // Retrieve signing keys: current key + grace period keys for concurrency handling
     List<SecretKey> keyOptions = gracePeriodInvalidTokens.get(untrustedSubject);
     if (userToKeyMap.containsKey(untrustedSubject)) {
       keyOptions.add(0, userToKeyMap.get(untrustedSubject));
@@ -86,12 +85,30 @@ public class TokenManager {
   }
 
   protected static String getUntrustedSubject(String jws) {
-    int i = jws.lastIndexOf('.');
-    if (i == -1) {
+    try {
+      // Split JWT into header.payload.signature components
+      String[] parts = jws.split("\\.");
+      if (parts.length != 3) {
         return null;
+      }
+
+      // Base64-decode payload to extract subject claim
+      String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+
+      // Extract "sub" field from JSON payload
+      int subIndex = payload.indexOf("\"sub\"");
+      if (subIndex == -1) {
+        return null;
+      }
+
+      int colonIndex = payload.indexOf(":", subIndex);
+      int startQuote = payload.indexOf("\"", colonIndex);
+      int endQuote = payload.indexOf("\"", startQuote + 1);
+
+      return payload.substring(startQuote + 1, endQuote);
+    } catch (Exception e) {
+      return null;
     }
-    String untrustedJwtString = jws.substring(0, i+1);
-    return Jwts.parser().unsecured().build().parseUnsecuredClaims(untrustedJwtString).getPayload().getSubject();
   }
 
   public static Boolean invalidate(String jwt) {
@@ -127,7 +144,6 @@ public class TokenManager {
     if (headerParts.length != 2)
       return null;
 
-    String jwt = headerParts[1];
-    return jwt;
+    return headerParts[1];
   }
 }

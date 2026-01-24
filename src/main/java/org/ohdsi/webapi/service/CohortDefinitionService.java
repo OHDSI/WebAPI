@@ -434,7 +434,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return List of metadata about all cohort definitions in WebAPI
 	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
-	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
@@ -460,7 +460,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param dto The cohort definition to create.
 	 * @return The newly created cohort definition
 	 */
-	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO createCohortDefinition(@RequestBody CohortDTO dto) {

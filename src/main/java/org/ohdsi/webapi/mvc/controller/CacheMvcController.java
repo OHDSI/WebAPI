@@ -42,7 +42,7 @@ public class CacheMvcController extends AbstractMvcController {
     /**
      * Get list of all caches with statistics.
      */
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CacheInfo>> getCacheInfoList() {
         List<CacheInfo> caches = new ArrayList<>();
 

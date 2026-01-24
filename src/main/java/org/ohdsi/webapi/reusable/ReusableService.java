@@ -70,7 +70,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         this.versionService = versionService;
     }
 
-    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ReusableDTO create(@RequestBody ReusableDTO dto) {
         return createInternal(dto);
     }
@@ -104,7 +104,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findAll();
     }
 
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ReusableDTO> page(@Pagination Pageable pageable) {
         return reusableRepository.findAll(pageable)
                 .map(reusable -> {

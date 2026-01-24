@@ -94,7 +94,7 @@ public class I18nServiceImpl implements I18nService {
    *
    * Note: Locale is resolved by LocaleInterceptor and stored in LocaleContextHolder
    */
-  @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public String getResources() {
     // Get locale from LocaleContextHolder (set by LocaleInterceptor)
     Locale locale = LocaleContextHolder.getLocale();

@@ -174,7 +174,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary Get all concept sets
      * @return A list of all concept sets in the WebAPI database
      */
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
     public Collection<ConceptSetDTO> getConceptSets() {
         return getTransactionTemplate().execute(
@@ -480,7 +480,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param conceptSetDTO The concept set to save
      * @return The concept set saved with the concept set identifier
      */
-    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO createConceptSet(@RequestBody ConceptSetDTO conceptSetDTO) {
 

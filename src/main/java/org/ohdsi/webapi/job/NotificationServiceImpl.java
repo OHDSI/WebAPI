@@ -81,7 +81,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param refreshJobs Boolean - when true, it will refresh the cache of notifications
      * @return List of job execution resources
      */
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(
             @RequestParam(value = "hide_statuses", required = false) String hideStatuses,

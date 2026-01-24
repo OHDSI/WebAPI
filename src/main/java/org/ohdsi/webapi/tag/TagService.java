@@ -60,7 +60,7 @@ public class TagService extends AbstractDaoService {
      * @param dto
      * @return
      */
-    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public TagDTO create(@RequestBody TagDTO dto) {
         Tag tag = conversionService.convert(dto, Tag.class);
         Tag saved = create(tag);
@@ -126,7 +126,7 @@ public class TagService extends AbstractDaoService {
      *
      * @return
      */
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TagDTO> listInfoDTO() {
         return listInfo().stream()
                 .map(tag -> conversionService.convert(tag, TagDTO.class))

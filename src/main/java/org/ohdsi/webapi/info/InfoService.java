@@ -50,7 +50,7 @@ public class InfoService {
     /**
      * Get info about the WebAPI instance
      */
-    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Info getInfo() {
 
         return info;

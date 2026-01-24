@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="WebAPI Authentication Tests" tests="20" time="0.259">
-  <testsuite name="Health &amp; Info / WebAPI Info Endpoint" id="9996009e-643c-4116-b85c-9f5c0b0c8412" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.045">
-    <testcase name="Response time is reasonable" time="0.045" classname="WebApiAuthenticationTests"/>
-    <testcase name="Info endpoint is accessible" time="0.045" classname="WebApiAuthenticationTests"/>
-    <testcase name="Response contains version" time="0.045" classname="WebApiAuthenticationTests"/>
+<testsuites name="WebAPI Authentication Tests" tests="20" time="0.351">
+  <testsuite name="Health &amp; Info / WebAPI Info Endpoint" id="728953c1-c77f-44b0-8e6b-120fe762e0cc" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="0" errors="0" time="0.072">
+    <testcase name="Response time is reasonable" time="0.072" classname="WebApiAuthenticationTests"/>
+    <testcase name="Info endpoint is accessible" time="0.072" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response contains version" time="0.072" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="Health &amp; Info / OIDC Discovery Endpoint" id="0dfe213a-e0b9-4212-8a05-8abb1a92af60" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.015">
-    <testcase name="Response time is reasonable" time="0.015" classname="WebApiAuthenticationTests"/>
-    <testcase name="OIDC discovery is accessible" time="0.015" classname="WebApiAuthenticationTests"/>
-    <testcase name="Contains required OIDC endpoints" time="0.015" classname="WebApiAuthenticationTests"/>
+  <testsuite name="Health &amp; Info / OIDC Discovery Endpoint" id="005a427b-593e-4b52-936f-ce2df6e75bac" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="0" errors="0" time="0.016">
+    <testcase name="Response time is reasonable" time="0.016" classname="WebApiAuthenticationTests"/>
+    <testcase name="OIDC discovery is accessible" time="0.016" classname="WebApiAuthenticationTests"/>
+    <testcase name="Contains required OIDC endpoints" time="0.016" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="Health &amp; Info / Auth Providers Endpoint" id="9455c805-6c9e-42b6-aac7-88c311a3157f" timestamp="2026-01-24T15:06:17.921Z" tests="4" failures="0" errors="0" time="0.009">
-    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
-    <testcase name="Auth providers endpoint is accessible" time="0.009" classname="WebApiAuthenticationTests"/>
-    <testcase name="Response is an array" time="0.009" classname="WebApiAuthenticationTests"/>
-    <testcase name="OpenID provider is enabled" time="0.009" classname="WebApiAuthenticationTests"/>
+  <testsuite name="Health &amp; Info / Auth Providers Endpoint" id="3be00a9a-b8b8-4b4f-8855-e74714642ee4" timestamp="2026-01-24T15:27:06.346Z" tests="4" failures="0" errors="0" time="0.014">
+    <testcase name="Response time is reasonable" time="0.014" classname="WebApiAuthenticationTests"/>
+    <testcase name="Auth providers endpoint is accessible" time="0.014" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response is an array" time="0.014" classname="WebApiAuthenticationTests"/>
+    <testcase name="OpenID provider is enabled" time="0.014" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="Unauthenticated Access / Protected Endpoint Without Token - Should Return 401" id="4679a7f5-8268-4e49-b139-aa9932e0bdf8" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.010">
-    <testcase name="Response time is reasonable" time="0.010" classname="WebApiAuthenticationTests"/>
-    <testcase name="Protected endpoint returns 401 without token" time="0.010" classname="WebApiAuthenticationTests">
+  <testsuite name="Unauthenticated Access / Protected Endpoint Without Token - Should Return 401" id="db48f92e-22d7-441f-aada-14e7f6d13cb8" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.018">
+    <testcase name="Response time is reasonable" time="0.018" classname="WebApiAuthenticationTests"/>
+    <testcase name="Protected endpoint returns 401 without token" time="0.018" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -31,9 +31,9 @@
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="Unauthenticated Access / User Info Without Token - Should Return 401" id="3de9e38a-0984-406b-9b65-ffc6311710b1" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.047">
-    <testcase name="Response time is reasonable" time="0.047" classname="WebApiAuthenticationTests"/>
-    <testcase name="User info returns 401 without token" time="0.047" classname="WebApiAuthenticationTests">
+  <testsuite name="Unauthenticated Access / User Info Without Token - Should Return 401" id="67783846-8960-4bb1-bf24-bcaf52698197" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.062">
+    <testcase name="Response time is reasonable" time="0.062" classname="WebApiAuthenticationTests"/>
+    <testcase name="User info returns 401 without token" time="0.062" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -46,15 +46,15 @@
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="OIDC Full Login Flow / 1. Start OIDC Login" id="396ff194-e60d-4c80-9b8a-c0b718f0b059" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="2" errors="1" time="0.019">
+  <testsuite name="OIDC Full Login Flow / 1. Start OIDC Login" id="91faaaca-c11b-4d5d-badf-d962dddf330c" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="2" errors="1" time="0.027">
     <system-err><![CDATA[Iteration: 0
 
 ---
 testScriptError: Cannot read properties of undefined (reading 'replace')
 ---
 ]]></system-err>
-    <testcase name="Response time is reasonable" time="0.019" classname="WebApiAuthenticationTests"/>
-    <testcase name="Login redirects to OIDC provider" time="0.019" classname="WebApiAuthenticationTests">
+    <testcase name="Response time is reasonable" time="0.027" classname="WebApiAuthenticationTests"/>
+    <testcase name="Login redirects to OIDC provider" time="0.027" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 404 to be one of [ 302, 303 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -66,7 +66,7 @@ testScriptError: Cannot read properties of undefined (reading 'replace')
    at Object.eval sandbox-script.js:1:6).]]>
       </failure>
     </testcase>
-    <testcase name="Redirect contains authorize endpoint" time="0.019" classname="WebApiAuthenticationTests">
+    <testcase name="Redirect contains authorize endpoint" time="0.027" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -79,7 +79,7 @@ testScriptError: Cannot read properties of undefined (reading 'replace')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="OIDC Full Login Flow / 2. Simulate IdP Login" id="cfb972d0-79dd-424a-8ed3-46c85c479811" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="3" errors="2" time="0.000">
+  <testsuite name="OIDC Full Login Flow / 2. Simulate IdP Login" id="34d6baf2-8ff3-4ec7-8835-c9da372a9b0f" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="3" errors="2" time="0.000">
     <system-err><![CDATA[Iteration: 0
 RequestError: Error: runtime:extensions~request: request url is empty
     at Requester.request (/usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/requester/requester.js:421:26)
@@ -140,9 +140,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="OIDC Full Login Flow / 3. Complete OAuth Callback" id="40bd317f-db1c-418f-90ca-0cd637d19304" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.009">
-    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
-    <testcase name="Callback returns redirect or success" time="0.009" classname="WebApiAuthenticationTests">
+  <testsuite name="OIDC Full Login Flow / 3. Complete OAuth Callback" id="16b9a1ed-aff6-4642-bb8b-da1c53a760de" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.015">
+    <testcase name="Response time is reasonable" time="0.015" classname="WebApiAuthenticationTests"/>
+    <testcase name="Callback returns redirect or success" time="0.015" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 302, 303 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -155,9 +155,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="OIDC Full Login Flow / 4. Get Token via Refresh" id="beab6bbc-7eda-4cb2-8249-53db1cdd02f2" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.008">
-    <testcase name="Response time is reasonable" time="0.008" classname="WebApiAuthenticationTests"/>
-    <testcase name="Refresh returns token" time="0.008" classname="WebApiAuthenticationTests">
+  <testsuite name="OIDC Full Login Flow / 4. Get Token via Refresh" id="dbca936d-8620-4a05-8b1a-03fe284957ce" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.012">
+    <testcase name="Response time is reasonable" time="0.012" classname="WebApiAuthenticationTests"/>
+    <testcase name="Refresh returns token" time="0.012" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 401 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -170,13 +170,13 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="OIDC Full Login Flow / 5. Access Protected Endpoint" id="9dea82eb-1c77-4f37-a3c1-e6a2d099d0b3" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="0" errors="0" time="0.011">
-    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
-    <testcase name="OIDC flow completed (session-based auth)" time="0.011" classname="WebApiAuthenticationTests"/>
+  <testsuite name="OIDC Full Login Flow / 5. Access Protected Endpoint" id="aa97a370-e56a-4be1-bde3-2c72a72aa9ac" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="0" errors="0" time="0.019">
+    <testcase name="Response time is reasonable" time="0.019" classname="WebApiAuthenticationTests"/>
+    <testcase name="OIDC flow completed (session-based auth)" time="0.019" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="JDBC Authentication / JDBC Login - Valid Credentials" id="9792aa17-5591-45ac-89b2-80786af6490f" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="2" errors="0" time="0.009">
-    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
-    <testcase name="JDBC login returns 200" time="0.009" classname="WebApiAuthenticationTests">
+  <testsuite name="JDBC Authentication / JDBC Login - Valid Credentials" id="f18b0bc6-a009-45dd-9754-880d0fc779bd" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="2" errors="0" time="0.010">
+    <testcase name="Response time is reasonable" time="0.010" classname="WebApiAuthenticationTests"/>
+    <testcase name="JDBC login returns 200" time="0.010" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected response to have status code 200 but got 404">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -188,7 +188,7 @@ testScriptError: Cannot read properties of undefined (reading 'match')
    at Object.eval sandbox-script.js:1:11).]]>
       </failure>
     </testcase>
-    <testcase name="Bearer header should be present" time="0.009" classname="WebApiAuthenticationTests">
+    <testcase name="Bearer header should be present" time="0.010" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected undefined not to be undefined">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -201,9 +201,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="JDBC Authentication / JDBC Login - Invalid Credentials" id="b794846c-a310-429f-947e-07632c209d54" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.008">
-    <testcase name="Response time is reasonable" time="0.008" classname="WebApiAuthenticationTests"/>
-    <testcase name="Invalid credentials return 401" time="0.008" classname="WebApiAuthenticationTests">
+  <testsuite name="JDBC Authentication / JDBC Login - Invalid Credentials" id="ef48cd81-7040-42d6-b19d-6446d0d2cfbc" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.010">
+    <testcase name="Response time is reasonable" time="0.010" classname="WebApiAuthenticationTests"/>
+    <testcase name="Invalid credentials return 401" time="0.010" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 404 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -216,9 +216,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="JDBC Authentication / JDBC Login - Missing Credentials" id="039ba4d3-0104-4275-af62-e6d34d9bbf31" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.007">
-    <testcase name="Response time is reasonable" time="0.007" classname="WebApiAuthenticationTests"/>
-    <testcase name="Missing credentials are handled" time="0.007" classname="WebApiAuthenticationTests">
+  <testsuite name="JDBC Authentication / JDBC Login - Missing Credentials" id="219f18cf-9e09-473a-aee0-bdce893066e4" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.008">
+    <testcase name="Response time is reasonable" time="0.008" classname="WebApiAuthenticationTests"/>
+    <testcase name="Missing credentials are handled" time="0.008" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 400, 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -231,18 +231,18 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="JDBC Authentication / Access Protected Endpoint with JDBC Token" id="b1f12914-e622-4580-9f68-1552adf1068e" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="0" errors="0" time="0.011">
-    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
-    <testcase name="No JDBC token available" time="0.011" classname="WebApiAuthenticationTests"/>
+  <testsuite name="JDBC Authentication / Access Protected Endpoint with JDBC Token" id="242fc19f-1d16-4269-8ee2-61ac123e59bd" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="0" errors="0" time="0.013">
+    <testcase name="Response time is reasonable" time="0.013" classname="WebApiAuthenticationTests"/>
+    <testcase name="No JDBC token available" time="0.013" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="Security Configuration / Security Info Endpoint" id="04954cd8-de08-4f8e-a321-8481ccf89ed5" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.005">
+  <testsuite name="Security Configuration / Security Info Endpoint" id="59a7b99f-e2bb-457d-ba2d-b8b966b26bee" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="0" errors="0" time="0.005">
     <testcase name="Response time is reasonable" time="0.005" classname="WebApiAuthenticationTests"/>
     <testcase name="Security info endpoint responds" time="0.005" classname="WebApiAuthenticationTests"/>
     <testcase name="Response contains security info" time="0.005" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="JWT Validation / Invalid JWT Token - Should Return 401" id="0a384724-5ba3-49d9-9516-b6fd4dcf5fb6" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.011">
-    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
-    <testcase name="Invalid JWT returns 401" time="0.011" classname="WebApiAuthenticationTests">
+  <testsuite name="JWT Validation / Invalid JWT Token - Should Return 401" id="681b3744-2f49-4d5f-a5c5-c2e6bcc7ce93" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.013">
+    <testcase name="Response time is reasonable" time="0.013" classname="WebApiAuthenticationTests"/>
+    <testcase name="Invalid JWT returns 401" time="0.013" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -255,9 +255,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="JWT Validation / Malformed Authorization Header - Should Return 401" id="ac410404-7801-4a0e-9d4d-3c22d052e9ef" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.012">
-    <testcase name="Response time is reasonable" time="0.012" classname="WebApiAuthenticationTests"/>
-    <testcase name="Malformed auth header returns 401" time="0.012" classname="WebApiAuthenticationTests">
+  <testsuite name="JWT Validation / Malformed Authorization Header - Should Return 401" id="e6c6f150-b5d4-4a21-bef4-0691c2d5b816" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.013">
+    <testcase name="Response time is reasonable" time="0.013" classname="WebApiAuthenticationTests"/>
+    <testcase name="Malformed auth header returns 401" time="0.013" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -270,9 +270,9 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="JWT Validation / Expired JWT Token - Should Return 401" id="cbca33a7-fe15-4d13-a0e5-793071d5d47b" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.011">
-    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
-    <testcase name="Expired JWT returns 401" time="0.011" classname="WebApiAuthenticationTests">
+  <testsuite name="JWT Validation / Expired JWT Token - Should Return 401" id="22eb8e09-92a2-4700-b11d-913ac34f5e4c" timestamp="2026-01-24T15:27:06.346Z" tests="2" failures="1" errors="0" time="0.012">
+    <testcase name="Response time is reasonable" time="0.012" classname="WebApiAuthenticationTests"/>
+    <testcase name="Expired JWT returns 401" time="0.012" classname="WebApiAuthenticationTests">
       <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
         <![CDATA[Failed 1 times.]]>
         <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
@@ -285,14 +285,14 @@ testScriptError: Cannot read properties of undefined (reading 'match')
       </failure>
     </testcase>
   </testsuite>
-  <testsuite name="Public Endpoints / Info Endpoint - Always Public" id="adf22d9f-72d7-4c00-8719-067908a678dc" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.007">
-    <testcase name="Response time is reasonable" time="0.007" classname="WebApiAuthenticationTests"/>
-    <testcase name="Info endpoint is always accessible" time="0.007" classname="WebApiAuthenticationTests"/>
-    <testcase name="Response is valid JSON" time="0.007" classname="WebApiAuthenticationTests"/>
+  <testsuite name="Public Endpoints / Info Endpoint - Always Public" id="ba16f18e-6904-40a4-b9df-465f47aa0d15" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="Response time is reasonable" time="0.006" classname="WebApiAuthenticationTests"/>
+    <testcase name="Info endpoint is always accessible" time="0.006" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response is valid JSON" time="0.006" classname="WebApiAuthenticationTests"/>
   </testsuite>
-  <testsuite name="CORS Headers / CORS Preflight Request" id="63b15a5b-5305-4880-ae7f-29092810a7dc" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.005">
-    <testcase name="Response time is reasonable" time="0.005" classname="WebApiAuthenticationTests"/>
-    <testcase name="CORS preflight responds correctly" time="0.005" classname="WebApiAuthenticationTests"/>
-    <testcase name="CORS headers present" time="0.005" classname="WebApiAuthenticationTests"/>
+  <testsuite name="CORS Headers / CORS Preflight Request" id="7f3f63d3-9647-43be-bfc2-8240c193ef92" timestamp="2026-01-24T15:27:06.346Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="Response time is reasonable" time="0.006" classname="WebApiAuthenticationTests"/>
+    <testcase name="CORS preflight responds correctly" time="0.006" classname="WebApiAuthenticationTests"/>
+    <testcase name="CORS headers present" time="0.006" classname="WebApiAuthenticationTests"/>
   </testsuite>
 </testsuites>

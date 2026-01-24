@@ -14,15 +14,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Spring MVC HttpMessageConverter for ByteArrayOutputStream
- *
- * Replaces Jersey JAX-RS MessageBodyWriter:
- * - OutputStreamWriter.java
- *
- * This converter allows controllers to return ByteArrayOutputStream directly,
+ * HttpMessageConverter for ByteArrayOutputStream.
+ * Allows controllers to return ByteArrayOutputStream directly,
  * which is useful for streaming/downloading generated content.
- *
- * Migration Status: Replaces JAX-RS @Provider MessageBodyWriter
  */
 @Component
 public class OutputStreamMessageConverter implements HttpMessageConverter<ByteArrayOutputStream> {
@@ -40,7 +34,7 @@ public class OutputStreamMessageConverter implements HttpMessageConverter<ByteAr
 
     @Override
     public List<MediaType> getSupportedMediaTypes() {
-        // Support all media types (like Jersey's implementation)
+        // Support all media types
         return Collections.singletonList(MediaType.ALL);
     }
 

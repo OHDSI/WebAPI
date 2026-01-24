@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Base class for Spring MVC controllers during Jersey migration.
- * Provides common functionality and utilities for migrated controllers.
- * Extends AbstractAdminService to inherit security helper methods (isSecured, isAdmin, isModerator).
+ * Base class for Spring MVC controllers.
+ * Provides common response helper methods and security utilities.
  */
 public abstract class AbstractMvcController extends AbstractAdminService {
 

@@ -11,23 +11,7 @@ import java.util.List;
 
 /**
  * Spring MVC Configuration.
- * Jersey has been removed - Spring MVC now serves all endpoints.
- *
- * Spring MVC endpoints are served at: /WebAPI/* (via server.context-path=/WebAPI)
- *
- * NOTE: We don't use @EnableWebMvc because:
- * - Spring Boot auto-configures Spring MVC by default
- * - @EnableWebMvc would disable Spring Boot's auto-configuration
- * - This would conflict with existing I18nConfig (duplicate localeResolver bean)
- * - We only need to customize specific aspects, not override everything
- *
- * NOTE: We don't need a custom ServletRegistrationBean because:
- * - Spring Boot's default DispatcherServlet already serves at context-path + /*
- * - With server.context-path=/WebAPI, it automatically serves /WebAPI/*
- * - @ComponentScan in WebApi.java finds controllers in org.ohdsi.webapi.mvc.controller
- *
- * @see org.ohdsi.webapi.I18nConfig
- * @see org.ohdsi.webapi.WebApi
+ * Configures interceptors, message converters, and other MVC components.
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -37,7 +21,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // Add locale interceptor if available (replaces Jersey LocaleFilter)
+        // Add locale interceptor if available
         if (localeInterceptor != null) {
             registry.addInterceptor(localeInterceptor)
                     .addPathPatterns("/**");
@@ -46,8 +30,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // Add custom OutputStreamMessageConverter (replaces Jersey's OutputStreamWriter)
-        // Spring Boot already configures Jackson converter, so we just extend the list
+        // Add custom OutputStreamMessageConverter for ByteArrayOutputStream responses
         converters.add(new org.ohdsi.webapi.mvc.OutputStreamMessageConverter());
     }
 }

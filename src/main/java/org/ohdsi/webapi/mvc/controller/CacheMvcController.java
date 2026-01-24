@@ -17,11 +17,8 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 /**
- * Spring MVC version of CacheService
- *
- * Migration Status: Replaces /cache/CacheService.java (Jersey)
- * Endpoints: 2 GET endpoints
- * Complexity: Simple - basic cache operations
+ * Cache management controller.
+ * Provides endpoints for viewing and clearing application caches.
  */
 @RestController
 @RequestMapping("/cache")
@@ -43,10 +40,7 @@ public class CacheMvcController extends AbstractMvcController {
     }
 
     /**
-     * Get list of all caches with statistics
-     *
-     * Jersey: GET /WebAPI/cache/
-     * Spring MVC: GET /WebAPI/v2/cache/
+     * Get list of all caches with statistics.
      */
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CacheInfo>> getCacheInfoList() {
@@ -68,10 +62,7 @@ public class CacheMvcController extends AbstractMvcController {
     }
 
     /**
-     * Clear all caches
-     *
-     * Jersey: GET /WebAPI/cache/clear
-     * Spring MVC: GET /WebAPI/v2/cache/clear
+     * Clear all caches.
      */
     @GetMapping(value = "/clear", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ClearCacheResult> clearAll() {

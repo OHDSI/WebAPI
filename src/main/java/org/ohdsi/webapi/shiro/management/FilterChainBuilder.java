@@ -72,7 +72,7 @@ public class FilterChainBuilder {
     public FilterChainBuilder addPath(String path, String filters) {
         path = path.replaceAll("/+$", "");
 
-        // Prepend /WebAPI to match JAX-RS @ApplicationPath("/WebAPI")
+        // Prepend /WebAPI to match the application context path
         if (!path.startsWith("/WebAPI") && !path.equals("/**") && !path.equals("/*")) {
             path = "/WebAPI" + path;
         }

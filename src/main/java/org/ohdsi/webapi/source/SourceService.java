@@ -38,6 +38,7 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.PersistenceException;
 import javax.cache.CacheManager;
+import org.springframework.context.annotation.Lazy;
 import javax.cache.configuration.MutableConfiguration;
 import java.io.IOException;
 import java.util.*;
@@ -95,7 +96,7 @@ public class SourceService extends AbstractDaoService {
                          PBEStringEncryptor defaultStringEncryptor,
                          SourceAccessor sourceAccessor,
                          GenericConversionService conversionService,
-                         VocabularyService vocabularyService,
+                         @Lazy VocabularyService vocabularyService,
                          ApplicationEventPublisher publisher) {
         this.sourceRepository = sourceRepository;
         this.sourceDaimonRepository = sourceDaimonRepository;

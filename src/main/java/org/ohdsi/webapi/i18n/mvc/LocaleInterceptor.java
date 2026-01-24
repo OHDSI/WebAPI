@@ -11,10 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Locale;
 
 /**
- * Spring MVC HandlerInterceptor replacement for Jersey's LocaleFilter.
+ * Locale interceptor.
  * Extracts locale from request headers and sets it in LocaleContextHolder.
- *
- * Migration Status: Replaces /i18n/LocaleFilter.java (JAX-RS ContainerRequestFilter)
  */
 @Component
 public class LocaleInterceptor implements HandlerInterceptor {

@@ -35,13 +35,8 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Objects;
 
 /**
- * Spring MVC Global Exception Handler
- *
- * Replaces Jersey JAX-RS exception mappers:
- * - GenericExceptionMapper.java (handles all throwables)
- * - JdbcExceptionMapper.java (handles database connection failures)
- *
- * Migration Status: Replaces both JAX-RS @Provider exception mappers
+ * Global exception handler for REST controllers.
+ * Handles all exceptions and returns appropriate HTTP responses.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -53,8 +48,7 @@ public class GlobalExceptionHandler {
     private ApplicationEventPublisher eventPublisher;
 
     /**
-     * Handle database connection failures
-     * Replaces: JdbcExceptionMapper
+     * Handle database connection failures.
      */
     @ExceptionHandler(CannotGetJdbcConnectionException.class)
     public ResponseEntity<Void> handleDatabaseConnectionException(CannotGetJdbcConnectionException exception) {
@@ -90,7 +84,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle Spring ResponseStatusException (replaces JAX-RS NotFoundException, ForbiddenException, etc.)
+     * Handle ResponseStatusException.
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorMessage> handleResponseStatusException(ResponseStatusException ex) {

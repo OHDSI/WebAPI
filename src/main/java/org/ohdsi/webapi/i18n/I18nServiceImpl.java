@@ -23,11 +23,8 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Spring MVC version of I18nController
- *
- * Migration Status: Replaces /i18n/I18nController.java (Jersey)
- * Endpoints: 2 GET endpoints
- * Complexity: Simple - i18n resource handling
+ * Internationalization service.
+ * Provides localized message resources and available locales.
  */
 @RestController
 @RequestMapping("/i18n")

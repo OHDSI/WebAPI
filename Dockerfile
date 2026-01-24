@@ -8,14 +8,11 @@ ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTes
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
-# Download dependencies (for Docker layer caching)
-COPY pom.xml /code/
-RUN mvn dependency:go-offline -DskipTests -P${MAVEN_PROFILE}
-
 ARG GIT_BRANCH=unknown
 ARG GIT_COMMIT_ID_ABBREV=unknown
 
 # Compile code and repackage it
+COPY pom.xml /code/
 COPY src /code/src
 RUN mvn package ${MAVEN_PARAMS} \
     -Dpackaging.type=jar \

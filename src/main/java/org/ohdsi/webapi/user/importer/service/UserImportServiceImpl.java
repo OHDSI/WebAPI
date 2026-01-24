@@ -1,13 +1,20 @@
 package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.arachne.scheduler.model.JobExecutingType;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserOrigin;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.Role;
+import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
+import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
+import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
+import org.ohdsi.webapi.user.importer.model.AuthenticationProviders;
+import org.ohdsi.webapi.user.importer.model.ConnectionInfo;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.LdapUserImportStatus;
@@ -27,13 +34,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +62,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.Constants.JOB_IS_ALREADY_SCHEDULED;
 import static org.ohdsi.webapi.user.importer.providers.AbstractLdapProvider.OBJECTCLASS_ATTR;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
 
-@Service
+@RestController
+@RequestMapping("/user")
 @Transactional(readOnly = true)
 public class UserImportServiceImpl implements UserImportService {
+
+  // Note: @RestController already includes @Component, so @Service is not needed
 
   private static final Logger logger = LoggerFactory.getLogger(UserImportService.class);
 
@@ -61,20 +85,34 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final RoleGroupRepository roleGroupMappingRepository;
 
+  private final UserImportJobService userImportJobService;
+
+  private final GenericConversionService conversionService;
+
   @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
+
+  @Value("${security.ad.url}")
+  private String adUrl;
+
+  @Value("${security.ldap.url}")
+  private String ldapUrl;
 
   public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
                                @Autowired(required = false) DefaultLdapProvider ldapProvider,
                                UserRepository userRepository,
                                UserImportJobRepository userImportJobRepository,
                                PermissionManager userManager,
-                               RoleGroupRepository roleGroupMappingRepository) {
+                               RoleGroupRepository roleGroupMappingRepository,
+                               @Autowired(required = false) UserImportJobService userImportJobService,
+                               GenericConversionService conversionService) {
 
     this.userRepository = userRepository;
     this.userImportJobRepository = userImportJobRepository;
     this.userManager = userManager;
     this.roleGroupMappingRepository = roleGroupMappingRepository;
+    this.userImportJobService = userImportJobService;
+    this.conversionService = conversionService;
     Optional.ofNullable(activeDirectoryProvider).ifPresent(provider -> providersMap.put(LdapProviderType.ACTIVE_DIRECTORY, provider));
     Optional.ofNullable(ldapProvider).ifPresent(provider -> providersMap.put(LdapProviderType.LDAP, provider));
   }
@@ -83,6 +121,139 @@ public class UserImportServiceImpl implements UserImportService {
 
     return Optional.ofNullable(providersMap.get(type));
   }
+
+  // ==================== REST Endpoints ====================
+
+  /**
+   * Get authentication providers
+   */
+  @GetMapping(
+      value = "/providers",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public AuthenticationProviders getAuthenticationProviders() {
+    AuthenticationProviders providers = new AuthenticationProviders();
+    providers.setAdUrl(adUrl);
+    providers.setLdapUrl(ldapUrl);
+    return providers;
+  }
+
+  /**
+   * Test connection to LDAP/AD provider
+   */
+  @GetMapping(
+      value = "/import/{type}/test",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public ConnectionInfo testConnectionEndpoint(@PathVariable("type") String type) {
+    LdapProviderType provider = LdapProviderType.fromValue(type);
+    ConnectionInfo result = new ConnectionInfo();
+    testConnection(provider);
+    result.setState(ConnectionInfo.ConnectionState.SUCCESS);
+    result.setMessage("Connection success");
+    return result;
+  }
+
+  /**
+   * Find groups in LDAP/AD
+   */
+  @GetMapping(
+      value = "/import/{type}/groups",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public List<LdapGroup> findGroupsEndpoint(
+          @PathVariable("type") String type,
+          @RequestParam(value = "search", required = false) String searchStr) {
+    LdapProviderType provider = LdapProviderType.fromValue(type);
+    return findGroups(provider, searchStr);
+  }
+
+  /**
+   * Find users in directory
+   */
+  @PostMapping(
+      value = "/import/{type}",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public List<AtlasUserRoles> findDirectoryUsers(
+          @PathVariable("type") String type,
+          @RequestBody RoleGroupMapping mapping) {
+    LdapProviderType provider = LdapProviderType.fromValue(type);
+    return findUsers(provider, mapping);
+  }
+
+  /**
+   * Import users from directory
+   */
+  @PostMapping(
+      value = "/import",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public UserImportJobDTO importUsersEndpoint(
+          @RequestBody List<AtlasUserRoles> users,
+          @RequestParam(value = "provider") String provider,
+          @RequestParam(value = "preserve", defaultValue = "TRUE") Boolean preserveRoles) {
+    LdapProviderType providerType = LdapProviderType.fromValue(provider);
+
+    UserImportJobDTO jobDto = new UserImportJobDTO();
+    jobDto.setProviderType(providerType);
+    jobDto.setPreserveRoles(preserveRoles);
+    jobDto.setEnabled(true);
+    jobDto.setStartDate(getJobStartDate());
+    jobDto.setFrequency(JobExecutingType.ONCE);
+    jobDto.setRecurringTimes(0);
+    if (users != null) {
+      jobDto.setUserRoles(Utils.serialize(users));
+    }
+
+    try {
+      UserImportJob job = conversionService.convert(jobDto, UserImportJob.class);
+      UserImportJob created = userImportJobService.createJob(job);
+      return conversionService.convert(created, UserImportJobDTO.class);
+    } catch (JobAlreadyExistException e) {
+      throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+              String.format(JOB_IS_ALREADY_SCHEDULED, jobDto.getProviderType()));
+    }
+  }
+
+  /**
+   * Save role group mapping
+   */
+  @PostMapping(
+      value = "/import/{type}/mapping",
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public void saveMappingEndpoint(@PathVariable("type") String type, @RequestBody RoleGroupMapping mapping) {
+    LdapProviderType providerType = LdapProviderType.fromValue(type);
+    List<RoleGroupEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
+    saveRoleGroupMapping(providerType, mappingEntities);
+  }
+
+  /**
+   * Get role group mapping
+   */
+  @GetMapping(
+      value = "/import/{type}/mapping",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public RoleGroupMapping getMappingEndpoint(@PathVariable("type") String type) {
+    LdapProviderType providerType = LdapProviderType.fromValue(type);
+    List<RoleGroupEntity> mappingEntities = getRoleGroupMapping(providerType);
+    return RoleGroupMappingConverter.convertRoleGroupMapping(type, mappingEntities);
+  }
+
+  private Date getJobStartDate() {
+    Calendar calendar = GregorianCalendar.getInstance();
+    // Job will be started in five seconds after now
+    calendar.add(Calendar.SECOND, 5);
+    calendar.set(Calendar.MILLISECOND, 0);
+
+    return calendar.getTime();
+  }
+
+  // ==================== Service Methods ====================
 
   @Override
   public List<LdapGroup> findGroups(LdapProviderType type, String searchStr) {

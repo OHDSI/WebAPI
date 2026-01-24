@@ -22,12 +22,16 @@ package org.ohdsi.webapi.info;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.info.ConfigurationInfo;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
+@RequestMapping("/info")
 public class InfoService {
 
     private final Info info;
@@ -46,6 +50,7 @@ public class InfoService {
     /**
      * Get info about the WebAPI instance
      */
+    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public Info getInfo() {
 
         return info;

@@ -1,8 +1,7 @@
-package org.ohdsi.webapi.mvc.controller;
+package org.ohdsi.webapi.service;
 
 import com.google.common.net.HttpHeaders;
 import org.apache.commons.io.IOUtils;
-import org.ohdsi.webapi.mvc.AbstractMvcController;
 import org.pac4j.core.context.HttpConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -19,15 +18,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Spring MVC version of SSOController
- *
- * Migration Status: Replaces /security/SSOController.java (Jersey)
- * Endpoints: 2 GET endpoints
- * Complexity: Low - SAML metadata and logout redirect
+ * SSO Service providing SAML metadata and logout functionality
  */
 @RestController
 @RequestMapping("/saml")
-public class SSOMvcController extends AbstractMvcController {
+public class SSOService {
 
     @Value("${security.saml.metadataLocation}")
     private String metadataLocation;
@@ -40,9 +35,6 @@ public class SSOMvcController extends AbstractMvcController {
 
     /**
      * Get the SAML metadata
-     *
-     * Jersey: GET /WebAPI/saml/saml-metadata
-     * Spring MVC: GET /WebAPI/v2/saml/saml-metadata
      *
      * @summary Get metadata
      * @param response The response context
@@ -63,9 +55,6 @@ public class SSOMvcController extends AbstractMvcController {
 
     /**
      * Log out of the service
-     *
-     * Jersey: GET /WebAPI/saml/slo
-     * Spring MVC: GET /WebAPI/v2/saml/slo
      *
      * @summary Log out
      * @return Response

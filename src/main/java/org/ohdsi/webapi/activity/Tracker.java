@@ -17,33 +17,54 @@ package org.ohdsi.webapi.activity;
 
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.ohdsi.webapi.activity.Activity.ActivityType;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Activity tracker service
  *
  * @author fdefalco
+ * @deprecated Example REST service - will be deprecated in a future release
  */
+@RestController
+@RequestMapping("/activity")
+@Deprecated
 public class Tracker {
   private static ConcurrentLinkedQueue<Activity> activityLog;
-  
+
   public static void trackActivity(ActivityType type, String caption) {
     if (activityLog == null) {
       activityLog = new ConcurrentLinkedQueue<>();
     }
-    
+
     Activity activity = new Activity();
     activity.caption = caption;
     activity.timestamp = new Date();
     activity.type = type;
-    
+
     activityLog.add(activity);
   }
-  
+
   public static Object[] getActivity() {
     if (activityLog == null) {
       activityLog = new ConcurrentLinkedQueue<>();
     }
-    
+
     return activityLog.toArray();
+  }
+
+  /**
+   * Get latest activity
+   *
+   * @deprecated DO NOT USE - will be removed in future release
+   */
+  @GetMapping(value = "/latest", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Deprecated
+  public Object[] getLatestActivity() {
+    return getActivity();
   }
 }

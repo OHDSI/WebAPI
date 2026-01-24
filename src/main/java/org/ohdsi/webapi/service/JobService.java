@@ -25,9 +25,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,10 +46,11 @@ import java.util.function.Predicate;
 
 /**
  * REST Services related to working with the Spring Batch jobs
- * 
+ *
  * @summary Jobs
  */
-@Component
+@RestController
+@RequestMapping("/job")
 public class JobService extends AbstractDaoService {
 
   private final JobExplorer jobExplorer;
@@ -67,12 +73,13 @@ public class JobService extends AbstractDaoService {
 
   /**
    * Get the job information by job ID
-   * 
+   *
    * @summary Get job by ID
    * @param jobId The job ID
    * @return The job information
    */
-  public JobInstanceResource findJob(final Long jobId) {
+  @GetMapping(value = "/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobInstanceResource findJob(@PathVariable("jobId") final Long jobId) {
     final JobInstance job = this.jobExplorer.getJobInstance(jobId);
     if (job == null) {
       return null;//TODO #8 conventions under review
@@ -82,29 +89,34 @@ public class JobService extends AbstractDaoService {
 
   /**
    * Get the job execution information by job type and name
-   * 
+   *
    * @summary Get job by name and type
    * @param jobName The job name
    * @param jobType The job type
    * @return JobExecutionResource
    */
-    public JobExecutionResource findJobByName(final String jobName, final String jobType) {
+  @GetMapping(value = "/type/{jobType}/name/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobByName(
+          @PathVariable("jobName") final String jobName,
+          @PathVariable("jobType") final String jobType) {
             final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
                     .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
                     .findFirst();
             return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
     }
 
-    /**
-     * Get the job execution information by execution ID and job ID
-     * 
-     * @summary Get job by job ID and execution ID
-     * @param jobId The job ID
-     * @param executionId The execution ID
-     * @return JobExecutionResource
-     */
-  public JobExecutionResource findJobExecution(final Long jobId,
-          final Long executionId) {
+  /**
+   * Get the job execution information by execution ID and job ID
+   *
+   * @summary Get job by job ID and execution ID
+   * @param jobId The job ID
+   * @param executionId The execution ID
+   * @return JobExecutionResource
+   */
+  @GetMapping(value = "/{jobId}/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobExecution(
+          @PathVariable("jobId") final Long jobId,
+          @PathVariable("executionId") final Long executionId) {
     return service(jobId, executionId);
   }
 
@@ -115,7 +127,8 @@ public class JobService extends AbstractDaoService {
    * @param executionId The job execution ID
    * @return JobExecutionResource
    */
-  public JobExecutionResource findJobExecution(final Long executionId) {
+  @GetMapping(value = "/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobExecutionById(@PathVariable("executionId") final Long executionId) {
     return service(null, executionId);
   }
 
@@ -130,12 +143,13 @@ public class JobService extends AbstractDaoService {
   /**
    * Get job names (unique names). Note: this path (GET /job) should really
    * return pages of job instances. This could be implemented should the need
-   * arise. See {@link JobService#list(String, Integer, Integer)} to obtain
+   * arise. See {@link JobService#list(String, Integer, Integer, boolean)} to obtain
    * executions and filter by job name.
    *
    * @summary Get list of jobs
    * @return A list of jobs
    */
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<String> findJobNames() {
     return this.jobExplorer.getJobNames();
   }
@@ -156,10 +170,12 @@ public class JobService extends AbstractDaoService {
    * @return collection of JobExecutionInfo
    * @throws NoSuchJobException
    */
-  public Page<JobExecutionResource> list(final String jobName,
-          final Integer pageIndex,
-          final Integer pageSize,
-          boolean comprehensivePage)
+  @GetMapping(value = "/execution", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Page<JobExecutionResource> list(
+          @RequestParam(value = "jobName", required = false) final String jobName,
+          @RequestParam(value = "pageIndex", defaultValue = "0") final Integer pageIndex,
+          @RequestParam(value = "pageSize", defaultValue = "20") final Integer pageSize,
+          @RequestParam(value = "comprehensivePage", required = false, defaultValue = "false") boolean comprehensivePage)
           throws NoSuchJobException {
 
     List<JobExecutionResource> resources = null;

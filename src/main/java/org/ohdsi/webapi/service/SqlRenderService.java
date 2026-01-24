@@ -11,18 +11,30 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
  * @author Lee Evans
  */
+@RestController
+@RequestMapping("/sqlrender")
 public class SqlRenderService {
     /**
      * Translate an OHDSI SQL to a supported target SQL dialect
      * @param sourceStatement JSON with parameters, source SQL, and target dialect
      * @return rendered and translated SQL
      */
-    public TranslatedStatement translateSQLFromSourceStatement(SourceStatement sourceStatement) {
+    @PostMapping(
+        value = "/translate",
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public TranslatedStatement translateSQLFromSourceStatement(@RequestBody SourceStatement sourceStatement) {
         if (sourceStatement == null) {
             return new TranslatedStatement();
         }

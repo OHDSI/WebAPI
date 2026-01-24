@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.reusable;
 
+import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
@@ -23,11 +24,21 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.persistence.EntityManager;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +46,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
-@Service
+@RestController
+@RequestMapping("/reusable")
 @Transactional
 public class ReusableService extends AbstractDaoService implements HasTags<Integer> {
     private final ReusableRepository reusableRepository;
@@ -58,7 +70,12 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         this.versionService = versionService;
     }
 
-    public ReusableDTO create(ReusableDTO dto) {
+    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableDTO create(@RequestBody ReusableDTO dto) {
+        return createInternal(dto);
+    }
+
+    private ReusableDTO createInternal(ReusableDTO dto) {
         Reusable reusable = conversionService.convert(dto, Reusable.class);
         Reusable saved = create(reusable);
         return conversionService.convert(saved, ReusableDTO.class);
@@ -77,7 +94,8 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findById(id).orElse(null);
     }
 
-    public ReusableDTO getDTOById(Integer id) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableDTO getDTOById(@PathVariable("id") Integer id) {
         Reusable reusable = reusableRepository.findById(id).orElse(null);
         return conversionService.convert(reusable, ReusableDTO.class);
     }
@@ -86,7 +104,8 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findAll();
     }
 
-    public Page<ReusableDTO> page(final Pageable pageable) {
+    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ReusableDTO> page(@Pagination Pageable pageable) {
         return reusableRepository.findAll(pageable)
                 .map(reusable -> {
                     final ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
@@ -95,7 +114,8 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
                 });
     }
 
-    public ReusableDTO update(Integer id, ReusableDTO entity) {
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableDTO update(@PathVariable("id") Integer id, @RequestBody ReusableDTO entity) {
         Date currentTime = Calendar.getInstance().getTime();
 
         saveVersion(id);
@@ -113,26 +133,42 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return conversionService.convert(saved, ReusableDTO.class);
     }
 
-    public ReusableDTO copy(Integer id) {
+    @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableDTO copy(@PathVariable("id") Integer id) {
         ReusableDTO def = getDTOById(id);
         def.setId(null);
         def.setTags(null);
         def.setName(NameUtils.getNameForCopy(def.getName(), this::getNamesLike, reusableRepository.findByName(def.getName())));
 
-        return create(def);
+        return createInternal(def);
     }
 
-    public void assignTag(Integer id, int tagId) {
+    @PostMapping(value = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void assignTag(@PathVariable("id") Integer id, @RequestBody int tagId) {
         Reusable entity = getById(id);
         assignTag(entity, tagId);
     }
 
-    public void unassignTag(Integer id, int tagId) {
+    @DeleteMapping(value = "/{id}/tag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void unassignTag(@PathVariable("id") Integer id, @PathVariable("tagId") int tagId) {
         Reusable entity = getById(id);
         unassignTag(entity, tagId);
     }
 
-    public void delete(Integer id) {
+    @PostMapping(value = "/{id}/protectedtag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void assignPermissionProtectedTag(@PathVariable("id") int id, @RequestBody int tagId) {
+        Reusable entity = getById(id);
+        assignTag(entity, tagId);
+    }
+
+    @DeleteMapping(value = "/{id}/protectedtag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void unassignPermissionProtectedTag(@PathVariable("id") int id, @PathVariable("tagId") int tagId) {
+        Reusable entity = getById(id);
+        unassignTag(entity, tagId);
+    }
+
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void delete(@PathVariable("id") Integer id) {
         Reusable existing = reusableRepository.findById(id).orElse(null);
 
         checkOwnerOrAdminOrModerator(existing.getCreatedBy());
@@ -140,21 +176,24 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         reusableRepository.deleteById(id);
     }
 
-    public List<VersionDTO> getVersions(long id) {
+    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<VersionDTO> getVersions(@PathVariable("id") long id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.REUSABLE, id);
         return versions.stream()
                 .map(v -> conversionService.convert(v, VersionDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public ReusableVersionFullDTO getVersion(int id, int version) {
+    @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableVersionFullDTO getVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
         checkVersion(id, version, false);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
 
         return conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
     }
 
-    public VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO) {
+    @PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public VersionDTO updateVersion(@PathVariable("id") int id, @PathVariable("version") int version, @RequestBody VersionUpdateDTO updateDTO) {
         checkVersion(id, version);
         updateDTO.setAssetId(id);
         updateDTO.setVersion(version);
@@ -163,12 +202,14 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return conversionService.convert(updated, VersionDTO.class);
     }
 
-    public void deleteVersion(int id, int version) {
+    @DeleteMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
         checkVersion(id, version);
         versionService.delete(VersionType.REUSABLE, id, version);
     }
 
-    public ReusableDTO copyAssetFromVersion(int id, int version) {
+    @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ReusableDTO copyAssetFromVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
         checkVersion(id, version, false);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ReusableVersionFullDTO fullDTO = conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
@@ -177,10 +218,14 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         dto.setTags(null);
         dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
                 reusableRepository.findByName(dto.getName())));
-        return create(dto);
+        return createInternal(dto);
     }
 
-    public List<ReusableDTO> listByTags(TagNameListRequestDTO requestDTO) {
+    @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public List<ReusableDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
         List<String> names = requestDTO.getNames().stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toList());
@@ -220,7 +265,8 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findById(reusable.getId()).orElse(null);
     }
 
-    public boolean exists(final int id, final String name) {
+    @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    public boolean exists(@PathVariable("id") int id, @RequestParam(value = "name", required = false) String name) {
         return reusableRepository.existsCount(id, name) > 0;
     }
 

@@ -3,10 +3,14 @@ package org.ohdsi.webapi.user.importer.service;
 import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import com.cronutils.model.definition.CronDefinition;
+import org.ohdsi.webapi.arachne.scheduler.exception.JobNotFoundException;
 import org.ohdsi.webapi.arachne.scheduler.model.ScheduledTask;
 import org.ohdsi.webapi.arachne.scheduler.service.BaseJobServiceImpl;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.user.importer.dto.JobHistoryItemDTO;
+import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
+import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
@@ -23,11 +27,22 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
@@ -35,9 +50,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.ohdsi.webapi.Constants.JOB_IS_ALREADY_SCHEDULED;
 import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 
-@Service
+@RestController
+@RequestMapping("/user/import/job")
 @Transactional
 public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> implements UserImportJobService {
 
@@ -49,6 +66,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final JobRepository jobRepositoryBatch;
   private final PlatformTransactionManager transactionManager;
   private final JobTemplate jobTemplate;
+  private final GenericConversionService conversionService;
   private EntityGraph jobWithMappingEntityGraph = NamedEntityGraph.loading("jobWithMapping");
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
@@ -61,7 +79,8 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
                                   TransactionTemplate transactionTemplate,
                                   JobRepository jobRepositoryBatch,
                                   PlatformTransactionManager transactionManager,
-                                  JobTemplate jobTemplate) {
+                                  JobTemplate jobTemplate,
+                                  @Qualifier("conversionService") GenericConversionService conversionService) {
 
     super(taskScheduler, cronDefinition, jobRepository);
     this.userImportService = userImportService;
@@ -72,6 +91,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     this.jobRepositoryBatch = jobRepositoryBatch;
     this.transactionManager = transactionManager;
     this.jobTemplate = jobTemplate;
+    this.conversionService = conversionService;
   }
 
   @PostConstruct
@@ -144,6 +164,104 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     return jobHistoryItemRepository.findFirstByUserImportIdOrderByEndTimeDesc(id);
   }
+
+  // ==================== REST Endpoints ====================
+
+  /**
+   * Create a user import job
+   */
+  @PostMapping(
+      value = "/",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public UserImportJobDTO createJobEndpoint(@RequestBody UserImportJobDTO jobDTO) {
+    UserImportJob job = conversionService.convert(jobDTO, UserImportJob.class);
+    try {
+      UserImportJob created = createJob(job);
+      return conversionService.convert(created, UserImportJobDTO.class);
+    } catch (JobAlreadyExistException e) {
+      throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+              String.format(JOB_IS_ALREADY_SCHEDULED, job.getProviderType()));
+    }
+  }
+
+  /**
+   * Update a user import job
+   */
+  @PutMapping(
+      value = "/{id}",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public UserImportJobDTO updateJobEndpoint(
+          @PathVariable("id") Long jobId,
+          @RequestBody UserImportJobDTO jobDTO) {
+    UserImportJob job = conversionService.convert(jobDTO, UserImportJob.class);
+    try {
+      job.setId(jobId);
+      UserImportJob updated = updateJob(job);
+      return conversionService.convert(updated, UserImportJobDTO.class);
+    } catch (JobNotFoundException e) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /**
+   * Get the user import job list
+   */
+  @GetMapping(
+      value = "/",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  @Transactional
+  public List<UserImportJobDTO> listJobsEndpoint() {
+    return getJobs().stream()
+            .map(job -> conversionService.convert(job, UserImportJobDTO.class))
+            .peek(job -> getLatestHistoryItem(job.getId())
+                    .ifPresent(item -> job.setLastExecuted(item.getEndTime())))
+            .collect(Collectors.toList());
+  }
+
+  /**
+   * Get user import job by ID
+   */
+  @GetMapping(
+      value = "/{id}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public UserImportJobDTO getJobEndpoint(@PathVariable("id") Long id) {
+    return getJob(id)
+            .map(job -> conversionService.convert(job, UserImportJobDTO.class))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+  }
+
+  /**
+   * Delete user import job by ID
+   */
+  @DeleteMapping(
+      value = "/{id}"
+  )
+  public void deleteJobEndpoint(@PathVariable("id") Long id) {
+    UserImportJob job = getJob(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    delete(job);
+  }
+
+  /**
+   * Get the user import job history
+   */
+  @GetMapping(
+      value = "/{id}/history",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public List<JobHistoryItemDTO> getImportHistoryEndpoint(@PathVariable("id") Long id) {
+    return getJobHistoryItems(id)
+            .map(item -> conversionService.convert(item, JobHistoryItemDTO.class))
+            .collect(Collectors.toList());
+  }
+
+  // ==================== Internal Methods ====================
 
   Step userImportStep() {
 

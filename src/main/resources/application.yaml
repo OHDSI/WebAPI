@@ -199,7 +199,6 @@ security:
         usernameAttr: cn
 
     oauth: # OAuth
-      enabled: false
       callback:
         api: http://localhost:8080/WebAPI/user/oauth/callback
         ui: http://localhost/Atlas/#/welcome

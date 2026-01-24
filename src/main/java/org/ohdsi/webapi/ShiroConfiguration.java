@@ -119,6 +119,20 @@ public class ShiroConfiguration {
         return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
     }
 
+    /**
+     * Register the Shiro filter with the servlet container.
+     * This is necessary for Spring Boot to properly apply the filter to all requests.
+     */
+    @Bean
+    public FilterRegistrationBean<AbstractShiroFilter> shiroFilterRegistration(ShiroFilterFactoryBean shiroFilterFactoryBean) throws Exception {
+        FilterRegistrationBean<AbstractShiroFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter((AbstractShiroFilter) shiroFilterFactoryBean.getObject());
+        registration.addUrlPatterns("/*");
+        registration.setName("shiroFilter");
+        registration.setOrder(1); // Run before other filters
+        return registration;
+    }
+
     private Collection<Realm> getJwtAuthRealmForAuthorization(Security security) {
 
         return security.getRealms().stream()

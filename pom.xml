@@ -309,6 +309,12 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>oauth2-oidc-sdk</artifactId>
+      <version>11.13</version>
+    </dependency>
+
     <!-- Handlebars template engine (for TemplateUtils) -->
     <dependency>
       <groupId>com.github.jknack</groupId>

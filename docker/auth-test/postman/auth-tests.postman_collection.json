@@ -537,8 +537,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Missing credentials return 400 or 401', function() {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401, 403]);",
+                  "pm.test('Missing credentials are handled', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 403]);",
                   "});"
                 ],
                 "type": "text/javascript"

@@ -1,0 +1,132 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: webapi-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ohdsi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - webapi-network
+
+  mock-oauth2:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    container_name: mock-oauth2
+    environment:
+      - SERVER_PORT=9090
+      - JSON_CONFIG={"interactiveLogin":true,"httpServer":"NettyWrapper","tokenCallbacks":[{"issuerId":"default","tokenExpiry":3600,"requestMappings":[{"requestParam":"grant_type","match":"*","claims":{"sub":"testuser","email":"testuser@example.com","name":"Test User"}}]}]}
+    ports:
+      - "9090:9090"
+    networks:
+      - webapi-network
+
+  webapi:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: webapi
+    restart: on-failure:3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-oauth2:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT=60000
+      - SPRING_DATASOURCE_HIKARI_INITIALIZATIONFAILTIMEOUT=60000
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - DATASOURCE_USERNAME=postgres
+      - DATASOURCE_PASSWORD=postgres
+      - DATASOURCE_OHDSI_SCHEMA=webapi
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=webapi
+      - SPRING_BATCH_REPOSITORY_TABLEPREFIX=webapi.BATCH_
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SPRING_FLYWAY_USER=postgres
+      - SPRING_FLYWAY_PASSWORD=postgres
+      - SPRING_FLYWAY_SCHEMAS=webapi
+      - SPRING_FLYWAY_PLACEHOLDERS_OHDSISCHEMA=webapi
+      - SECURITY_PROVIDER=AtlasRegularSecurity
+      - SECURITY_AUTH_OPENID_ENABLED=true
+      - SECURITY_AUTH_JDBC_ENABLED=true
+      - SECURITY_AUTH_LDAP_ENABLED=false
+      - SECURITY_AUTH_AD_ENABLED=false
+      - SECURITY_AUTH_CAS_ENABLED=false
+      - SECURITY_AUTH_WINDOWS_ENABLED=false
+      - SECURITY_AUTH_KERBEROS_ENABLED=false
+      - SECURITY_AUTH_GOOGLE_ENABLED=false
+      - SECURITY_AUTH_FACEBOOK_ENABLED=false
+      - SECURITY_AUTH_GITHUB_ENABLED=false
+      - SECURITY_OID_CLIENTID=webapi-client
+      - SECURITY_OID_APISECRET=webapi-secret
+      - SECURITY_OID_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
+      - SECURITY_OID_EXTERNALURL=http://localhost:9090/default
+      - SECURITY_OID_LOGOUTURL=http://localhost:9090/default/endsession
+      - SECURITY_OID_EXTRASCOPES=profile email
+      - SECURITY_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
+      - SECURITY_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
+      - SECURITY_OAUTH_CALLBACK_URLRESOLVER=query
+      - SECURITY_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SECURITY_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SECURITY_DB_DATASOURCE_USERNAME=postgres
+      - SECURITY_DB_DATASOURCE_PASSWORD=postgres
+      - SECURITY_DB_DATASOURCE_SCHEMA=webapi
+      - SECURITY_DB_DATASOURCE_AUTHENTICATIONQUERY=select password, firstname, middlename, lastname from webapi.users where lower(email) = lower(?)
+      - LOGGING_LEVEL_ORG_OHDSI_WEBAPI_SECURITY=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+    ports:
+      - "18080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/WebAPI/info"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+    networks:
+      - webapi-network
+
+  db-setup:
+    image: postgres:15-alpine
+    container_name: db-setup
+    depends_on:
+      webapi:
+        condition: service_healthy
+    volumes:
+      - ./setup-test-users.sql:/setup-test-users.sql:ro
+    environment:
+      PGPASSWORD: postgres
+    command: >
+      psql -h postgres -U postgres -d ohdsi -f /setup-test-users.sql
+    networks:
+      - webapi-network
+
+  newman:
+    image: postman/newman:6-alpine
+    container_name: newman
+    depends_on:
+      webapi:
+        condition: service_healthy
+      db-setup:
+        condition: service_completed_successfully
+    volumes:
+      - ./postman:/etc/newman
+      - ./test-results:/results
+    command:
+      - run
+      - /etc/newman/auth-tests.postman_collection.json
+      - --environment
+      - /etc/newman/auth-test-env.postman_environment.json
+      - --reporters
+      - cli,junit
+      - --reporter-junit-export
+      - /results/auth-test-results.xml
+    networks:
+      - webapi-network
+
+networks:
+  webapi-network:
+    driver: bridge

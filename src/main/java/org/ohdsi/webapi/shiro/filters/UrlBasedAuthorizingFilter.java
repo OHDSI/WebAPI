@@ -17,8 +17,13 @@ public class UrlBasedAuthorizingFilter extends AdviceFilter {
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
     HttpServletRequest httpRequest = ServletBridge.toHttp(request);
-    
-    String path = httpRequest.getPathInfo()
+
+    // getPathInfo() can return null if there's no extra path info
+    // Use servlet path as fallback, which is always non-null
+    String pathInfo = httpRequest.getPathInfo();
+    String rawPath = (pathInfo != null) ? pathInfo : httpRequest.getServletPath();
+
+    String path = rawPath
                               .replaceAll("^/+", "")
                               .replaceAll("/+$", "")
                               // replace special characters

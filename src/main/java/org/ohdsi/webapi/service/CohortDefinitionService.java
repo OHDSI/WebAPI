@@ -135,14 +135,11 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Provides REST services for working with cohort definitions.
@@ -645,15 +642,16 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	public ResponseEntity cancelGenerateCohort(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
 
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
-						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+								String.format("Source with key '%s' not found", sourceKey)));
 		getTransactionTemplateRequiresNew().execute(status -> {
-			CohortDefinition currentDefinition = cohortDefinitionRepository.findById(id).orElse(null);
-			if (Objects.nonNull(currentDefinition)) {
-				CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
-				if (Objects.nonNull(info)) {
-					invalidateExecution(info);
-					cohortDefinitionRepository.save(currentDefinition);
-				}
+			CohortDefinition currentDefinition = cohortDefinitionRepository.findById(id)
+					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+							String.format("Cohort Definition with id = %d not found", id)));
+			CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
+			if (Objects.nonNull(info)) {
+				invalidateExecution(info);
+				cohortDefinitionRepository.save(currentDefinition);
 			}
 			return null;
 		});

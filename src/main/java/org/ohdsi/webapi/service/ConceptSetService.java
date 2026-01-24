@@ -535,12 +535,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO updateConceptSet(
             @PathVariable("id") final int id,
-            @RequestBody ConceptSetDTO conceptSetDTO) throws Exception {
+            @RequestBody ConceptSetDTO conceptSetDTO) {
 
-        ConceptSet updated = getConceptSetRepository().findById(id).orElse(null);
-        if (updated == null) {
-            throw new Exception("Concept Set does not exist.");
-        }
+        ConceptSet updated = getConceptSetRepository().findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("Concept Set with id = %d does not exist.", id)));
 
         saveVersion(id);
 

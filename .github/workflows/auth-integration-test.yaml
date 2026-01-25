@@ -30,7 +30,7 @@ jobs:
         run: |
           # Create test results directory
           mkdir -p docker/auth-test/test-results
-          chmod 777 docker/auth-test/test-results
+          chmod 755 docker/auth-test/test-results
 
       - name: Start infrastructure
         working-directory: docker/auth-test

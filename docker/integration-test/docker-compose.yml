@@ -4,7 +4,7 @@ services:
     container_name: webapi-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ohdsi
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -14,9 +14,21 @@ services:
     networks:
       - webapi-network
 
-  cdm-db:  # CDM with demo data (password: mypass)
+  cdm-db:
     image: ohdsi/broadsea-atlasdb:2.3.0
     container_name: cdm-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - webapi-network
+
+  cdm-db-debug:
+    image: ohdsi/broadsea-atlasdb:2.3.0
+    container_name: cdm-db-debug
+    profiles: ["debug"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -56,13 +68,13 @@ services:
       - SPRING_DATASOURCE_HIKARI_INITIALIZATIONFAILTIMEOUT=60000
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
       - DATASOURCE_USERNAME=postgres
-      - DATASOURCE_PASSWORD=postgres
+      - DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - DATASOURCE_OHDSI_SCHEMA=webapi
       - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=webapi
       - SPRING_BATCH_REPOSITORY_TABLEPREFIX=webapi.BATCH_
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/ohdsi
       - SPRING_FLYWAY_USER=postgres
-      - SPRING_FLYWAY_PASSWORD=postgres
+      - SPRING_FLYWAY_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - SPRING_FLYWAY_SCHEMAS=webapi
       - SPRING_FLYWAY_PLACEHOLDERS_OHDSISCHEMA=webapi
       - SECURITY_PROVIDER=AtlasRegularSecurity
@@ -77,7 +89,7 @@ services:
       - SECURITY_AUTH_FACEBOOK_ENABLED=false
       - SECURITY_AUTH_GITHUB_ENABLED=false
       - SECURITY_OID_CLIENTID=webapi-client
-      - SECURITY_OID_APISECRET=webapi-secret
+      - SECURITY_OID_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
       - SECURITY_OID_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
       - SECURITY_OID_EXTERNALURL=http://localhost:9090/default
       - SECURITY_OID_LOGOUTURL=http://localhost:9090/default/endsession
@@ -88,9 +100,9 @@ services:
       - SECURITY_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
       - SECURITY_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
       - SECURITY_DB_DATASOURCE_USERNAME=postgres
-      - SECURITY_DB_DATASOURCE_PASSWORD=postgres
+      - SECURITY_DB_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - SECURITY_DB_DATASOURCE_SCHEMA=webapi
-      - SECURITY_DB_DATASOURCE_AUTHENTICATIONQUERY=select password, firstname, middlename, lastname from webapi.users where lower(email) = lower(?)
+      - SECURITY_DB_DATASOURCE_AUTHENTICATIONQUERY=select password from webapi.users where lower(login) = lower(?)
     ports:
       - "18080:8080"
     healthcheck:
@@ -111,7 +123,7 @@ services:
     volumes:
       - ./setup-test-data.sql:/setup-test-data.sql:ro
     environment:
-      PGPASSWORD: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
     command: >
       psql -h postgres -U postgres -d ohdsi -f /setup-test-data.sql
     networks:

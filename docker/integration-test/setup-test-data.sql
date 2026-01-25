@@ -1,30 +1,43 @@
 -- Integration Test Data Setup
+-- This script is idempotent and can be run multiple times safely
 
+-- Cleanup existing test artifacts (ignore errors for missing tables on fresh runs)
+DO $$ BEGIN DELETE FROM webapi.cohort_definition WHERE id >= 10001 AND id < 20000; EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DO $$ BEGIN DELETE FROM webapi.concept_set WHERE concept_set_id >= 10001 AND concept_set_id < 20000; EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DELETE FROM webapi.sec_user_role WHERE id >= 10001 AND id < 20000;
+DELETE FROM webapi.sec_role_permission WHERE id >= 10001 AND id < 20000;
+DELETE FROM webapi.sec_permission WHERE id >= 10001 AND id < 20000;
+DELETE FROM webapi.sec_role WHERE id >= 10001 AND id < 20000;
+DELETE FROM webapi.sec_user WHERE id >= 10001 AND id < 20000;
+DELETE FROM webapi.source_daimon WHERE source_id = 1;
+DELETE FROM webapi.source WHERE source_id = 1;
+
+-- JDBC authentication table (WebAPI's SEC_USER doesn't store passwords)
+-- Uses login field to match SEC_USER for consistency
 CREATE TABLE IF NOT EXISTS webapi.users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    login VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     firstname VARCHAR(100),
     middlename VARCHAR(100),
-    lastname VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    lastname VARCHAR(100)
 );
 
 -- Test users (passwords: testpass123, adminpass123)
-INSERT INTO webapi.users (email, password, firstname, lastname) VALUES
+INSERT INTO webapi.users (login, password, firstname, lastname) VALUES
     ('testuser@example.com', '$2a$10$XBta6lTOBvpIB2Lqa8kCj.da4LOsAgH01YpcQB9l2AU7ip.G1mzsu', 'Test', 'User'),
     ('admin@example.com', '$2a$10$kDpJMpJqX5GDLMJqmWr1/.9v0x.yWVYGaXMOVdXPYMTqXhZpqcFfC', 'Admin', 'User')
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (login) DO UPDATE SET password = EXCLUDED.password;
 
--- Security roles
+-- Security roles (IDs 10001-10010 reserved for test data)
 INSERT INTO webapi.sec_role (id, name, system_role) VALUES
     (10001, 'test-admin', true),
     (10002, 'test-user', false),
-    (10003, 'testuser@example.com', false),  -- personal role for entity creation
+    (10003, 'testuser@example.com', false),
     (10004, 'admin@example.com', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Security users
+-- Security users (must match login in users table)
 INSERT INTO webapi.sec_user (id, login, name, origin) VALUES
     (10001, 'testuser@example.com', 'Test User', 'SYSTEM'),
     (10002, 'admin@example.com', 'Admin User', 'SYSTEM')
@@ -32,19 +45,18 @@ ON CONFLICT (id) DO NOTHING;
 
 -- User-role assignments
 INSERT INTO webapi.sec_user_role (id, user_id, role_id, origin) VALUES
-    (10001, 10001, 10001, 'SYSTEM'),  -- testuser -> test-admin
-    (10002, 10002, 10001, 'SYSTEM'),  -- admin -> test-admin
-    (10003, 10001, 10003, 'SYSTEM'),  -- testuser -> personal role
-    (10004, 10002, 10004, 'SYSTEM')   -- admin -> personal role
+    (10001, 10001, 10001, 'SYSTEM'),
+    (10002, 10002, 10001, 'SYSTEM'),
+    (10003, 10001, 10003, 'SYSTEM'),
+    (10004, 10002, 10004, 'SYSTEM')
 ON CONFLICT (id) DO NOTHING;
 
--- Permissions
+-- Permissions (IDs 10001-10100 reserved for test data)
 INSERT INTO webapi.sec_permission (id, value) SELECT 10001, 'source:get' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10001);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10002, 'source:*:get' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10002);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10003, 'source:post' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10003);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10004, 'source:*:put' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10004);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10005, 'source:*:delete' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10005);
-
 INSERT INTO webapi.sec_permission (id, value) SELECT 10010, 'cohortdefinition:get' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10010);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10011, 'cohortdefinition:*:get' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10011);
 INSERT INTO webapi.sec_permission (id, value) SELECT 10012, 'cohortdefinition:post' WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_permission WHERE id = 10012);
@@ -105,7 +117,7 @@ INSERT INTO webapi.sec_role_permission (id, role_id, permission_id) SELECT 10051
 INSERT INTO webapi.sec_role_permission (id, role_id, permission_id) SELECT 10060, 10001, 10060 WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_role_permission WHERE id = 10060);
 INSERT INTO webapi.sec_role_permission (id, role_id, permission_id) SELECT 10070, 10001, 10070 WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_role_permission WHERE id = 10070);
 
--- CDM data source (broadsea-atlasdb password: mypass)
+-- CDM data source (broadsea-atlasdb default password: mypass)
 INSERT INTO webapi.source (source_id, source_name, source_key, source_connection, source_dialect, username, password)
 VALUES (1, 'Demo CDM', 'DEMO_CDM', 'jdbc:postgresql://cdm-db:5432/postgres', 'postgresql', 'postgres', 'mypass')
 ON CONFLICT (source_id) DO NOTHING;

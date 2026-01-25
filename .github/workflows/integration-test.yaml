@@ -1,4 +1,4 @@
-name: Authentication Integration Tests
+name: Integration Tests
 
 on:
   push:
@@ -12,37 +12,41 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
-  auth-integration-test:
-    name: OIDC & JDBC Authentication Tests
+  integration-test:
+    name: CDM Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Build WebAPI Docker image
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
           docker compose build webapi
 
       - name: Set up test environment
         run: |
           # Create test results directory
-          mkdir -p docker/auth-test/test-results
-          chmod 755 docker/auth-test/test-results
+          mkdir -p docker/integration-test/test-results
+          chmod 755 docker/integration-test/test-results
 
       - name: Start infrastructure
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
-          docker compose up -d postgres mock-oauth2
+          docker compose up -d postgres cdm-db mock-oauth2
 
           echo "Waiting for PostgreSQL to be ready..."
           timeout 60 bash -c 'until docker compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do sleep 2; done'
           echo "PostgreSQL is ready!"
 
+          echo "Waiting for CDM database to be ready..."
+          timeout 60 bash -c 'until docker compose exec -T cdm-db pg_isready -U postgres > /dev/null 2>&1; do sleep 2; done'
+          echo "CDM database is ready!"
+
       - name: Start WebAPI
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
           docker compose up -d webapi
 
@@ -50,20 +54,20 @@ jobs:
           timeout 300 bash -c 'until curl -sf http://localhost:18080/WebAPI/info > /dev/null 2>&1; do sleep 10; echo "Waiting for WebAPI..."; done'
           echo "WebAPI is ready!"
 
-      - name: Setup test users
-        working-directory: docker/auth-test
+      - name: Setup test data
+        working-directory: docker/integration-test
         run: |
           docker compose up db-setup
-          echo "Test users created!"
+          echo "Test data created!"
 
       - name: Run Newman tests
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
           # Run tests using Newman docker container
           docker compose up newman
 
           # Check test results
-          if [ -f test-results/auth-test-results.xml ]; then
+          if [ -f test-results/integration-test-results.xml ]; then
             echo "Test results generated successfully"
           else
             echo "Warning: Test results file not found"
@@ -73,24 +77,27 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: auth-test-results
-          path: docker/auth-test/test-results/
+          name: integration-test-results
+          path: docker/integration-test/test-results/
           retention-days: 30
 
       - name: Publish test results
         uses: mikepenz/action-junit-report@v4
         if: always()
         with:
-          report_paths: 'docker/auth-test/test-results/*.xml'
-          check_name: 'Auth Integration Test Results'
+          report_paths: 'docker/integration-test/test-results/*.xml'
+          check_name: 'Integration Test Results'
           fail_on_failure: true
 
       - name: Show logs on failure
         if: failure()
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
           echo "=== WebAPI Logs ==="
           docker compose logs webapi --tail=200
+          echo ""
+          echo "=== CDM Database Logs ==="
+          docker compose logs cdm-db --tail=50
           echo ""
           echo "=== mock-oauth2 Logs ==="
           docker compose logs mock-oauth2 --tail=100
@@ -103,6 +110,6 @@ jobs:
 
       - name: Cleanup
         if: always()
-        working-directory: docker/auth-test
+        working-directory: docker/integration-test
         run: |
           docker compose down -v --remove-orphans

@@ -38,7 +38,7 @@ public class TrexSQLServletConfig {
         servlet.initTrex(sourceRepository, config);
 
         ServletRegistrationBean<HttpServlet> registration =
-            new ServletRegistrationBean<>(servlet, "/WebAPI/trexsql/*");
+            new ServletRegistrationBean<>(servlet, "/trexsql/*");
         registration.setLoadOnStartup(1);
         return registration;
     }

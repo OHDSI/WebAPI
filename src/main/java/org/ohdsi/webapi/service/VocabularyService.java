@@ -693,7 +693,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param rows The number of rows to return.
    * @return A collection of concepts
    */
-  @GetMapping(value = "/{sourceKey}/searchByQuery",
+  @GetMapping(value = "/{sourceKey}/search",
               produces = MediaType.APPLICATION_JSON_VALUE,
               params = "query")
   public Collection<Concept> executeSearch(

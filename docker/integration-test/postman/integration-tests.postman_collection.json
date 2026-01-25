@@ -929,9 +929,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/conceptset/",
+              "raw": "{{base_url}}/conceptset",
               "host": ["{{base_url}}"],
-              "path": ["conceptset", ""]
+              "path": ["conceptset"]
             }
           }
         },
@@ -986,9 +986,9 @@
               "raw": "{\n  \"name\": \"Test Concept Set\",\n  \"description\": \"Integration test concept set\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/conceptset/",
+              "raw": "{{base_url}}/conceptset",
               "host": ["{{base_url}}"],
-              "path": ["conceptset", ""]
+              "path": ["conceptset"]
             }
           }
         },

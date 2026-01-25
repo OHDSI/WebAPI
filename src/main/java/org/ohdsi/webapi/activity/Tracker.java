@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Activity tracker service
  *
  * @author fdefalco
- * @deprecated Example REST service - will be deprecated in a future release
  */
 @RestController
 @RequestMapping("/activity")

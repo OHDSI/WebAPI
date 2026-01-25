@@ -134,9 +134,13 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
 
       String sessionId = (String) request.getAttribute(Constants.SESSION_ID);
       if (sessionId == null) {
-        final String token = TokenManager.extractToken(request);
-        if (token != null) {
-          sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+        // Skip parsing external OIDC tokens
+        Boolean isOidcToken = (Boolean) request.getAttribute(OidcJwtAuthFilter.OIDC_EXTERNAL_TOKEN);
+        if (isOidcToken == null || !isOidcToken) {
+          final String token = TokenManager.extractToken(request);
+          if (token != null) {
+            sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+          }
         }
       }
 

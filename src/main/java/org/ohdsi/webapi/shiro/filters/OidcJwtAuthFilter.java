@@ -80,7 +80,8 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
             request.setAttribute(OIDC_EXTERNAL_TOKEN, true);
             return executeLogin(request, response);
         } catch (AuthenticationException e) {
-            logger.debug("OIDC JWT auth failed: {}", e.getMessage());
+            logger.warn("OIDC JWT authentication failed for request from {}: {}",
+                    request.getRemoteAddr(), e.getMessage());
             return true;
         }
     }
@@ -100,14 +101,26 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
             JWSHeader header = signedJwt.getHeader();
             JWTClaimsSet claims = signedJwt.getJWTClaimsSet();
 
+            Date now = new Date();
             Date expiration = claims.getExpirationTime();
-            if (expiration != null && expiration.before(new Date())) {
+            if (expiration != null && expiration.before(now)) {
                 throw new AuthenticationException("Token expired");
+            }
+
+            Date notBefore = claims.getNotBeforeTime();
+            if (notBefore != null && notBefore.after(now)) {
+                throw new AuthenticationException("Token not yet valid");
             }
 
             String expectedIssuer = getExpectedIssuer();
             if (expectedIssuer != null && !expectedIssuer.equals(claims.getIssuer())) {
                 throw new AuthenticationException("Invalid token issuer");
+            }
+
+            String expectedAudience = oidcConfiguration.getClientId();
+            List<String> audiences = claims.getAudience();
+            if (expectedAudience != null && (audiences == null || !audiences.contains(expectedAudience))) {
+                throw new AuthenticationException("Invalid token audience");
             }
 
             JWK jwk = getKey(header.getKeyID());
@@ -154,14 +167,21 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
 
     private JWK getKey(String kid) {
         JWK jwk = keyCache.get(kid);
-        if (jwk == null && System.currentTimeMillis() - lastJwksFetch > JWKS_CACHE_DURATION_MS) {
-            refreshJwks();
-            jwk = keyCache.get(kid);
+        if (jwk == null) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastJwksFetch > JWKS_CACHE_DURATION_MS) {
+                synchronized (this) {
+                    if (currentTime - lastJwksFetch > JWKS_CACHE_DURATION_MS) {
+                        refreshJwks();
+                    }
+                }
+                jwk = keyCache.get(kid);
+            }
         }
         return jwk;
     }
 
-    private synchronized void refreshJwks() {
+    private void refreshJwks() {
         try {
             URI jwksUri = getJwksUri();
             if (jwksUri == null) {
@@ -176,9 +196,10 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
                     keyCache.put(key.getKeyID(), key);
                 }
             }
-            lastJwksFetch = System.currentTimeMillis();
         } catch (Exception e) {
             logger.error("Failed to fetch JWKS: {}", e.getMessage());
+        } finally {
+            lastJwksFetch = System.currentTimeMillis();
         }
     }
 

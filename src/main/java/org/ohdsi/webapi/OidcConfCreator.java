@@ -18,7 +18,6 @@
  */
 package org.ohdsi.webapi;
 
-import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.slf4j.Logger;
@@ -107,7 +106,7 @@ public class OidcConfCreator {
                 scopes += extraScopes;
             }
             conf.setScope(scopes);
-            conf.setPreferredJwsAlgorithm(JWSAlgorithm.RS256);
+            // Use all algorithms from provider metadata (supports RS256, ES384, etc.)
             conf.setPkceMethod(CodeChallengeMethod.S256);
 
             try {

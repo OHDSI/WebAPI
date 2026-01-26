@@ -23,10 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -45,16 +47,34 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
     private final OidcConfiguration oidcConfiguration;
     private final PermissionManager authorizer;
     private final Set<String> defaultRoles;
+    private final Set<String> acceptedAudiences;
     private final Map<String, JWK> keyCache = new ConcurrentHashMap<>();
     private volatile long lastJwksFetch = 0;
 
     public OidcJwtAuthFilter(OidcConfiguration oidcConfiguration,
                             PermissionManager authorizer,
+                            Set<String> defaultRoles) {
+        this(oidcConfiguration, authorizer, defaultRoles, null);
+    }
+
+    public OidcJwtAuthFilter(OidcConfiguration oidcConfiguration,
+                            PermissionManager authorizer,
                             Set<String> defaultRoles,
-                            int tokenExpirationIntervalInSeconds) {
+                            Set<String> additionalAudiences) {
         this.oidcConfiguration = oidcConfiguration;
         this.authorizer = authorizer;
         this.defaultRoles = defaultRoles;
+        this.acceptedAudiences = new HashSet<>();
+        if (oidcConfiguration.getClientId() != null) {
+            this.acceptedAudiences.add(oidcConfiguration.getClientId());
+        }
+        if (additionalAudiences != null) {
+            this.acceptedAudiences.addAll(additionalAudiences);
+        }
+        if (this.acceptedAudiences.isEmpty()) {
+            throw new IllegalArgumentException("At least one accepted audience must be configured (clientId or apiResource)");
+        }
+        logger.info("OidcJwtAuthFilter initialized with accepted audiences: {}", this.acceptedAudiences);
     }
 
     @Override
@@ -117,10 +137,14 @@ public class OidcJwtAuthFilter extends AtlasAuthFilter {
                 throw new AuthenticationException("Invalid token issuer");
             }
 
-            String expectedAudience = oidcConfiguration.getClientId();
-            List<String> audiences = claims.getAudience();
-            if (expectedAudience != null && (audiences == null || !audiences.contains(expectedAudience))) {
-                throw new AuthenticationException("Invalid token audience");
+            List<String> tokenAudiences = claims.getAudience();
+            if (tokenAudiences != null && !tokenAudiences.isEmpty()) {
+                boolean hasValidAudience = tokenAudiences.stream().anyMatch(acceptedAudiences::contains);
+                if (!hasValidAudience) {
+                    logger.warn("Token audience {} does not match any accepted audiences {}",
+                        tokenAudiences, acceptedAudiences);
+                    throw new AuthenticationException("Invalid token audience");
+                }
             }
 
             JWK jwk = getKey(header.getKeyID());

@@ -418,11 +418,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         // OIDC token exchange filter
         if (this.openidAuthEnabled && oidcConfiguration != null) {
+            Set<String> additionalAudiences = new HashSet<>();
+            String apiResource = oidcConfCreator.getApiResource();
+            if (apiResource != null && !apiResource.isEmpty()) {
+                additionalAudiences.add(apiResource);
+            }
             OidcJwtAuthFilter oidcJwtFilter = new OidcJwtAuthFilter(
                 oidcConfiguration,
                 this.authorizer,
                 this.defaultRoles,
-                this.tokenExpirationIntervalInSeconds
+                additionalAudiences
             );
             filters.put(OIDC_DIRECT_AUTH, oidcJwtFilter);
         }

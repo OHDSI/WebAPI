@@ -1077,7 +1077,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
 		log.info("Starting Concept Set Batch Compare Job with parameters: " +
 				"source1Key={}, source2Key={}, createdDateFrom={}, createdDateTo={}, " +
-				"updatedDateFrom={}, updatedDateTo={}, tags={}, skipLocked={}, " +
+				"updatedDateFrom={}, updatedDateTo={}, tags={}, " +
 				"authors={}, compareSourceCodes={}, conceptSetIds={}",
 			task.getSource1Key(),
 			task.getSource2Key(),
@@ -1086,7 +1086,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 			task.getUpdatedDateFrom(),
 			task.getUpdatedDateTo(),
 			task.getTags(),
-			task.isSkipLocked(),
 			task.getAuthors(),
 			task.isCompareSourceCodes(),
 			task.getConceptSetIds());
@@ -1110,8 +1109,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		} else {
 			log.debug("No tags filter applied");
 		}
-
-		builder.addString("skipLocked", Boolean.toString(task.isSkipLocked()));
 
 		if (CollectionUtils.isNotEmpty(task.getAuthors())) {
 			String authorIds = task.getAuthors().stream()
@@ -1170,13 +1167,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
 			log.info("Checking concept set filter count with parameters: " +
 					"createdDateFrom={}, createdDateTo={}, updatedDateFrom={}, updatedDateTo={}, " +
-					"tags={}, skipLocked={}, authors={}",
+					"tags={}, authors={}",
 				filterRequest.getCreatedDateFrom(),
 				filterRequest.getCreatedDateTo(),
 				filterRequest.getUpdatedDateFrom(),
 				filterRequest.getUpdatedDateTo(),
 				filterRequest.getTags(),
-				filterRequest.isSkipLocked(),
 				filterRequest.getAuthors());
 
 			// Build filter criteria
@@ -1232,8 +1228,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 				.collect(Collectors.toList());
 			criteria.setTagIds(tagIds);
 		}
-
-		criteria.setSkipLocked(request.isSkipLocked());
 
 		// Handle multiple authors
 		if (CollectionUtils.isNotEmpty(request.getAuthors())) {

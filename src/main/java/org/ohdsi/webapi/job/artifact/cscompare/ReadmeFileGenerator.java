@@ -116,9 +116,6 @@ public class ReadmeFileGenerator {
 		sb.append("Tags: ")
 			.append(jobParams.getString("tagsIds") != null ? jobParams.getString("tagsIds") : "N/A")
 			.append("\n");
-		sb.append("Skip Locked: ")
-			.append(jobParams.getString("skipLocked") != null ? jobParams.getString("skipLocked") : "false")
-			.append("\n");
 		sb.append("\n");
 	}
 

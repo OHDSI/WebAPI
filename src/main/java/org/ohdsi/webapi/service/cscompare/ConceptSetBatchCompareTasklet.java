@@ -108,16 +108,15 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 			String updatedDateFrom = (String) jobParams.get("updatedDateFrom");
 			String updatedDateTo = (String) jobParams.get("updatedDateTo");
 			String tagsParam = (String) jobParams.get("tagsIds");
-			Boolean skipLocked = Boolean.parseBoolean((String) jobParams.get("skipLocked"));
 			String authorIdsParam = (String) jobParams.get("authorIds");
 			Boolean compareSourceCodes = Boolean.parseBoolean((String) jobParams.get("compareSourceCodes"));
 			String conceptSetIdsParam = (String) jobParams.get("conceptSetIds");
 
 			log.info("Executing batch compare with parameters: source1Key={}, source2Key={}, " +
 					"createdDateFrom={}, createdDateTo={}, updatedDateFrom={}, updatedDateTo={}, " +
-					"tags={}, skipLocked={}, authorIds={}, compareSourceCodes={}, conceptSetIds={}",
+					"tags={}, authorIds={}, compareSourceCodes={}, conceptSetIds={}",
 				source1Key, source2Key, createdDateFrom, createdDateTo,
-				updatedDateFrom, updatedDateTo, tagsParam, skipLocked, authorIdsParam,
+				updatedDateFrom, updatedDateTo, tagsParam, authorIdsParam,
 				compareSourceCodes, conceptSetIdsParam);
 
 			Source source1 = sourceRepository.findBySourceKey(source1Key);
@@ -130,7 +129,7 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 			// Build filter criteria
 			ConceptSetFilterService.ConceptSetFilterCriteria criteria = buildFilterCriteria(
 				createdDateFrom, createdDateTo, updatedDateFrom, updatedDateTo,
-				tagsParam, skipLocked, authorIdsParam, conceptSetIdsParam
+				tagsParam, authorIdsParam, conceptSetIdsParam
 			);
 
 			// Get filtered concept sets
@@ -141,7 +140,7 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 			// Save ConceptSetCompareJobEntity with vocabulary versions
 			ConceptSetCompareJobEntity compareJob = createAndSaveCompareJob(
 				source1, source2, source1Version, source2Version, createdDateFrom, createdDateTo,
-				updatedDateFrom, updatedDateTo, tagsParam, skipLocked, authorIdsParam, compareSourceCodes, conceptSetIdsParam,
+				updatedDateFrom, updatedDateTo, tagsParam, authorIdsParam, compareSourceCodes, conceptSetIdsParam,
 				executionId, conceptSets.size()
 			);
 
@@ -201,7 +200,7 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 	private ConceptSetFilterService.ConceptSetFilterCriteria buildFilterCriteria(
 		String createdDateFrom, String createdDateTo,
 		String updatedDateFrom, String updatedDateTo,
-		String tagsParam, Boolean skipLocked, String authorIdsParam,
+		String tagsParam, String authorIdsParam,
 		String conceptSetIdsParam
 	) {
 		ConceptSetFilterService.ConceptSetFilterCriteria criteria =
@@ -230,8 +229,6 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 			criteria.setTagIds(tagIds);
 		}
 
-		criteria.setSkipLocked(skipLocked != null && skipLocked);
-
 		if (StringUtils.isNotBlank(authorIdsParam)) {
 			List<Long> authorIds = Arrays.stream(authorIdsParam.split(","))
 				.map(String::trim)
@@ -258,7 +255,7 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 	private ConceptSetCompareJobEntity createAndSaveCompareJob(
 		Source source1, Source source2, String source1Version, String source2Version,
 		String createdDateFrom, String createdDateTo, String updatedDateFrom, String updatedDateTo,
-		String tags, Boolean skipLocked, String authorIdsParam, Boolean compareSourceCodes, String conceptSetIdsParam, Long executionId,
+		String tags, String authorIdsParam, Boolean compareSourceCodes, String conceptSetIdsParam, Long executionId,
 		int conceptSetsAnalyzed
 	) {
 		ConceptSetCompareJobEntity compareJob = new ConceptSetCompareJobEntity();
@@ -267,7 +264,6 @@ public class ConceptSetBatchCompareTasklet extends BaseExecutionTasklet {
 		compareJob.setSource2Key(source2.getSourceKey());
 		compareJob.setVocab1Version(source1Version);
 		compareJob.setVocab2Version(source2Version);
-		compareJob.setSkipLocked(skipLocked != null ? skipLocked : false);
 		compareJob.setCompareSourceCodes(compareSourceCodes != null ? compareSourceCodes : false);
 		compareJob.setConceptSetsAnalyzed(conceptSetsAnalyzed);
 

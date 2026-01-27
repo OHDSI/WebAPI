@@ -12,7 +12,6 @@ public class ConceptSetBatchCompareRequest {
 	private String updatedDateFrom;
 	private String updatedDateTo;
 	private List<String> tags;
-	private boolean skipLocked;
 	private List<Long> authors;
 	private boolean compareSourceCodes;
 	private List<Integer> conceptSetIds;
@@ -63,14 +62,6 @@ public class ConceptSetBatchCompareRequest {
 
 	public void setTags(List<String> tags) {
 		this.tags = tags;
-	}
-
-	public boolean isSkipLocked() {
-		return skipLocked;
-	}
-
-	public void setSkipLocked(boolean skipLocked) {
-		this.skipLocked = skipLocked;
 	}
 
 	public String getUpdatedDateFrom() {

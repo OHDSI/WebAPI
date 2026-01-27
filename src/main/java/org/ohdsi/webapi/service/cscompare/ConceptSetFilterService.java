@@ -3,7 +3,6 @@ package org.ohdsi.webapi.service.cscompare;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.service.cscompare.repository.ConceptSetSpecifications;
-import org.ohdsi.webapi.service.lock.ConceptSetLockingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,8 +14,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class ConceptSetFilterService {
@@ -24,14 +21,11 @@ public class ConceptSetFilterService {
 	private static final Logger log = LoggerFactory.getLogger(ConceptSetFilterService.class);
 
 	private final ConceptSetRepository conceptSetRepository;
-	private final ConceptSetLockingService lockingService;
 
 	public ConceptSetFilterService(
-		ConceptSetRepository conceptSetRepository,
-		ConceptSetLockingService lockingService
+		ConceptSetRepository conceptSetRepository
 	) {
 		this.conceptSetRepository = conceptSetRepository;
-		this.lockingService = lockingService;
 	}
 
 	@Transactional(readOnly = true)
@@ -63,39 +57,7 @@ public class ConceptSetFilterService {
 
 		log.info("Found {} concept sets after date, tag, and author filtering", filteredSets.size());
 
-		// Filter out locked concept sets if needed
-		if (criteria.isSkipLocked()) {
-			filteredSets = filterOutLockedConceptSets(filteredSets);
-			log.info("Found {} concept sets after excluding locked ones", filteredSets.size());
-		}
-
 		return filteredSets;
-	}
-
-	private List<ConceptSet> filterOutLockedConceptSets(List<ConceptSet> conceptSets) {
-		if (conceptSets.isEmpty()) {
-			return conceptSets;
-		}
-
-		// Get all locked concept set IDs
-		Set<Integer> lockedIds = lockingService.getLockedConceptSetIds();
-
-		if (lockedIds.isEmpty()) {
-			log.debug("No locked concept sets found");
-			return conceptSets;
-		}
-
-		log.debug("Filtering out {} locked concept sets", lockedIds.size());
-
-		// Filter out locked concept sets
-		List<ConceptSet> unlocked = conceptSets.stream()
-			.filter(cs -> !lockedIds.contains(cs.getId()))
-			.collect(Collectors.toList());
-
-		log.debug("Excluded {} locked concept sets from results",
-			conceptSets.size() - unlocked.size());
-
-		return unlocked;
 	}
 
 	/**
@@ -129,7 +91,6 @@ public class ConceptSetFilterService {
 		private LocalDate updatedFrom;
 		private LocalDate updatedTo;
 		private List<Integer> tagIds;
-		private boolean skipLocked;
 		private List<Long> authorIds;
 		private List<Integer> conceptSetIds;
 
@@ -173,14 +134,6 @@ public class ConceptSetFilterService {
 			this.tagIds = tagIds;
 		}
 
-		public boolean isSkipLocked() {
-			return skipLocked;
-		}
-
-		public void setSkipLocked(boolean skipLocked) {
-			this.skipLocked = skipLocked;
-		}
-
 		public List<Long> getAuthorIds() {
 			return authorIds;
 		}
@@ -197,7 +150,6 @@ public class ConceptSetFilterService {
 				", updatedFrom=" + updatedFrom +
 				", updatedTo=" + updatedTo +
 				", tagIds=" + tagIds +
-				", skipLocked=" + skipLocked +
 				", authorIds=" + authorIds +
 				'}';
 		}

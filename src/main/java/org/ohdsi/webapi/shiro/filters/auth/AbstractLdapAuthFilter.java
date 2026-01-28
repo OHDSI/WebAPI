@@ -18,16 +18,23 @@
  */
 package org.ohdsi.webapi.shiro.filters.auth;
 
+import java.io.IOException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.authc.AuthenticationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.ohdsi.webapi.shiro.filters.AuthenticatingPropagationFilter;
 import org.springframework.context.ApplicationEventPublisher;
 
 public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingPropagationFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractLdapAuthFilter.class);
+
     protected AbstractLdapAuthFilter(ApplicationEventPublisher eventPublisher) {
         super(eventPublisher);
     }
@@ -58,8 +65,23 @@ public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> ex
 
         if (request.getParameter("login") != null) {
             loggedIn = executeLogin(request, response);
+        } else {
+            // No credentials provided - write error response and commit
+            writeUnauthorizedResponse(response, "Missing credentials");
         }
 
         return loggedIn;
+    }
+
+    private void writeUnauthorizedResponse(ServletResponse response, String message) {
+        try {
+            HttpServletResponse httpResponse = (HttpServletResponse) response;
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.setContentType("application/json");
+            httpResponse.getWriter().write("{\"error\":\"" + message + "\"}");
+            httpResponse.flushBuffer(); // Commit the response
+        } catch (IOException e) {
+            log.error("Failed to write unauthorized response", e);
+        }
     }
 }

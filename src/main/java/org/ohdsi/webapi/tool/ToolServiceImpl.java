@@ -12,9 +12,18 @@ import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tool.dto.ToolDTO;
-import org.springframework.stereotype.Service;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
+@RestController
+@RequestMapping("/tool")
 public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     
@@ -25,6 +34,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ToolDTO> getTools() {
         List<Tool> tools = (isAdmin() || canManageTools()) ? toolRepository.findAll() : toolRepository.findAllByEnabled(true);
         return tools.stream()
@@ -32,7 +42,8 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
-    public ToolDTO saveTool(ToolDTO toolDTO) {
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ToolDTO saveTool(@RequestBody ToolDTO toolDTO) {
         Tool tool = saveToolFromDTO(toolDTO, getCurrentUser());
         return toDTO(toolRepository.saveAndFlush(tool));
     }
@@ -47,13 +58,20 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
-    public ToolDTO getById(Integer id) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ToolDTO getById(@PathVariable("id") Integer id) {
         return toDTO(toolRepository.findById(id).orElse(null));
     }
 
     @Override
-    public void delete(Integer id) {
+    @DeleteMapping(value = "/{id}")
+    public void delete(@PathVariable("id") Integer id) {
         toolRepository.deleteById(id);
+    }
+
+    @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ToolDTO updateTool(@RequestBody ToolDTO toolDTO) {
+        return saveTool(toolDTO);
     }
 
     private boolean canManageTools() {

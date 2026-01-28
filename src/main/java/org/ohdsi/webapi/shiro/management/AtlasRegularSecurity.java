@@ -15,6 +15,7 @@ import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.*;
+import org.ohdsi.webapi.shiro.filters.OidcJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.ActiveDirectoryAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.AtlasJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.JdbcAuthFilter;
@@ -49,8 +50,6 @@ import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
-import org.pac4j.oidc.credentials.authenticator.OidcAuthenticator;
-import org.pac4j.http.client.direct.DirectBearerAuthClient;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.config.SAML2Configuration;
 import org.slf4j.Logger;
@@ -331,17 +330,18 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             clients.add(githubClient);
         }
 
+        OidcConfiguration oidcConfiguration = null;
         if (this.openidAuthEnabled) {
-            OidcConfiguration configuration = oidcConfCreator.build();
-            if (StringUtils.isNotBlank(configuration.getClientId())) {
+            oidcConfiguration = oidcConfCreator.build();
+            if (StringUtils.isNotBlank(oidcConfiguration.getClientId())) {
                 // https://www.pac4j.org/4.0.x/docs/clients/openid-connect.html
                 // OidcClient allows indirect login through UI with code flow
-                OidcClient oidcClient = new OidcClient(configuration);
+                OidcClient oidcClient = new OidcClient(oidcConfiguration);
                 oidcClient.setCallbackUrl(oauthApiCallback);
                 oidcClient.setCallbackUrlResolver(urlResolver);
 
                 // URL rewriting: discovery from internal URL, redirect to external URL
-                String internalUrl = configuration.getDiscoveryURI();
+                String internalUrl = oidcConfiguration.getDiscoveryURI();
                 String externalUrl = oidcConfCreator.getExternalUrl();
                 if (externalUrl != null && !externalUrl.isEmpty()) {
                     org.ohdsi.webapi.shiro.filters.ExternalUrlOidcRedirectionActionBuilder redirectBuilder =
@@ -353,12 +353,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
                 // Configuration already initialized; pac4j handles lazy init
                 clients.add(oidcClient);
-                
-                // Bearer token authentication for API access (pac4j 6.x)
-                // OidcAuthenticator requires both configuration and client
-                OidcAuthenticator authenticator = new OidcAuthenticator(configuration, oidcClient);
-                DirectBearerAuthClient bearerClient = new DirectBearerAuthClient(authenticator);
-                clients.add(bearerClient);
             } else {
                 logger.warn("openidAuth is enabled but no client id is provided");
             }
@@ -405,11 +399,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 oidcFilter.setConfig(cfg);
                 oidcFilter.setClients("OidcClient");
                 filters.put(OIDC_AUTH, oidcFilter);
-
-                SecurityFilter oidcDirectFilter = new SecurityFilter();
-                oidcDirectFilter.setConfig(cfg);
-                oidcDirectFilter.setClients("HeaderClient");
-                filters.put(OIDC_DIRECT_AUTH, oidcDirectFilter);
             }
 
             io.buji.pac4j.filter.CallbackFilter callbackFilter = new io.buji.pac4j.filter.CallbackFilter();
@@ -427,6 +416,22 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
         }
 
+        // OIDC token exchange filter
+        if (this.openidAuthEnabled && oidcConfiguration != null) {
+            Set<String> additionalAudiences = new HashSet<>();
+            String apiResource = oidcConfCreator.getApiResource();
+            if (apiResource != null && !apiResource.isEmpty()) {
+                additionalAudiences.add(apiResource);
+            }
+            OidcJwtAuthFilter oidcJwtFilter = new OidcJwtAuthFilter(
+                oidcConfiguration,
+                this.authorizer,
+                this.defaultRoles,
+                additionalAudiences
+            );
+            filters.put(OIDC_DIRECT_AUTH, oidcJwtFilter);
+        }
+
         if (this.casAuthEnabled) {
             this.setUpCAS(filters);
         }
@@ -440,8 +445,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Override
     protected FilterChainBuilder getFilterChainBuilder() {
 
-        List<FilterTemplates> authcFilters = googleAccessTokenEnabled ? Arrays.asList(ACCESS_AUTHC, JWT_AUTHC) :
-                Collections.singletonList(JWT_AUTHC);
+        // Build authentication filter chain: try JWT first, then OIDC if enabled
+        List<FilterTemplates> authcFilters = new ArrayList<>();
+        if (googleAccessTokenEnabled) {
+            authcFilters.add(ACCESS_AUTHC);
+        }
+        authcFilters.add(JWT_AUTHC);
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)

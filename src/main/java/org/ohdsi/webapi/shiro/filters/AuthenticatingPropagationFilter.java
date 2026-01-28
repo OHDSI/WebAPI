@@ -4,6 +4,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.ohdsi.webapi.arachne.logging.event.FailedLoginEvent;
+import java.io.IOException;
 import org.ohdsi.webapi.arachne.logging.event.SuccessLoginEvent;
 import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.authc.AuthenticationException;
@@ -55,6 +56,17 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
         boolean result = super.onLoginFailure(token, e, request, response);
         eventPublisher.publishEvent(new FailedLoginEvent(this, username));
         eventPublisher.publishEvent(new AuditTrailLoginFailedEvent(this, username, request.getRemoteHost()));
+
+        // Write response body and commit to prevent Spring MVC from processing
+        try {
+            httpResponse.setContentType("application/json");
+            String errorMessage = e instanceof LockedAccountException ? e.getMessage() : "Invalid credentials";
+            httpResponse.getWriter().write("{\"error\":\"" + errorMessage + "\"}");
+            httpResponse.flushBuffer(); // Commit the response
+        } catch (IOException ioe) {
+            // Response may already be committed, ignore
+        }
+
         return result;
     }
 }

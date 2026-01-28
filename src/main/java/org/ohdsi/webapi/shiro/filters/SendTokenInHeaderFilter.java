@@ -44,8 +44,10 @@ public class SendTokenInHeaderFilter extends AdviceFilter {
     httpResponse.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
     httpResponse.setStatus(HttpServletResponse.SC_OK);
 
-    try (final PrintWriter responseWriter = response.getWriter()) {
+    try {
+      final PrintWriter responseWriter = response.getWriter();
       responseWriter.print(objectMapper.writeValueAsString(permissions));
+      httpResponse.flushBuffer(); // Commit the response
     } catch (IOException e) {
       LOGGER.error(ERROR_WRITING_PERMISSIONS_TO_RESPONSE_LOG, e);
     }

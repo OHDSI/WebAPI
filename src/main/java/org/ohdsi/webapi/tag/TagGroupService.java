@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.ws.rs.ForbiddenException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class TagGroupService extends AbstractDaoService {
         assetIds.forEach(id -> {
             try {
                 service.assignTag(id, tagId);
-            } catch (final ForbiddenException e) {
+            } catch (final ResponseStatusException e) {
                 log.warn("Tag {} cannot be assigned to entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
                 throw e;
             }
@@ -67,7 +68,7 @@ public class TagGroupService extends AbstractDaoService {
         assetIds.forEach(id -> {
             try {
                 service.unassignTag(id, tagId);
-            } catch(final ForbiddenException e) {
+            } catch(final ResponseStatusException e) {
                 log.warn("Tag {} cannot be unassigned from entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
             }
         });

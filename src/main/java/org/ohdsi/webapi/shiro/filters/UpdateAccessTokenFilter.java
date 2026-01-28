@@ -17,7 +17,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.ws.rs.core.UriBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.SecurityUtils;
@@ -134,9 +134,12 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
 
       String sessionId = (String) request.getAttribute(Constants.SESSION_ID);
       if (sessionId == null) {
-        final String token = TokenManager.extractToken(request);
-        if (token != null) {
-          sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+        Boolean isOidcToken = (Boolean) request.getAttribute(OidcJwtAuthFilter.OIDC_EXTERNAL_TOKEN);
+        if (!Boolean.TRUE.equals(isOidcToken)) {
+          final String token = TokenManager.extractToken(request);
+          if (token != null) {
+            sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+          }
         }
       }
 
@@ -166,7 +169,10 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     } else {
       sbFragment.append(fragment).append("/").append(failFragment).append("/");
     }
-    return UriBuilder.fromUri(oauthFailURI).fragment(sbFragment.toString()).build();
+    return UriComponentsBuilder.fromUri(oauthFailURI)
+        .fragment(sbFragment.toString())
+        .build()
+        .toUri();
   }
 
   private Date getExpirationDate(final int expirationIntervalInSeconds) {

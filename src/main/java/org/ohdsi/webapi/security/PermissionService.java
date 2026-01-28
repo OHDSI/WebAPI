@@ -4,11 +4,14 @@ import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.security.dto.AccessRequestDTO;
+import org.ohdsi.webapi.security.dto.RoleDTO;
 import org.ohdsi.webapi.security.model.EntityPermissionSchema;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.security.model.SourcePermissionSchema;
 import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
+import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
@@ -28,7 +31,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.stereotype.Service;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.annotation.PostConstruct;
@@ -39,12 +51,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.subject.Subject;
 
-@Service
+@RestController
+@RequestMapping("/permission")
+@Transactional
 public class PermissionService {
     private final Logger logger = LoggerFactory.getLogger(PermissionService.class);
 
@@ -248,4 +263,145 @@ public class PermissionService {
 		public String getSubjectCacheKey() {
 			return this.isSecurityEnabled() ? permissionManager.getSubjectName() : "ALL_USERS";
 		}
+
+    // ==================== REST Endpoints ====================
+
+    /**
+     * Get the list of permissions for a user
+     *
+     * @return A list of permissions
+     */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<UserService.Permission> getPermissions() {
+        Iterable<PermissionEntity> permissionEntities = permissionManager.getPermissions();
+        return StreamSupport.stream(permissionEntities.spliterator(), false)
+            .map(UserService.Permission::new)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the roles matching the roleSearch value
+     *
+     * @summary Role search
+     * @param roleSearch The role to search
+     * @return The list of roles
+     */
+    @GetMapping(
+        value = "/access/suggest",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public List<RoleDTO> listAccessesForEntitySuggest(@RequestParam("roleSearch") String roleSearch) {
+        List<RoleEntity> roles = suggestRoles(roleSearch);
+        return roles.stream()
+            .map(re -> conversionService.convert(re, RoleDTO.class))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get roles that have a permission type (READ/WRITE) to entity
+     *
+     * @summary Get roles that have a specific permission (READ/WRITE) for the entity
+     * @param entityType The entity type
+     * @param entityId The entity ID
+     * @param permType The permission type
+     * @return The list of permissions for the permission type
+     * @throws Exception
+     */
+    @GetMapping(
+        value = "/access/{entityType}/{entityId}/{permType}",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public List<RoleDTO> listAccessesForEntityByPermType(
+            @PathVariable("entityType") EntityType entityType,
+            @PathVariable("entityId") Integer entityId,
+            @PathVariable("permType") AccessType permType) throws Exception {
+        checkCommonEntityOwnership(entityType, entityId);
+        var permissionTemplates = getTemplatesForType(entityType, permType).keySet();
+
+        List<String> permissions = permissionTemplates.stream()
+                .map(pt -> getPermission(pt, entityId))
+                .collect(Collectors.toList());
+
+        List<RoleEntity> roles = finaAllRolesHavingPermissions(permissions);
+
+        return roles.stream()
+            .map(re -> conversionService.convert(re, RoleDTO.class))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get roles that have a permission type (READ/WRITE) to entity
+     *
+     * @summary Get roles that have a specific permission (READ/WRITE) for the entity
+     * @param entityType The entity type
+     * @param entityId The entity ID
+     * @return The list of permissions for the permission type
+     * @throws Exception
+     */
+    @GetMapping(
+        value = "/access/{entityType}/{entityId}",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public List<RoleDTO> listAccessesForEntity(
+            @PathVariable("entityType") EntityType entityType,
+            @PathVariable("entityId") Integer entityId) throws Exception {
+        return listAccessesForEntityByPermType(entityType, entityId, AccessType.WRITE);
+    }
+
+    /**
+     * Grant group of permissions (READ / WRITE / ...) for the specified entity to the given role.
+     * Only owner of the entity can do that.
+     *
+     * @summary Grant permissions
+     * @param entityType The entity type
+     * @param entityId The entity ID
+     * @param roleId The role ID
+     * @param accessRequestDTO The access request object
+     * @throws Exception
+     */
+    @PostMapping(
+        value = "/access/{entityType}/{entityId}/role/{roleId}",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public void grantEntityPermissionsForRole(
+            @PathVariable("entityType") EntityType entityType,
+            @PathVariable("entityId") Integer entityId,
+            @PathVariable("roleId") Long roleId,
+            @RequestBody AccessRequestDTO accessRequestDTO) throws Exception {
+        checkCommonEntityOwnership(entityType, entityId);
+
+        var permissionTemplates = getTemplatesForType(entityType, accessRequestDTO.getAccessType());
+
+        RoleEntity role = permissionManager.getRole(roleId);
+        permissionManager.addPermissionsFromTemplate(role, permissionTemplates, entityId.toString());
+    }
+
+    /**
+     * Remove group of permissions for the specified entity to the given role.
+     *
+     * @summary Remove permissions
+     * @param entityType The entity type
+     * @param entityId The entity ID
+     * @param roleId The role ID
+     * @param accessRequestDTO The access request object
+     * @throws Exception
+     */
+    @DeleteMapping(
+        value = "/access/{entityType}/{entityId}/role/{roleId}",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public void revokeEntityPermissionsFromRole(
+            @PathVariable("entityType") EntityType entityType,
+            @PathVariable("entityId") Integer entityId,
+            @PathVariable("roleId") Long roleId,
+            @RequestBody AccessRequestDTO accessRequestDTO) throws Exception {
+        checkCommonEntityOwnership(entityType, entityId);
+        var permissionTemplates = getTemplatesForType(entityType, accessRequestDTO.getAccessType());
+        removePermissionsFromRole(permissionTemplates, entityId, roleId);
+    }
 }

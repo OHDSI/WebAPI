@@ -18,7 +18,6 @@
  */
 package org.ohdsi.webapi;
 
-import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.slf4j.Logger;
@@ -62,6 +61,13 @@ public class OidcConfCreator {
 
     @Value("${security.auth.oauth.callback.api}")
     private String oauthApiCallback;
+
+    @Value("${security.oid.apiResource:}")
+    private String apiResource;
+
+    public String getApiResource() {
+        return apiResource;
+    }
 
     /**
      * Returns the external OIDC URL for browser-facing endpoints.
@@ -108,7 +114,7 @@ public class OidcConfCreator {
                 scopes += extraScopes;
             }
             conf.setScope(scopes);
-            conf.setPreferredJwsAlgorithm(JWSAlgorithm.RS256);
+            // Use all algorithms from provider metadata (supports RS256, ES384, etc.)
             conf.setPkceMethod(CodeChallengeMethod.S256);
 
             try {

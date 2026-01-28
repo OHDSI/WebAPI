@@ -36,15 +36,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jakarta.servlet.ServletContext;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
@@ -84,25 +75,26 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 /**
- * REST Services related to performing a feasibility analysis but 
+ * REST Services related to performing a feasibility analysis but
  * the implementation appears to be subsumed by the cohort definition
  * services. Marking the REST methods of this
  * class as deprecated.
- * 
+ *
  * @summary Feasibility analysis (DO NOT USE)
  */
-@Path("/feasibility/")
-@Component
+@RestController
+@RequestMapping("/feasibility")
 public class FeasibilityService extends AbstractDaoService {
 
   @Autowired
@@ -135,7 +127,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Autowired
   private SourceService sourceService;
 
-  @Context
   ServletContext context;
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId) {
@@ -379,13 +370,13 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * DO NOT USE
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @return List<FeasibilityService.FeasibilityStudyListItem>
    */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  @Deprecated
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
 
     return getTransactionTemplate().execute(transactionStatus -> {
@@ -408,17 +399,19 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Creates the feasibility study
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param study The feasibility study
    * @return Feasibility study
    */
-  @PUT
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
+  @PutMapping(
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
   @Transactional
-  public FeasibilityService.FeasibilityStudyDTO createStudy(FeasibilityService.FeasibilityStudyDTO study) {
+  @Deprecated
+  public FeasibilityService.FeasibilityStudyDTO createStudy(@RequestBody FeasibilityService.FeasibilityStudyDTO study) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       Date currentTime = Calendar.getInstance().getTime();
@@ -471,18 +464,20 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Get the feasibility study by ID
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    * @return Feasibility study
    */
-  @GET
-  @Path("/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
+  @GetMapping(
+      value = "/{id}",
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
   @Transactional(readOnly = true)
-  public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
+  @Deprecated
+  public FeasibilityService.FeasibilityStudyDTO getStudy(@PathVariable("id") final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
@@ -492,18 +487,20 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Update the feasibility study
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    * @param study The study information
    * @return The updated study information
    */
-  @PUT
-  @Path("/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
+  @PutMapping(
+      value = "/{id}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
   @Transactional
-  public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathParam("id") final int id, FeasibilityStudyDTO study) {
+  @Deprecated
+  public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathVariable("id") final int id, @RequestBody FeasibilityStudyDTO study) {
     Date currentTime = Calendar.getInstance().getTime();
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -555,18 +552,20 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Generate the feasibility study
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param study_id The study ID
    * @param sourceKey The source key
    * @return JobExecutionResource
    */
-  @GET
-  @Path("/{study_id}/generate/{sourceKey}")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public JobExecutionResource performStudy(@PathParam("study_id") final int study_id, @PathParam("sourceKey") final String sourceKey) {
+  @GetMapping(
+      value = "/{study_id}/generate/{sourceKey}",
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @Deprecated
+  public JobExecutionResource performStudy(@PathVariable("study_id") final int study_id, @PathVariable("sourceKey") final String sourceKey) {
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -663,17 +662,19 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Get simulation information
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    * @return List<StudyInfoDTO>
    */
-  @GET
-  @Path("/{id}/info")
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(
+      value = "/{id}/info",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
   @Transactional(readOnly = true)
-  public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
+  @Deprecated
+  public List<StudyInfoDTO> getSimulationInfo(@PathVariable("id") final int id) {
     FeasibilityStudy study = this.feasibilityStudyRepository.findById(id).orElse(null);
 
     List<StudyInfoDTO> result = new ArrayList<>();
@@ -688,18 +689,20 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Get simulation report
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    * @param sourceKey The source key
    * @return FeasibilityReport
    */
-  @GET
-  @Path("/{id}/report/{sourceKey}")
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(
+      value = "/{id}/report/{sourceKey}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
   @Transactional
-  public FeasibilityReport getSimulationReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  @Deprecated
+  public FeasibilityReport getSimulationReport(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
@@ -723,11 +726,13 @@ public class FeasibilityService extends AbstractDaoService {
    * @param id - the Cohort Definition ID to copy
    * @return the copied feasibility study as a FeasibilityStudyDTO
    */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}/copy")
+  @GetMapping(
+      value = "/{id}/copy",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
   @jakarta.transaction.Transactional
-  public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
+  @Deprecated
+  public FeasibilityStudyDTO copy(@PathVariable("id") final int id) {
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, sourceStudy.name);
@@ -737,31 +742,35 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Deletes the specified feasibility study
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    */
-  @DELETE
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}")
-  public void delete(@PathParam("id") final int id) {
+  @DeleteMapping(
+      value = "/{id}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  @Deprecated
+  public void delete(@PathVariable("id") final int id) {
     feasibilityStudyRepository.deleteById(id);
   }
   
   /**
    * Deletes the specified study for the selected source
-   * 
+   *
    * @summary DO NOT USE
    * @deprecated
    * @param id The study ID
    * @param sourceKey The source key
    */
-  @DELETE
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}/info/{sourceKey}")
-  @Transactional    
-  public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  @DeleteMapping(
+      value = "/{id}/info/{sourceKey}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  @Transactional
+  @Deprecated
+  public void deleteInfo(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
     FeasibilityStudy study = feasibilityStudyRepository.findById(id).orElse(null);
     StudyGenerationInfo itemToRemove = null;
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList())

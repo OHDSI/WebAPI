@@ -28,20 +28,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/ddl/")
-@Component
+@RestController
+@RequestMapping("/ddl")
 public class DDLService {
 
 	public static final String VOCAB_SCHEMA = "vocab_schema";
@@ -132,15 +130,13 @@ public class DDLService {
 	 * @param tempSchema
 	 * @return SQL to create tables in results schema
 	 */
-	@GET
-	@Path("results")
-	@Produces("text/plain")
+	@GetMapping(value = "/results", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateResultSQL(
-			@QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema,
-			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
-			@QueryParam("tempSchema") String tempSchema) {
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "vocabSchema", defaultValue = "vocab") String vocabSchema,
+			@RequestParam(value = "schema", defaultValue = "results") String resultSchema,
+			@RequestParam(value = "initConceptHierarchy", defaultValue = "true") Boolean initConceptHierarchy,
+			@RequestParam(value = "tempSchema", required = false) String tempSchema) {
 
 		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
 
@@ -171,10 +167,10 @@ public class DDLService {
 	 * @param schema schema name
 	 * @return SQL
 	 */
-	@GET
-	@Path("cemresults")
-	@Produces("text/plain")
-	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
+	@GetMapping(value = "/cemresults", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String generateCemResultSQL(
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "schema", defaultValue = "cemresults") String schema) {
 
 		Map<String, String> params = new HashMap<String, String>() {{
 			put(CEM_SCHEMA, schema);
@@ -190,13 +186,11 @@ public class DDLService {
 	 * @param resultSchema results schema
 	 * @return SQL
 	 */
-	@GET
-	@Path("achilles")
-	@Produces("text/plain")
+	@GetMapping(value = "/achilles", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateAchillesSQL(
-            @QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema) {
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "vocabSchema", defaultValue = "vocab") String vocabSchema,
+			@RequestParam(value = "schema", defaultValue = "results") String resultSchema) {
 
 		final Collection<String> achillesDDLFilePaths = new ArrayList<>(ACHILLES_DDL_FILE_PATHS);
 

@@ -8,13 +8,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -34,23 +27,29 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST Services related to running 
- * cohort analysis (a.k.a Heracles) analyses. 
+ * REST Services related to running
+ * cohort analysis (a.k.a Heracles) analyses.
  * More information on the Heracles project
  * can be found at {@link https://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:heracles}.
  * The implementation found in WebAPI represents a migration of the functionality
  * from the stand-alone HERACLES application to integrate it into WebAPI and
  * ATLAS.
- * 
+ *
  * @summary Cohort Analysis (a.k.a Heracles)
  */
-@Path("/cohortanalysis/")
-@Component
+@RestController
+@RequestMapping("/cohortanalysis")
 public class CohortAnalysisService extends AbstractDaoService implements GeneratesNotification {
 
 	public static final String NAME = "cohortAnalysisJob";
@@ -120,12 +119,11 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 
 	/**
 	 * Returns all cohort analyses in the WebAPI database
-         * 
+	 *
 	 * @summary Get all cohort analyses
 	 * @return List of all cohort analyses
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Analysis> getCohortAnalyses() {
 		String sqlPath = "/resources/cohortanalysis/sql/getCohortAnalyses.sql";
 		String search = "ohdsi_database_schema";
@@ -134,19 +132,17 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		return getJdbcTemplate().query(psr.getSql(), psr.getSetter(), this.analysisMapper);
 	}
 
-        /**
-         * Returns all cohort analyses in the WebAPI database
-         * for the given cohort_definition_id
-         * 
-         * @summary Get cohort analyses by cohort ID
-         * @param id The cohort definition identifier
-         * @return List of all cohort analyses and their statuses 
-         * for the given cohort_definition_id
-         */
-	@GET
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
+	/**
+	 * Returns all cohort analyses in the WebAPI database
+	 * for the given cohort_definition_id
+	 *
+	 * @summary Get cohort analyses by cohort ID
+	 * @param id The cohort definition identifier
+	 * @return List of all cohort analyses and their statuses
+	 * for the given cohort_definition_id
+	 */
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathVariable("id") final int id) {
         String sqlPath = "/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql";
         String tqName = "ohdsi_database_schema";
         String tqValue = getOhdsiSchema();
@@ -154,19 +150,17 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
         return getJdbcTemplate().query(psr.getSql(), psr.getSetter(), this.cohortAnalysisMapper);
 	}
 
-    /**
-     * Returns the summary for the cohort
-     * 
-     * @summary Cohort analysis summary
-     * @param id - the cohort_definition id
-     * @return Summary which includes the base cohort_definition, the cohort analyses list and their
-     *         statuses for this cohort, and a base set of common cohort results that may or may not
-     *         yet have been ran
-     */
-    @GET
-    @Path("/{id}/summary")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CohortSummary getCohortSummary(@PathParam("id") final int id) {
+	/**
+	 * Returns the summary for the cohort
+	 *
+	 * @summary Cohort analysis summary
+	 * @param id - the cohort_definition id
+	 * @return Summary which includes the base cohort_definition, the cohort analyses list and their
+	 *         statuses for this cohort, and a base set of common cohort results that may or may not
+	 *         yet have been ran
+	 */
+	@GetMapping(value = "/{id}/summary", produces = MediaType.APPLICATION_JSON_VALUE)
+	public CohortSummary getCohortSummary(@PathVariable("id") final int id) {
 
         CohortSummary summary = new CohortSummary();
         try {
@@ -179,21 +173,20 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
         return summary;
     }
 
-        /**
-	 * Generates a preview of the cohort analysis SQL used to run 
-         * the Cohort Analysis Job
+	/**
+	 * Generates a preview of the cohort analysis SQL used to run
+	 * the Cohort Analysis Job
 	 *
-         * @summary Cohort analysis SQL preview
+	 * @summary Cohort analysis SQL preview
 	 * @param task - the CohortAnalysisTask, be sure to have a least one
 	 * analysis_id and one cohort_definition id
 	 * @return - SQL for the given CohortAnalysisTask translated and rendered to
 	 * the current dialect
 	 */
-	@POST
-	@Path("/preview")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+	@PostMapping(value = "/preview",
+			produces = MediaType.TEXT_PLAIN_VALUE,
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String getRunCohortAnalysisSql(@RequestBody CohortAnalysisTask task) {
 		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 		return heraclesQueryBuilder.buildHeraclesAnalysisQuery(task);
 	}
@@ -227,15 +220,14 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	 * Queues up a cohort analysis task, that generates and translates SQL for the
 	 * given cohort definitions, analysis ids and concept ids
 	 *
-         * @summary Queue cohort analysis job
+	 * @summary Queue cohort analysis job
 	 * @param task The cohort analysis task to be ran
 	 * @return information about the Cohort Analysis Job
 	 * @throws Exception
 	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public JobExecutionResource queueCohortAnalysisJob(CohortAnalysisTask task) throws Exception {
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	public JobExecutionResource queueCohortAnalysisJob(@RequestBody CohortAnalysisTask task) throws Exception {
 		if (task == null) {
 			return null;
 		}

@@ -16,13 +16,11 @@
 
 package org.ohdsi.webapi.auth;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +28,8 @@ import java.util.List;
 /**
  * Service that exposes available authentication providers for Atlas frontend.
  */
-@Path("/auth")
-@Controller
+@RestController
+@RequestMapping("/auth")
 public class AuthProviderService {
 
     @Value("${security.auth.jdbc.enabled}")
@@ -74,9 +72,7 @@ public class AuthProviderService {
      * Get the list of enabled authentication providers.
      * This endpoint is publicly accessible (no auth required).
      */
-    @GET
-    @Path("/providers")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AuthProviderInfo> getProviders() {
         List<AuthProviderInfo> providers = new ArrayList<>();
 

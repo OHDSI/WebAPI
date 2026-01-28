@@ -1,14 +1,26 @@
 package org.ohdsi.webapi.job;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,11 +31,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
 
-@Service
+/**
+ * REST Services related to working with the system notifications
+ *
+ * @summary Notifications
+ */
+@RestController
+@RequestMapping("/notifications")
+@Transactional
 public class NotificationServiceImpl implements NotificationService {
+    private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
     private static final int MAX_SIZE = 10;
     private static final int PAGE_SIZE = MAX_SIZE * 10;
     private static final List<String> WHITE_LIST = new ArrayList<>();
@@ -32,20 +53,91 @@ public class NotificationServiceImpl implements NotificationService {
     private final SearchableJobExecutionDao jobExecutionDao;
     private final PermissionManager permissionManager;
     private final UserRepository userRepository;
+    private final GenericConversionService conversionService;
 
     @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
     private boolean securityEnabled;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList, PermissionManager permissionManager, UserRepository userRepository) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList,
+                                   PermissionManager permissionManager, UserRepository userRepository,
+                                   @Qualifier("conversionService") GenericConversionService conversionService) {
         this.jobExecutionDao = jobExecutionDao;
         this.permissionManager = permissionManager;
         this.userRepository = userRepository;
+        this.conversionService = conversionService;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
         // Folding key for warming source key job
         FOLDING_KEYS.add(SOURCE_KEY);
+    }
+
+    /**
+     * Get the list of notifications
+     *
+     * @summary Get all notifications
+     * @param hideStatuses Used to filter statuses - passes as a comma-delimited list
+     * @param refreshJobs Boolean - when true, it will refresh the cache of notifications
+     * @return List of job execution resources
+     */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional(readOnly = true)
+    public List<JobExecutionResource> list(
+            @RequestParam(value = "hide_statuses", required = false) String hideStatuses,
+            @RequestParam(value = "refreshJobs", defaultValue = "FALSE") Boolean refreshJobs) {
+        List<BatchStatus> statuses = new ArrayList<>();
+        if (StringUtils.isNotEmpty(hideStatuses)) {
+            for (String status : hideStatuses.split(",")) {
+                try {
+                    statuses.add(BatchStatus.valueOf(status));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid argument passed as batch status: {}", status);
+                }
+            }
+        }
+        List<JobExecutionInfo> executionInfos;
+        if (refreshJobs) {
+            executionInfos = findRefreshCacheLastJobs();
+        } else {
+            executionInfos = findLastJobs(statuses);
+        }
+        return executionInfos.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the date when notifications were last viewed
+     *
+     * @summary Get notification last viewed date
+     * @return The date when notifications were last viewed
+     */
+    @GetMapping(value = "/viewed", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional(readOnly = true)
+    public Date getLastViewedTimeEndpoint() {
+        try {
+            return getLastViewedTime();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Sets the date when notifications were last viewed
+     *
+     * @summary Set notification last viewed date
+     * @param stamp The date to set
+     */
+    @PostMapping(value = "/viewed", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void setLastViewedTimeEndpoint(@RequestBody Date stamp) {
+        try {
+            setLastViewedTime(stamp);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private JobExecutionResource toDTO(JobExecutionInfo entity) {
+        return conversionService.convert(entity, JobExecutionResource.class);
     }
 
     @Override

@@ -18,8 +18,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionCallback;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,7 +71,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	public CohortSampleDTO getSample(int sampleId, boolean withRecordCounts) {
 		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
-			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cohort sample with ID " + sampleId + " not found");
 		}
 		Source source = getSourceRepository().findBySourceId(sample.getSourceId());
 		List<SampleElement> sampleElements = findSampleElements(source, sample.getId(), withRecordCounts);
@@ -198,7 +200,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		
 				CohortSample sample = sampleRepository.findById(sampleId).orElse(null);
 		if (sample == null) {
-			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cohort sample with ID " + sampleId + " not found");
 		}
 		Source source = getSourceRepository().findBySourceId(sample.getSourceId());
 		
@@ -454,13 +456,13 @@ public class CohortSamplingService extends AbstractDaoService {
 					sampleId).getSql();
 		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
-			throw new NotFoundException("Sample with ID " + sampleId + " does not exist");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sample with ID " + sampleId + " does not exist");
 		}
 		if (sample.getCohortDefinitionId() != cohortDefinitionId) {
-			throw new BadRequestException("Cohort definition ID " + sample.getCohortDefinitionId() + " does not match provided cohort definition id " + cohortDefinitionId);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cohort definition ID " + sample.getCohortDefinitionId() + " does not match provided cohort definition id " + cohortDefinitionId);
 		}
 		if (sample.getSourceId() != source.getId()) {
-			throw new BadRequestException("Source " + sample.getSourceId() + " does not match provided source " + source.getId());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Source " + sample.getSourceId() + " does not match provided source " + source.getId());
 		}
 
 		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {

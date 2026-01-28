@@ -72,10 +72,9 @@ public class FilterChainBuilder {
     public FilterChainBuilder addPath(String path, String filters) {
         path = path.replaceAll("/+$", "");
 
-        // Prepend /WebAPI to match JAX-RS @ApplicationPath("/WebAPI")
-        if (!path.startsWith("/WebAPI") && !path.equals("/**") && !path.equals("/*")) {
-            path = "/WebAPI" + path;
-        }
+        // Note: Shiro's PathMatchingFilterChainResolver uses WebUtils.getPathWithinApplication()
+        // which returns paths RELATIVE to the context path (e.g., /user/login/db not /WebAPI/user/login/db).
+        // DO NOT prepend /WebAPI here - Shiro works with servlet-relative paths.
 
         this.filterChain.put(path, filters);
 

@@ -12,27 +12,16 @@ import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.util.*;
-import java.util.Optional;
 
-@Path("/cohortsample")
-@Component
-@Produces(MediaType.APPLICATION_JSON)
+@RestController
+@RequestMapping("/cohortsample")
 public class CohortSampleService {
 	private final CohortDefinitionRepository cohortDefinitionRepository;
 	private final CohortGenerationInfoRepository generationInfoRepository;
@@ -59,11 +48,10 @@ public class CohortSampleService {
 	 * @param sourceKey
 	 * @return JSON containing information about cohort samples
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}")
-	@GET
+	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleListDTO listCohortSamples(
-			@PathParam("cohortDefinitionId") int cohortDefinitionId,
-			@PathParam("sourceKey") String sourceKey
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
+			@PathVariable("sourceKey") String sourceKey
 	) {
 		Source source = getSource(sourceKey);
 		CohortSampleListDTO result = new CohortSampleListDTO();
@@ -89,13 +77,12 @@ public class CohortSampleService {
 	 * @param fields
 	 * @return personId, gender, age of each person in the cohort sample
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
-	@GET
+	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}/{sampleId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO getCohortSample(
-			@PathParam("cohortDefinitionId") int cohortDefinitionId,
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("sampleId") Integer sampleId,
-			@DefaultValue("") @QueryParam("fields") String fields
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("sampleId") Integer sampleId,
+			@RequestParam(defaultValue = "") String fields
 	) {
 		List<String> returnFields = Arrays.asList(fields.split(","));
 		boolean withRecordCounts = returnFields.contains("recordCount");
@@ -111,13 +98,12 @@ public class CohortSampleService {
 	 * @param fields
 	 * @return A sample of persons from a cohort
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}/refresh")
-	@POST
+	@PostMapping(value = "/{cohortDefinitionId}/{sourceKey}/{sampleId}/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO refreshCohortSample(
-			@PathParam("cohortDefinitionId") int cohortDefinitionId,
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("sampleId") Integer sampleId,
-			@DefaultValue("") @QueryParam("fields") String fields
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("sampleId") Integer sampleId,
+			@RequestParam(defaultValue = "") String fields
 	) {
 		List<String> returnFields = Arrays.asList(fields.split(","));
 		boolean withRecordCounts = returnFields.contains("recordCount");
@@ -130,10 +116,9 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return true or false
 	 */
-	@Path("/has-samples/{cohortDefinitionId}")
-	@GET
+	@GetMapping(value = "/has-samples/{cohortDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map<String, Boolean> hasSamples(
-			@PathParam("cohortDefinitionId") int cohortDefinitionId
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId
 	) {
 		int nSamples = this.samplingService.countSamples(cohortDefinitionId);
 		return Collections.singletonMap("hasSamples", nSamples > 0);
@@ -145,11 +130,10 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return true or false
 	 */
-	@Path("/has-samples/{cohortDefinitionId}/{sourceKey}")
-	@GET
-	public Map<String, Boolean> hasSamples(
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("cohortDefinitionId") int cohortDefinitionId
+	@GetMapping(value = "/has-samples/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Map<String, Boolean> hasSamplesForSource(
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId
 	) {
 		Source source = getSource(sourceKey);
 		int nSamples = this.samplingService.countSamples(cohortDefinitionId, source.getId());
@@ -163,23 +147,21 @@ public class CohortSampleService {
 	 * @param sampleParameters
 	 * @return
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}")
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO createCohortSample(
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("cohortDefinitionId") int cohortDefinitionId,
-			SampleParametersDTO sampleParameters
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
+			@RequestBody SampleParametersDTO sampleParameters
 	) {
 		sampleParameters.validate();
 		Source source = getSource(sourceKey);
 		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
-			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		CohortGenerationInfo generationInfo = generationInfoRepository.findById(
 				new CohortGenerationInfoId(cohortDefinitionId, source.getId())).orElse(null);
 		if (generationInfo == null || generationInfo.getStatus() != GenerationStatus.COMPLETE) {
-			throw new BadRequestException("Cohort is not yet generated");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cohort is not yet generated");
 		}
 		return samplingService.createSample(source, cohortDefinitionId, sampleParameters);
 	}
@@ -191,19 +173,18 @@ public class CohortSampleService {
 	 * @param sampleId
 	 * @return
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
-	@DELETE
-	public Response deleteCohortSample(
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("cohortDefinitionId") int cohortDefinitionId,
-			@PathParam("sampleId") int sampleId
+	@DeleteMapping("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
+	public ResponseEntity<Void> deleteCohortSample(
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
+			@PathVariable("sampleId") int sampleId
 	) {
 		Source source = getSource(sourceKey);
 		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
-			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		samplingService.deleteSample(cohortDefinitionId, source, sampleId);
-		return Response.status(Response.Status.NO_CONTENT).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -212,24 +193,23 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return
 	 */
-	@Path("/{cohortDefinitionId}/{sourceKey}")
-	@DELETE
-	public Response deleteCohortSamples(
-			@PathParam("sourceKey") String sourceKey,
-			@PathParam("cohortDefinitionId") int cohortDefinitionId
+	@DeleteMapping("/{cohortDefinitionId}/{sourceKey}")
+	public ResponseEntity<Void> deleteCohortSamples(
+			@PathVariable("sourceKey") String sourceKey,
+			@PathVariable("cohortDefinitionId") int cohortDefinitionId
 	) {
 		Source source = getSource(sourceKey);
 		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
-			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		samplingService.launchDeleteSamplesTasklet(cohortDefinitionId, source.getId());
-		return Response.status(Response.Status.ACCEPTED).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 	}
 
 	private Source getSource(String sourceKey) {
 		Source source = sourceRepository.findBySourceKey(sourceKey);
 		if (source == null) {
-			throw new NotFoundException("Source " + sourceKey + " does not exist");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Source " + sourceKey + " does not exist");
 		}
 		return source;
 	}

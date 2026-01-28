@@ -547,6 +547,12 @@ public class PermissionManager {
 
   public String getSubjectName() {
     Subject subject = SecurityUtils.getSubject();
+
+    // Return "anonymous" if subject is not authenticated or has no principals
+    if (subject == null || !subject.isAuthenticated() || subject.getPrincipals() == null) {
+      return "anonymous";
+    }
+
     Object principalObject = subject.getPrincipals().getPrimaryPrincipal();
 
     if (principalObject instanceof String)
@@ -557,7 +563,7 @@ public class PermissionManager {
       return principal.getName();
     }
 
-    throw new UnsupportedOperationException();
+    return "anonymous";
   }
 
   public RoleEntity getRole(Long id) {

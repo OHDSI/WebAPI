@@ -2,12 +2,14 @@
 name: CI
 
 # Run in master and dev branches and in all pull requests to those branches
+# Or triggering it manually by the Github UI.
 on:
   push:
     branches: [ master, webapi-3.0 ]
   pull_request:
     branches: [ master, webapi-3.0 ]
-
+  workflow_dispatch:
+  
 jobs:
   # Build and test the code
   build:

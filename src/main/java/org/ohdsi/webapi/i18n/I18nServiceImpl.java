@@ -3,20 +3,38 @@ package org.ohdsi.webapi.i18n;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.ws.rs.InternalServerErrorException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
-@Component
+/**
+ * Internationalization service.
+ * Provides localized message resources and available locales.
+ */
+@RestController
+@RequestMapping("/i18n")
 public class I18nServiceImpl implements I18nService {
+
+  @Value("${i18n.enabled}")
+  private boolean i18nEnabled = true;
+
+  @Value("${i18n.defaultLocale}")
+  private String defaultLocale = "en";
 
   private List<LocaleDTO> availableLocales;
 
@@ -53,7 +71,7 @@ public class I18nServiceImpl implements I18nService {
       JsonNode node = root.at(pointer);
       return node.isValueNode() ? node.asText() : defaultValue;
     }catch (IOException e) {
-      throw new InternalServerErrorException(e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
     }
   }
 
@@ -67,5 +85,41 @@ public class I18nServiceImpl implements I18nService {
       messages = ResourceHelper.GetResourceAsString(resourcePath);
     }
     return messages;
+  }
+
+  // REST Endpoints
+
+  /**
+   * Get i18n resources for current locale
+   *
+   * Note: Locale is resolved by LocaleInterceptor and stored in LocaleContextHolder
+   */
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getResources() {
+    // Get locale from LocaleContextHolder (set by LocaleInterceptor)
+    Locale locale = LocaleContextHolder.getLocale();
+
+    if (!this.i18nEnabled || locale == null || !isLocaleSupported(locale.getLanguage())) {
+      locale = Locale.forLanguageTag(defaultLocale);
+    }
+
+    return getLocaleResource(locale);
+  }
+
+  /**
+   * Get list of available locales
+   */
+  @GetMapping(value = "/locales", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<LocaleDTO> getAvailableLocalesEndpoint() {
+    if (this.i18nEnabled) {
+      return getAvailableLocales();
+    }
+
+    // if i18n is disabled, then return only default locale
+    return ImmutableList.of(new LocaleDTO(this.defaultLocale, null, true));
+  }
+
+  private boolean isLocaleSupported(String code) {
+    return getAvailableLocales().stream().anyMatch(l -> Objects.equals(code, l.getCode()));
   }
 }

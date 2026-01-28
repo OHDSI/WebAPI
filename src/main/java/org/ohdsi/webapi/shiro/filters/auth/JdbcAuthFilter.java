@@ -24,8 +24,10 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.ohdsi.webapi.shiro.filters.AuthenticatingPropagationFilter;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,8 +59,23 @@ public class JdbcAuthFilter extends AuthenticatingPropagationFilter {
 
         if (servletRequest.getParameter("login") != null) {
             loggedIn = executeLogin(servletRequest, servletResponse);
+        } else {
+            // No credentials provided - write error response and commit
+            writeUnauthorizedResponse(servletResponse, "Missing credentials");
         }
         return loggedIn;
+    }
+
+    private void writeUnauthorizedResponse(ServletResponse response, String message) {
+        try {
+            HttpServletResponse httpResponse = (HttpServletResponse) response;
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.setContentType("application/json");
+            httpResponse.getWriter().write("{\"error\":\"" + message + "\"}");
+            httpResponse.flushBuffer(); // Commit the response
+        } catch (IOException e) {
+            log.error("Failed to write unauthorized response", e);
+        }
     }
 
 }

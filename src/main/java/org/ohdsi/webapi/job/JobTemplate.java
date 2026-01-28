@@ -13,9 +13,10 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_START_TIME;
@@ -42,7 +43,7 @@ public class JobTemplate {
         this.transactionManager = transactionManager;
     }
 
-    public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws WebApplicationException {
+    public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws ResponseStatusException {
         JobExecution exec;
         try {
             JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
@@ -56,15 +57,15 @@ public class JobTemplate {
                 log.debug("JobExecution queued: {}", exec);
             }
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(e, Response.status(Status.CONFLICT).entity(whitelist(e)).build());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, whitelist(e), e);
         } catch (final Exception e) {
-            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, whitelist(e), e);
         }
         return JobUtils.toJobExecutionResource(exec);
     }
 
     public JobExecutionResource launchTasklet(final String jobName, final String stepName, final Tasklet tasklet,
-                                              JobParameters jobParameters) throws WebApplicationException {
+                                              JobParameters jobParameters) throws ResponseStatusException {
         JobExecution exec;
         try {
             jobParameters = new JobParametersBuilder(jobParameters)
@@ -84,11 +85,11 @@ public class JobTemplate {
                     
             exec = this.jobLauncher.run(job, jobParameters);
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, whitelist(e.getMessage()), e);
         } catch (final JobInstanceAlreadyCompleteException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, whitelist(e.getMessage()), e);
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e.getMessage())).build());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, whitelist(e.getMessage()), e);
         }
         return JobUtils.toJobExecutionResource(exec);
     }

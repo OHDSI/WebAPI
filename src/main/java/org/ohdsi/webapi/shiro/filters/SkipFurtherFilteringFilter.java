@@ -25,7 +25,9 @@ public abstract class SkipFurtherFilteringFilter implements Filter {
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
     if (shouldSkip(request, response)) {
       HttpServletRequest httpRequest = ServletBridge.toHttp(request);
-      String path = httpRequest.getServletPath() + httpRequest.getPathInfo();
+      // getPathInfo() can return null if there's no extra path info
+      String pathInfo = httpRequest.getPathInfo();
+      String path = httpRequest.getServletPath() + (pathInfo != null ? pathInfo : "");
       RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
       requestDispatcher.forward(request, response);
     }

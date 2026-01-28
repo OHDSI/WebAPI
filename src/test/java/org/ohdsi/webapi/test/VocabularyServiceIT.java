@@ -23,6 +23,9 @@ public class VocabularyServiceIT extends WebApiIT {
     @Value("${vocabularyservice.endpoint.domains}")
     private String endpointDomains;
 
+    @Value("${vocabularyservice.endpoint.search}")
+    private String endpointSearch;
+
     @Autowired
     private SourceRepository sourceRepository;
 
@@ -68,6 +71,18 @@ public class VocabularyServiceIT extends WebApiIT {
 
         //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointDomains, String.class);
+
+        //Assertion
+        assertOK(entity);
+    }
+
+    @Test
+    public void canSearchConceptsWithQueryParam() {
+        // Test the GET /{sourceKey}/search?query=... endpoint format
+        String searchUrl = this.endpointSearch.replace("{sourceKey}", SOURCE_KEY) + "?query=test";
+
+        //Action
+        final ResponseEntity<String> entity = getRestTemplate().getForEntity(searchUrl, String.class);
 
         //Assertion
         assertOK(entity);

@@ -1,46 +1,52 @@
 package org.ohdsi.webapi.tag;
 
-import org.apache.shiro.SecurityUtils;
-import org.glassfish.jersey.internal.util.Producer;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
+import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityManager;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.Optional;
 
-@Service
+@RestController
+@RequestMapping("/tag")
 @Transactional
 public class TagService extends AbstractDaoService {
     private static final Logger logger = LoggerFactory.getLogger(TagService.class);
     private final TagRepository tagRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
+    private final TagGroupService tagGroupService;
 
-    private final ArrayList<Producer<List<TagInfo>>> infoProducers;
+    private final ArrayList<Supplier<List<TagInfo>>> infoProducers;
 
     @Autowired
     public TagService(
             TagRepository tagRepository,
             EntityManager entityManager,
-            @Qualifier("conversionService") ConversionService conversionService) {
+            @Qualifier("conversionService") ConversionService conversionService,
+            @Lazy TagGroupService tagGroupService) {
         this.tagRepository = tagRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
+        this.tagGroupService = tagGroupService;
 
         this.infoProducers = new ArrayList<>();
         this.infoProducers.add(tagRepository::findCohortTagInfo);
@@ -48,7 +54,14 @@ public class TagService extends AbstractDaoService {
         this.infoProducers.add(tagRepository::findReusableTagInfo);
     }
 
-    public TagDTO create(TagDTO dto) {
+    /**
+     * Creates a tag.
+     *
+     * @param dto
+     * @return
+     */
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public TagDTO create(@RequestBody TagDTO dto) {
         Tag tag = conversionService.convert(dto, Tag.class);
         Tag saved = create(tag);
         return conversionService.convert(saved, TagDTO.class);
@@ -79,17 +92,41 @@ public class TagService extends AbstractDaoService {
         return tagRepository.findById(id).orElse(null);
     }
 
-    public TagDTO getDTOById(Integer id) {
+    /**
+     * Return tag by ID.
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public TagDTO getDTOById(@PathVariable("id") Integer id) {
         Tag tag = tagRepository.findById(id).orElse(null);
         return conversionService.convert(tag, TagDTO.class);
     }
 
-    public List<TagDTO> listInfoDTO(String namePart) {
+    /**
+     * Returns list of tags, which names contain a provided substring.
+     *
+     * @summary Search tags by name part
+     * @param namePart
+     * @return
+     */
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TagDTO> listInfoDTO(@RequestParam("namePart") String namePart) {
+        if (StringUtils.isBlank(namePart)) {
+            return Collections.emptyList();
+        }
         return listInfo(namePart).stream()
                 .map(tag -> conversionService.convert(tag, TagDTO.class))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Returns list of all tags.
+     *
+     * @return
+     */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TagDTO> listInfoDTO() {
         return listInfo().stream()
                 .map(tag -> conversionService.convert(tag, TagDTO.class))
@@ -108,7 +145,15 @@ public class TagService extends AbstractDaoService {
         return tagRepository.findByIdIn(ids);
     }
 
-    public TagDTO update(Integer id, TagDTO entity) {
+    /**
+     * Updates tag with ID={id}.
+     *
+     * @param id
+     * @param entity
+     * @return
+     */
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public TagDTO update(@PathVariable("id") Integer id, @RequestBody TagDTO entity) {
         Tag existing = tagRepository.findById(id).orElse(null);
 
         checkOwnerOrAdmin(existing.getCreatedBy());
@@ -130,7 +175,13 @@ public class TagService extends AbstractDaoService {
         return conversionService.convert(saved, TagDTO.class);
     }
 
-    public void delete(Integer id) {
+    /**
+     * Deletes tag with ID={id}.
+     *
+     * @param id
+     */
+    @DeleteMapping(value = "/{id}")
+    public void delete(@PathVariable("id") Integer id) {
         Tag existing = tagRepository.findById(id).orElse(null);
 
         checkOwnerOrAdmin(existing.getCreatedBy());
@@ -171,9 +222,9 @@ public class TagService extends AbstractDaoService {
         logger.info("Finishing tags statistics refreshing");
     }
 
-    private void processTagInfo(Producer<List<TagInfo>> infoProducer,
+    private void processTagInfo(Supplier<List<TagInfo>> infoProducer,
                                 Map<Integer, TagDTO> infoMap) {
-        List<TagInfo> tagInfos = infoProducer.call();
+        List<TagInfo> tagInfos = infoProducer.get();
         tagInfos.forEach(info -> {
             int id = info.getId();
             TagDTO dto = infoMap.get(id);
@@ -207,11 +258,37 @@ public class TagService extends AbstractDaoService {
         });
     }
 
+    /**
+     * Tags assignment permissions for current user
+     *
+     * @return
+     */
+    @GetMapping(value = "/assignmentPermissions", produces = MediaType.APPLICATION_JSON_VALUE)
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
         tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
         tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
         tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
         return tagPermission;
+    }
+
+    /**
+     * Assigns group of tags to groups of assets.
+     *
+     * @param dto
+     */
+    @PostMapping(value = "/multiAssign", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void assignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
+        tagGroupService.assignGroup(dto);
+    }
+
+    /**
+     * Unassigns group of tags from groups of assets.
+     *
+     * @param dto
+     */
+    @PostMapping(value = "/multiUnassign", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void unassignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
+        tagGroupService.unassignGroup(dto);
     }
 }

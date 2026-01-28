@@ -22,10 +22,7 @@
     <shiro.version>2.0.2</shiro.version>
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
 
-    <commons-fileupload.version>1.5</commons-fileupload.version>
-
     <circe.version>1.12.1</circe.version>
-    <jersey.version>3.1.9</jersey.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>6.0.5</pac4j.version>
@@ -96,6 +93,7 @@
     <security.oid.extraScopes></security.oid.extraScopes>
     <security.oid.customParams>{:}</security.oid.customParams>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
+    <security.oid.apiResource></security.oid.apiResource>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
@@ -198,7 +196,6 @@
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
     <arachne.version>1.17.4</arachne.version>
-    <jersey-media-multipart.version>3.1.9</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
@@ -718,28 +715,6 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
     <dependency>
@@ -791,17 +766,7 @@
       <artifactId>cache-api</artifactId>
       <version>1.1.1</version>
     </dependency>
-    <!-- JAXB dependencies for Java 11+ (ehcache still uses javax.xml.bind) -->
-    <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jaxb</groupId>
-      <artifactId>jaxb-runtime</artifactId>
-      <version>2.3.1</version>
-    </dependency>
+    <!-- javax.xml.bind dependencies removed - ehcache 3.11.0+ no longer requires them -->
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
@@ -895,13 +860,7 @@
       <version>9.1.6</version>
     </dependency>
 
-    <!-- overriding commons-fileupload version from the plug-in above -->
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>${commons-fileupload.version}</version>
-    </dependency>
-
+    <!-- commons-fileupload removed - not used in codebase -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -913,11 +872,7 @@
       <artifactId>mssql-jdbc</artifactId>
       <version>12.8.1.jre11</version>
     </dependency>
-    <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>msal4j</artifactId>
-      <version>1.9.0</version>
-    </dependency>
+    <!-- msal4j removed - not used in codebase -->
     <dependency>
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
@@ -935,11 +890,7 @@
       <artifactId>commons-csv</artifactId>
       <version>1.8</version>
     </dependency>
-    <dependency>
-      <groupId>org.dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <version>2.1.3</version>
-    </dependency>
+    <!-- dom4j removed - not used in codebase -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
@@ -1113,10 +1064,12 @@
       <artifactId>jasypt</artifactId>
       <version>1.9.3</version>
     </dependency>
+    <!-- JAX-RS API removed - all Jersey code migrated to Spring MVC -->
+    <!-- JAXB API - needed by some legacy code -->
     <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-multipart</artifactId>
-      <version>${jersey-media-multipart.version}</version>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
@@ -1198,7 +1151,20 @@
     <dependency>
       <groupId>org.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-      <version>3.9.11</version>
+      <version>3.11.1</version>
+      <classifier>jakarta</classifier><!-- Using Jakarta classifier to avoid javax.xml.bind dependency -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- Jakarta JAXB runtime for ehcache XML configuration -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>3.0.2</version><!-- Jakarta EE 9 compatible -->
     </dependency>    <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
@@ -1816,32 +1782,6 @@
               <artifactId>jackson-core</artifactId>
             </exclusion>
           </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-server</artifactId>
-          <version>1.19.4</version>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-core</artifactId>
-          <version>1.19.4</version>
-          <exclusions>
-            <exclusion>
-              <groupId>javax.ws.rs</groupId>
-              <artifactId>jsr311-api</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-client</artifactId>
-          <version>1.19.4</version>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-json</artifactId>
-          <version>1.19.4</version>
         </dependency>
       </dependencies>
     </profile>

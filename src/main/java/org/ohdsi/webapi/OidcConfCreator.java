@@ -61,6 +61,13 @@ public class OidcConfCreator {
     @Value("${security.oauth.callback.api}")
     private String oauthApiCallback;
 
+    @Value("${security.oid.apiResource:}")
+    private String apiResource;
+
+    public String getApiResource() {
+        return apiResource;
+    }
+
     /**
      * Returns the external OIDC URL for browser-facing endpoints.
      * If externalUrl is set, returns it; otherwise returns the discovery URL.

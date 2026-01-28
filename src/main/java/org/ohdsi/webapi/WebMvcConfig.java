@@ -1,0 +1,42 @@
+package org.ohdsi.webapi;
+
+import org.ohdsi.webapi.i18n.mvc.LocaleInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+/**
+ * Spring MVC Configuration.
+ * Configures interceptors, message converters, and other MVC components.
+ */
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Autowired(required = false)
+    private LocaleInterceptor localeInterceptor;
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        configurer.setUseTrailingSlashMatch(true);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // Add locale interceptor if available
+        if (localeInterceptor != null) {
+            registry.addInterceptor(localeInterceptor)
+                    .addPathPatterns("/**");
+        }
+    }
+
+    @Override
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        // Add custom OutputStreamMessageConverter for ByteArrayOutputStream responses
+        converters.add(new org.ohdsi.webapi.mvc.OutputStreamMessageConverter());
+    }
+}

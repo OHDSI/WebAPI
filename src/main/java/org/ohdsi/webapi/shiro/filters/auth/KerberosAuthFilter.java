@@ -18,18 +18,23 @@
  */
 package org.ohdsi.webapi.shiro.filters.auth;
 
+import java.io.IOException;
 import java.util.Base64;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.ohdsi.webapi.shiro.ServletBridge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.ohdsi.webapi.shiro.tokens.SpnegoToken;
 
 public class KerberosAuthFilter extends AuthenticatingFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(KerberosAuthFilter.class);
 
     private String getAuthHeader(ServletRequest servletRequest) {
 
@@ -69,6 +74,14 @@ public class KerberosAuthFilter extends AuthenticatingFilter {
             HttpServletResponse response = ServletBridge.toHttp(servletResponse);
             response.addHeader("WWW-Authenticate", "Negotiate");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            // Write response body and commit to prevent Spring MVC from processing
+            try {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Kerberos authentication required\"}");
+                response.flushBuffer(); // Commit the response
+            } catch (IOException e) {
+                log.error("Failed to write unauthorized response", e);
+            }
         }
 
         return loggedIn;

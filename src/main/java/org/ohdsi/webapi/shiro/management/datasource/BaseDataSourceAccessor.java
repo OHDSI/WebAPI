@@ -6,7 +6,8 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import jakarta.ws.rs.ForbiddenException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T> {
 
@@ -15,7 +16,7 @@ public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T>
 
   public void checkAccess(T s) {
     if (!hasAccess(s)) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 

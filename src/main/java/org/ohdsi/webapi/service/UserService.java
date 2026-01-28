@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.ohdsi.webapi.arachne.logging.event.*;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -10,10 +9,9 @@ import org.ohdsi.webapi.user.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -23,8 +21,8 @@ import java.util.stream.StreamSupport;
  * @author gennadiy.anisimov
  */
 
-@Path("/")
-@Component
+@RestController
+@RequestMapping("")
 public class UserService {
 
   @Autowired
@@ -97,18 +95,14 @@ public class UserService {
     }
   }
 
-  @GET
-  @Path("user")
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
   public ArrayList<User> getUsers() {
     Iterable<UserEntity> userEntities = this.authorizer.getUsers();
     ArrayList<User> users = convertUsers(userEntities);
     return users;
   }
 
-  @GET
-  @Path("user/me")
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(value = "/user/me", produces = MediaType.APPLICATION_JSON_VALUE)
   public User getCurrentUser() throws Exception {
 
     UserEntity currentUser = this.authorizer.getCurrentUser();
@@ -125,31 +119,24 @@ public class UserService {
     return user;
   }
 
-  @GET
-  @Path("user/{userId}/permissions")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
+  @GetMapping(value = "/user/{userId}/permissions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Permission> getUsersPermissions(@PathVariable("userId") Long userId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(userId);
     List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
 
-  @GET
-  @Path("user/{userId}/roles")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Role> getUserRoles(@PathParam("userId") Long userId) throws Exception {
+  @GetMapping(value = "/user/{userId}/roles", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ArrayList<Role> getUserRoles(@PathVariable("userId") Long userId) throws Exception {
     Set<RoleEntity> roleEntities = this.authorizer.getUserRoles(userId);
     ArrayList<Role> roles = convertRoles(roleEntities);
     Collections.sort(roles);
     return roles;
   }
 
-  @POST
-  @Path("role")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Role createRole(Role role) throws Exception {
+  @PostMapping(value = "/role", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Role createRole(@RequestBody Role role) throws Exception {
     RoleEntity roleEntity = this.authorizer.addRole(role.role, true);
     RoleEntity personalRole = this.authorizer.getCurrentUserPersonalRole();
     this.authorizer.addPermissionsFromTemplate(
@@ -161,11 +148,8 @@ public class UserService {
     return newRole;
   }
 
-  @PUT
-  @Path("role/{roleId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Role updateRole(@PathParam("roleId") Long id, Role role) throws Exception {
+  @PutMapping(value = "/role/{roleId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Role updateRole(@PathVariable("roleId") Long id, @RequestBody Role role) throws Exception {
     RoleEntity roleEntity = this.authorizer.getRole(id);
     if (roleEntity == null) {
       throw new Exception("Role doesn't exist");
@@ -176,45 +160,39 @@ public class UserService {
     return new Role(roleEntity);
   }
 
-  @GET
-  @Path("role")
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(value = "/role", produces = MediaType.APPLICATION_JSON_VALUE)
   public ArrayList<Role> getRoles(
-          @DefaultValue("false") @QueryParam("include_personal") boolean includePersonalRoles) {
+          @RequestParam(value = "include_personal", defaultValue = "false") boolean includePersonalRoles) {
     Iterable<RoleEntity> roleEntities = this.authorizer.getRoles(includePersonalRoles);
     ArrayList<Role> roles = convertRoles(roleEntities);
     return roles;
   }
 
-  @GET
-  @Path("role/{roleId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Role getRole(@PathParam("roleId") Long id) {
+  @GetMapping(value = "/role/{roleId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Role getRole(@PathVariable("roleId") Long id) {
     RoleEntity roleEntity = this.authorizer.getRole(id);
     Role role = new Role(roleEntity);
     return role;
   }
 
-  @DELETE
-  @Path("role/{roleId}")
-  public void removeRole(@PathParam("roleId") Long roleId) {
+  @DeleteMapping(value = "/role/{roleId}")
+  public void removeRole(@PathVariable("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
   }
 
-  @GET
-  @Path("role/{roleId}/permissions")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
+  @GetMapping(value = "/role/{roleId}/permissions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Permission> getRolePermissions(@PathVariable("roleId") Long roleId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getRolePermissions(roleId);
     List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
 
-  @PUT
-  @Path("role/{roleId}/permissions/{permissionIdList}")
-  public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
+  @PutMapping(value = "/role/{roleId}/permissions/{permissionIdList}")
+  public void addPermissionToRole(
+          @PathVariable("roleId") Long roleId,
+          @PathVariable("permissionIdList") String permissionIdList) throws Exception {
     String[] ids = permissionIdList.split("\\+");
     for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
@@ -223,9 +201,10 @@ public class UserService {
     }
   }
 
-  @DELETE
-  @Path("role/{roleId}/permissions/{permissionIdList}")
-  public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
+  @DeleteMapping(value = "/role/{roleId}/permissions/{permissionIdList}")
+  public void removePermissionFromRole(
+          @PathVariable("roleId") Long roleId,
+          @PathVariable("permissionIdList") String permissionIdList) {
     String[] ids = permissionIdList.split("\\+");
     for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
@@ -234,19 +213,18 @@ public class UserService {
     }
   }
 
-  @GET
-  @Path("role/{roleId}/users")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<User> getRoleUsers(@PathParam("roleId") Long roleId) throws Exception {
+  @GetMapping(value = "/role/{roleId}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ArrayList<User> getRoleUsers(@PathVariable("roleId") Long roleId) throws Exception {
     Set<UserEntity> userEntities = this.authorizer.getRoleUsers(roleId);
     ArrayList<User> users = this.convertUsers(userEntities);
     Collections.sort(users);
     return users;
   }
 
-  @PUT
-  @Path("role/{roleId}/users/{userIdList}")
-  public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
+  @PutMapping(value = "/role/{roleId}/users/{userIdList}")
+  public void addUserToRole(
+          @PathVariable("roleId") Long roleId,
+          @PathVariable("userIdList") String userIdList) throws Exception {
     String[] ids = userIdList.split("\\+");
     for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
@@ -255,9 +233,10 @@ public class UserService {
     }
   }
 
-  @DELETE
-  @Path("role/{roleId}/users/{userIdList}")
-  public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
+  @DeleteMapping(value = "/role/{roleId}/users/{userIdList}")
+  public void removeUserFromRole(
+          @PathVariable("roleId") Long roleId,
+          @PathVariable("userIdList") String userIdList) {
     String[] ids = userIdList.split("\\+");
     for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);

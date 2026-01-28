@@ -1,3 +1,20 @@
+-- Initial security data (roles required for the application to function)
+-- These must be created before WebAPI can properly handle authentication
+INSERT INTO webapi.sec_role (id, name, system_role) VALUES (1, 'public', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO webapi.sec_role (id, name, system_role) VALUES (2, 'admin', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO webapi.sec_role (id, name, system_role) VALUES (1001, 'Atlas users', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO webapi.sec_role (id, name, system_role) VALUES (1002, 'Moderator', true) ON CONFLICT (id) DO NOTHING;
+
+-- Anonymous user (required for public endpoints)
+INSERT INTO webapi.sec_user (id, login, name) VALUES (1, 'anonymous', 'anonymous') ON CONFLICT (id) DO NOTHING;
+INSERT INTO webapi.sec_user_role (id, user_id, role_id, origin) VALUES (1, 1, 1, 'SYSTEM') ON CONFLICT (id) DO NOTHING;
+
+-- Update sequences to avoid conflicts
+SELECT setval('webapi.sec_role_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) + 1 FROM webapi.sec_role), nextval('webapi.sec_role_sequence')));
+SELECT setval('webapi.sec_user_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) + 1 FROM webapi.sec_user), nextval('webapi.sec_user_sequence')));
+SELECT setval('webapi.sec_user_role_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) + 1 FROM webapi.sec_user_role), nextval('webapi.sec_user_role_sequence')));
+
+-- Test users table for JDBC authentication
 CREATE TABLE IF NOT EXISTS webapi.users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,

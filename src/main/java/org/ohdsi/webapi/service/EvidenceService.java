@@ -10,17 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
@@ -65,9 +55,12 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Provides REST services for querying the Common Evidence Model
@@ -75,8 +68,8 @@ import org.springframework.stereotype.Component;
  * @summary REST services for querying the Common Evidence Model See
  * <a href="https://github.com/OHDSI/CommonEvidenceModel">https://github.com/OHDSI/CommonEvidenceModel</a>
  */
-@Path("/evidence")
-@Component
+@RestController
+@RequestMapping("/evidence")
 public class EvidenceService extends AbstractDaoService implements GeneratesNotification {
 
     private static final String NAME = "negativeControlsAnalysisJob";
@@ -152,10 +145,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param cohortId The cohort Id
      * @return A list of studies related to the cohort
      */
-    @GET
-    @Path("study/{cohortId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<CohortStudyMapping> getCohortStudyMapping(@PathParam("cohortId") int cohortId) {
+    @GetMapping(value = "/study/{cohortId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<CohortStudyMapping> getCohortStudyMapping(@PathVariable("cohortId") int cohortId) {
         return cohortStudyMappingRepository.findByCohortDefinitionId(cohortId);
     }
 
@@ -168,10 +159,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param conceptId The concept Id of interest
      * @return A list of cohorts for the specified conceptId
      */
-    @GET
-    @Path("mapping/{conceptId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptCohortMapping> getConceptCohortMapping(@PathParam("conceptId") int conceptId) {
+    @GetMapping(value = "/mapping/{conceptId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<ConceptCohortMapping> getConceptCohortMapping(@PathVariable("conceptId") int conceptId) {
         return mappingRepository.findByConceptId(conceptId);
     }
 
@@ -186,10 +175,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param conceptId The conceptId of interest
      * @return A list of concepts based on the conceptId of interest
      */
-    @GET
-    @Path("conceptofinterest/{conceptId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptOfInterestMapping> getConceptOfInterest(@PathParam("conceptId") int conceptId) {
+    @GetMapping(value = "/conceptofinterest/{conceptId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<ConceptOfInterestMapping> getConceptOfInterest(@PathVariable("conceptId") int conceptId) {
         return conceptOfInterestMappingRepository.findAllByConceptId(conceptId);
     }
 
@@ -205,10 +192,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param setid The drug label setId
      * @return The set of drug labels that match the setId specified.
      */
-    @GET
-    @Path("label/{setid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<DrugLabel> getDrugLabel(@PathParam("setid") String setid) {
+    @GetMapping(value = "/label/{setid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<DrugLabel> getDrugLabel(@PathVariable("setid") String setid) {
         return drugLabelRepository.findAllBySetid(setid);
     }
 
@@ -221,10 +206,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param searchTerm The search term
      * @return A list of drug labels matching the search term
      */
-    @GET
-    @Path("labelsearch/{searchTerm}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<DrugLabel> searchDrugLabels(@PathParam("searchTerm") String searchTerm) {
+    @GetMapping(value = "/labelsearch/{searchTerm}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<DrugLabel> searchDrugLabels(@PathVariable("searchTerm") String searchTerm) {
         return drugLabelRepository.searchNameContainsTerm(searchTerm);
     }
 
@@ -236,10 +219,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param sourceKey The source key containing the CEM daimon
      * @return A collection of evidence information stored in CEM
      */
-    @GET
-    @Path("{sourceKey}/info")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<EvidenceInfo> getInfo(@PathParam("sourceKey") String sourceKey) {
+    @GetMapping(value = "/{sourceKey}/info", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<EvidenceInfo> getInfo(@PathVariable("sourceKey") String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String sqlPath = "/resources/evidence/sql/getInfo.sql";
         String tqName = "cem_schema";
@@ -269,11 +250,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param searchParams
      * @return
      */
-    @POST
-    @Path("{sourceKey}/drugconditionpairs")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<DrugHoiEvidence> getDrugConditionPairs(@PathParam("sourceKey") String sourceKey, DrugConditionSourceSearchParams searchParams) {
+    @PostMapping(value = "/{sourceKey}/drugconditionpairs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<DrugHoiEvidence> getDrugConditionPairs(@PathVariable("sourceKey") String sourceKey, @RequestBody DrugConditionSourceSearchParams searchParams) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String sql = getDrugHoiEvidenceSQL(source, searchParams);
         return getSourceJdbcTemplate(source).query(sql, (rs, rowNum) -> {
@@ -306,10 +284,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param id - An RxNorm Drug Concept Id
      * @return A list of evidence
      */
-    @GET
-    @Path("{sourceKey}/drug/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<DrugEvidence> getDrugEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+    @GetMapping(value = "/{sourceKey}/drug/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<DrugEvidence> getDrugEvidence(@PathVariable("sourceKey") String sourceKey, @PathVariable("id") final Long id) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         PreparedStatementRenderer psr = prepareGetEvidenceForConcept(source, id);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
@@ -345,10 +321,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param id The conceptId for the health outcome of interest
      * @return A list of evidence
      */
-    @GET
-    @Path("{sourceKey}/hoi/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<HoiEvidence> getHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+    @GetMapping(value = "/{sourceKey}/hoi/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<HoiEvidence> getHoiEvidence(@PathVariable("sourceKey") String sourceKey, @PathVariable("id") final Long id) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         PreparedStatementRenderer psr = prepareGetEvidenceForConcept(source, id);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
@@ -384,11 +358,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param identifiers The list of RxNorm Ingredients concepts or ancestors
      * @return A list of evidence for the drug and HOI
      */
-    @Path("{sourceKey}/druglabel")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Collection<DrugLabelInfo> getDrugIngredientLabel(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+    @PostMapping(value = "/{sourceKey}/druglabel", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<DrugLabelInfo> getDrugIngredientLabel(@PathVariable("sourceKey") String sourceKey, @RequestBody long[] identifiers) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         return executeGetDrugLabels(identifiers, source);
     }
@@ -402,10 +373,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param key The key must be structured as {drugConceptId}-{hoiConceptId}
      * @return A list of evidence for the drug and HOI
      */
-    @GET
-    @Path("{sourceKey}/drughoi/{key}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<DrugHoiEvidence> getDrugHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("key") final String key) {
+    @GetMapping(value = "/{sourceKey}/drughoi/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<DrugHoiEvidence> getDrugHoiEvidence(@PathVariable("sourceKey") String sourceKey, @PathVariable("key") final String key) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         PreparedStatementRenderer psr = prepareGetDrugHoiEvidence(key, source);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
@@ -447,13 +416,13 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * drug, branded drug)
      * @return A list of evidence rolled up
      */
-    @GET
-    @Path("{sourceKey}/drugrollup/{filter}/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getDrugRollupIngredientEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id, @PathParam("filter") final String filter) {
+    @GetMapping(value = "/{sourceKey}/drugrollup/{filter}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<DrugRollUpEvidence>> getDrugRollupIngredientEvidence(@PathVariable("sourceKey") String sourceKey, @PathVariable("id") final Long id, @PathVariable("filter") final String filter) {
         String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: evidence/{sourceKey}/drug/{id}";
         ArrayList<DrugRollUpEvidence> evidence = new ArrayList<>();
-        return Response.ok(evidence).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(evidence);
     }
 
     /**
@@ -465,10 +434,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param id The conceptId of interest
      * @return A list of evidence matching the conceptId of interest
      */
-    @GET
-    @Path("{sourceKey}/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Evidence> getEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+    @GetMapping(value = "/{sourceKey}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<Evidence> getEvidence(@PathVariable("sourceKey") String sourceKey, @PathVariable("id") final Long id) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         PreparedStatementRenderer psr = prepareGetEvidenceForConcept(source, id);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
@@ -510,13 +477,13 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param evidenceGroup The evidence group
      * @return A summary of evidence
      */
-    @GET
-    @Path("{sourceKey}/evidencesummary")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvidenceSummaryBySource(@PathParam("sourceKey") String sourceKey, @QueryParam("conditionID") String conditionID, @QueryParam("drugID") String drugID, @QueryParam("evidenceGroup") String evidenceGroup) {
+    @GetMapping(value = "/{sourceKey}/evidencesummary", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<EvidenceSummary>> getEvidenceSummaryBySource(@PathVariable("sourceKey") String sourceKey, @RequestParam(required = false) String conditionID, @RequestParam(required = false) String drugID, @RequestParam(required = false) String evidenceGroup) {
         String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: evidence/{sourceKey}/drug/{id}";
         ArrayList<EvidenceSummary> evidenceSummary = new ArrayList<>();
-        return Response.ok(evidenceSummary).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(evidenceSummary);
     }
 
     /**
@@ -532,17 +499,17 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @throws org.codehaus.jettison.json.JSONException
      * @throws java.io.IOException
      */
-    @GET
-    @Path("{sourceKey}/evidencedetails")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvidenceDetails(@PathParam("sourceKey") String sourceKey,
-            @QueryParam("conditionID") String conditionID,
-            @QueryParam("drugID") String drugID,
-            @QueryParam("evidenceType") String evidenceType)
+    @GetMapping(value = "/{sourceKey}/evidencedetails", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<EvidenceDetails>> getEvidenceDetails(@PathVariable("sourceKey") String sourceKey,
+            @RequestParam(required = false) String conditionID,
+            @RequestParam(required = false) String drugID,
+            @RequestParam(required = false) String evidenceType)
             throws JSONException, IOException {
         String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: evidence/{sourceKey}/drug/{id}";
         ArrayList<EvidenceDetails> evidenceDetails = new ArrayList<>();
-        return Response.ok(evidenceDetails).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(evidenceDetails);
     }
 
     /**
@@ -556,14 +523,13 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @throws JSONException
      * @throws IOException
      */
-    @POST
-    @Path("{sourceKey}/spontaneousreports")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getSpontaneousReports(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+    @PostMapping(value = "/{sourceKey}/spontaneousreports", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<SpontaneousReport>> getSpontaneousReports(@PathVariable("sourceKey") String sourceKey, @RequestBody EvidenceSearch search) throws JSONException, IOException {
         String warningMessage = "This method will be deprecated in the next release.";
         ArrayList<SpontaneousReport> returnVal = new ArrayList<>();
-        return Response.ok(returnVal).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(returnVal);
     }
 
     /**
@@ -577,14 +543,13 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @throws JSONException
      * @throws IOException
      */
-    @POST
-    @Path("{sourceKey}/evidencesearch")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response evidenceSearch(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+    @PostMapping(value = "/{sourceKey}/evidencesearch", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<EvidenceUniverse>> evidenceSearch(@PathVariable("sourceKey") String sourceKey, @RequestBody EvidenceSearch search) throws JSONException, IOException {
         String warningMessage = "This method will be deprecated in the next release.";
         ArrayList<EvidenceUniverse> returnVal = new ArrayList<>();
-        return Response.ok(returnVal).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(returnVal);
     }
 
     /**
@@ -598,14 +563,13 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @throws JSONException
      * @throws IOException
      */
-    @POST
-    @Path("{sourceKey}/labelevidence")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response labelEvidence(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+    @PostMapping(value = "/{sourceKey}/labelevidence", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArrayList<EvidenceUniverse>> labelEvidence(@PathVariable("sourceKey") String sourceKey, @RequestBody EvidenceSearch search) throws JSONException, IOException {
         String warningMessage = "This method will be deprecated in the next release.";
         ArrayList<EvidenceUniverse> returnVal = new ArrayList<>();
-        return Response.ok(returnVal).header("Warning: 299", warningMessage).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299 - " + warningMessage);
+        return ResponseEntity.ok().headers(headers).body(returnVal);
     }
 
     /**
@@ -618,11 +582,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @return information about the negative control job
      * @throws Exception
      */
-    @POST
-    @Path("{sourceKey}/negativecontrols")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public JobExecutionResource queueNegativeControlsJob(@PathParam("sourceKey") String sourceKey, NegativeControlTaskParameters task) throws Exception {
+    @PostMapping(value = "/{sourceKey}/negativecontrols", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public JobExecutionResource queueNegativeControlsJob(@PathVariable("sourceKey") String sourceKey, @RequestBody NegativeControlTaskParameters task) throws Exception {
         if (task == null) {
             return null;
         }
@@ -683,7 +644,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
         String csSQL = "";
         if (task.getCsToInclude() > 0) {
             try {
-                csExpression = conceptSetService.getConceptSetExpression(task.getCsToInclude());
+                csExpression = conceptSetService.getConceptSetExpressionById(task.getCsToInclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
                 log.warn("Failed to build Inclusion expression query", e);
@@ -693,7 +654,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
         csSQL = "";
         if (task.getCsToExclude() > 0) {
             try {
-                csExpression = conceptSetService.getConceptSetExpression(task.getCsToExclude());
+                csExpression = conceptSetService.getConceptSetExpressionById(task.getCsToExclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
                 log.warn("Failed to build Exclusion expression query", e);
@@ -719,11 +680,8 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param conceptSetId The concept set id
      * @return The list of negative controls
      */
-    @GET
-    @Path("{sourceKey}/negativecontrols/{conceptsetid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Collection<NegativeControlDTO> getNegativeControls(@PathParam("sourceKey") String sourceKey, @PathParam("conceptsetid") int conceptSetId) throws Exception {
+    @GetMapping(value = "/{sourceKey}/negativecontrols/{conceptsetid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<NegativeControlDTO> getNegativeControls(@PathVariable("sourceKey") String sourceKey, @PathVariable("conceptsetid") int conceptSetId) throws Exception {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         PreparedStatementRenderer psr = this.prepareGetNegativeControls(source, conceptSetId);
         final List<NegativeControlDTO> recs = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new NegativeControlMapper());
@@ -737,13 +695,11 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param sourceKey The source key of the CEM daimon
      * @return The list of negative controls
      */
-    @GET
-    @Path("{sourceKey}/negativecontrols/sql")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getNegativeControlsSqlStatement(@PathParam("sourceKey") String sourceKey,
-            @DefaultValue("CONDITION") @QueryParam("conceptDomain") String conceptDomain,
-            @DefaultValue("DRUG") @QueryParam("targetDomain") String targetDomain,
-            @DefaultValue("192671") @QueryParam("conceptOfInterest") String conceptOfInterest) {
+    @GetMapping(value = "/{sourceKey}/negativecontrols/sql", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getNegativeControlsSqlStatement(@PathVariable("sourceKey") String sourceKey,
+            @RequestParam(defaultValue = "CONDITION") String conceptDomain,
+            @RequestParam(defaultValue = "DRUG") String targetDomain,
+            @RequestParam(defaultValue = "192671") String conceptOfInterest) {
         NegativeControlTaskParameters task = new NegativeControlTaskParameters();
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         task.setSource(source);

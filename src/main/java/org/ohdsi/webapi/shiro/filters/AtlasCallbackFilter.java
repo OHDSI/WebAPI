@@ -35,9 +35,7 @@ public class AtlasCallbackFilter extends CallbackFilter {
         HttpServletRequest request = ServletBridge.toHttp(servletRequest);
         HttpServletResponse response = ServletBridge.toHttp(servletResponse);
 
-        // Use WARN level to ensure it appears in logs
-        logger.warn("AtlasCallbackFilter.doFilter ENTERED for URI: {}", request.getRequestURI());
-        System.out.println("AtlasCallbackFilter.doFilter ENTERED for URI: " + request.getRequestURI());
+        logger.debug("AtlasCallbackFilter.doFilter ENTERED for URI: {}", request.getRequestURI());
 
         // Wrap the response to intercept redirects (via sendRedirect OR setHeader/setStatus)
         RedirectCapturingResponseWrapper responseWrapper = new RedirectCapturingResponseWrapper(response);
@@ -45,28 +43,26 @@ public class AtlasCallbackFilter extends CallbackFilter {
         // Execute the parent callback filter with the wrapped response
         super.doFilter(request, responseWrapper, filterChain);
 
-        logger.warn("AtlasCallbackFilter: After parent filter - redirectLocation='{}', status={}, isRedirect={}",
+        logger.debug("AtlasCallbackFilter: After parent filter - redirectLocation='{}', status={}, isRedirect={}",
                    responseWrapper.getRedirectLocation(), responseWrapper.getCapturedStatus(), responseWrapper.isRedirect());
-        System.out.println("AtlasCallbackFilter: After parent filter - redirectLocation=" + responseWrapper.getRedirectLocation());
 
         // If a redirect was captured (either via sendRedirect or setHeader/setStatus), override it
         if (responseWrapper.getRedirectLocation() != null) {
             String capturedRedirect = responseWrapper.getRedirectLocation();
-            logger.warn("AtlasCallbackFilter: Intercepted redirect to '{}', atlasRedirectUrl='{}'",
+            logger.debug("AtlasCallbackFilter: Intercepted redirect to '{}', atlasRedirectUrl='{}'",
                        capturedRedirect, atlasRedirectUrl);
 
             // Only override if it's not already pointing to Atlas and we have a configured URL
             if (atlasRedirectUrl != null && !capturedRedirect.contains("/atlas/")) {
-                logger.warn("AtlasCallbackFilter: Overriding redirect to Atlas UI: {}", atlasRedirectUrl);
+                logger.debug("AtlasCallbackFilter: Overriding redirect to Atlas UI: {}", atlasRedirectUrl);
                 response.sendRedirect(atlasRedirectUrl);
             } else {
                 // Use the original redirect
-                logger.warn("AtlasCallbackFilter: Using original redirect: {}", capturedRedirect);
+                logger.debug("AtlasCallbackFilter: Using original redirect: {}", capturedRedirect);
                 response.sendRedirect(capturedRedirect);
             }
         } else {
-            logger.warn("AtlasCallbackFilter: No redirect captured, response committed={}", response.isCommitted());
-            System.out.println("AtlasCallbackFilter: No redirect captured, response committed=" + response.isCommitted());
+            logger.debug("AtlasCallbackFilter: No redirect captured, response committed={}", response.isCommitted());
         }
     }
 
@@ -88,16 +84,14 @@ public class AtlasCallbackFilter extends CallbackFilter {
         @Override
         public void sendRedirect(String location) throws IOException {
             // Don't actually redirect, just capture the location
-            logger.warn("RedirectCapturingResponseWrapper: sendRedirect called with '{}'", location);
-            System.out.println("RedirectCapturingResponseWrapper: sendRedirect called with '" + location + "'");
+            logger.debug("RedirectCapturingResponseWrapper: sendRedirect called with '{}'", location);
             this.redirectLocation = location;
             this.statusCode = 302;
         }
 
         @Override
         public void setStatus(int sc) {
-            logger.warn("RedirectCapturingResponseWrapper: setStatus called with {}", sc);
-            System.out.println("RedirectCapturingResponseWrapper: setStatus called with " + sc);
+            logger.debug("RedirectCapturingResponseWrapper: setStatus called with {}", sc);
             this.statusCode = sc;
             // Don't pass through redirect status codes
             if (sc != 302 && sc != 301 && sc != 303 && sc != 307 && sc != 308) {
@@ -107,8 +101,7 @@ public class AtlasCallbackFilter extends CallbackFilter {
 
         @Override
         public void setHeader(String name, String value) {
-            logger.warn("RedirectCapturingResponseWrapper: setHeader called with '{}' = '{}'", name, value);
-            System.out.println("RedirectCapturingResponseWrapper: setHeader called with '" + name + "' = '" + value + "'");
+            logger.debug("RedirectCapturingResponseWrapper: setHeader called with '{}' = '{}'", name, value);
             if ("Location".equalsIgnoreCase(name)) {
                 this.redirectLocation = value;
             } else {
@@ -118,8 +111,7 @@ public class AtlasCallbackFilter extends CallbackFilter {
 
         @Override
         public void addHeader(String name, String value) {
-            logger.warn("RedirectCapturingResponseWrapper: addHeader called with '{}' = '{}'", name, value);
-            System.out.println("RedirectCapturingResponseWrapper: addHeader called with '" + name + "' = '" + value + "'");
+            logger.debug("RedirectCapturingResponseWrapper: addHeader called with '{}' = '{}'", name, value);
             if ("Location".equalsIgnoreCase(name)) {
                 this.redirectLocation = value;
             } else {

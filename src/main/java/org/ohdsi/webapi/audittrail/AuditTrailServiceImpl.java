@@ -13,7 +13,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import jakarta.ws.rs.core.Response;
+import org.springframework.http.ResponseEntity;
 import java.io.File;
 import java.util.Collection;
 import java.util.Map;
@@ -173,9 +173,9 @@ class AuditTrailServiceImpl implements AuditTrailService {
         }
 
         // File entry log
-        if (entry.getReturnedObject() instanceof Response) {
+        if (entry.getReturnedObject() instanceof ResponseEntity) {
             try {
-                final Object entity = ((Response) entry.getReturnedObject()).getEntity();
+                final Object entity = ((ResponseEntity) entry.getReturnedObject()).getBody();
                 if (entity instanceof File) {
                     final File file = (File) entity;
                     return String.format(FILE_TEMPLATE, file.getName(), file.length());

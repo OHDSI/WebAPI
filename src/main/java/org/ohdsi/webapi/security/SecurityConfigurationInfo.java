@@ -15,7 +15,7 @@ public class SecurityConfigurationInfo extends ConfigurationInfo {
     private static final String KEY = "security";
 
     public SecurityConfigurationInfo(@Value("${security.provider}") String securityProvider,
-                                     @Value("${security.saml.enabled}") Boolean samlEnabled,
+                                     @Value("${security.auth.saml.enabled}") Boolean samlEnabled,
                                      Security atlasSecurity) {
 
         boolean enabled = !Objects.equals(securityProvider, Constants.SecurityProviders.DISABLED);

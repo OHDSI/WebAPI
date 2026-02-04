@@ -23,6 +23,7 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -37,28 +38,28 @@ public class OidcConfCreator {
     private volatile OidcConfiguration cachedConfiguration;
     private final Object lock = new Object();
 
-    @Value("${security.oid.clientId}")
+    @Value("${security.auth.openId.clientId}")
     private String clientId;
 
-    @Value("${security.oid.apiSecret}")
+    @Value("${security.auth.openId.apiSecret}")
     private String apiSecret;
 
-    @Value("${security.oid.url}")
+    @Value("${security.auth.openId.url}")
     private String url;
 
-    @Value("${security.oid.externalUrl:}")
+    @Value("${security.auth.openId.externalUrl:}")
     private String externalUrl;
 
-    @Value("${security.oid.logoutUrl}")
+    @Value("${security.auth.openId.logoutUrl}")
     private String logoutUrl;
 
-    @Value("${security.oid.extraScopes}")
+    @Value("${security.auth.openId.extraScopes}")
     private String extraScopes;
 
-    @Value("#{${security.oid.customParams:{T(java.util.Collections).emptyMap()}}}")
+    @Value("#{${security.auth.openId.customParams:{T(java.util.Collections).emptyMap()}}}")
     private Map<String, String> customParams = new HashMap<>();
 
-    @Value("${security.oauth.callback.api}")
+    @Value("${security.auth.oauth.callback.api}")
     private String oauthApiCallback;
 
     @Value("${security.oid.apiResource:}")

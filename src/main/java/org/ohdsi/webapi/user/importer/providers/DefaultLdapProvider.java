@@ -33,34 +33,34 @@ import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteri
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
 
 @Component
-@ConditionalOnProperty("security.ldap.url")
+@ConditionalOnProperty(name = "security.auth.ldap.enabled", havingValue = "true", matchIfMissing = false)
 public class DefaultLdapProvider extends AbstractLdapProvider {
 
   private static final String DN = "DN";
   private static final String[] RETURNING_ATTRS = {DN, "cn", "ou"};
   private static final String[] USER_ATTRIBUTES = {DN, "uid", "cn"};
-  @Value("${security.ldap.url}")
+  @Value("${security.auth.ldap.url}")
   private String ldapUrl;
 
-  @Value("${security.ldap.baseDn}")
+  @Value("${security.auth.ldap.baseDn}")
   private String baseDn;
 
-  @Value("${security.ldap.system.username}")
+  @Value("${security.auth.ldap.system.username}")
   private String systemUsername;
 
-  @Value("${security.ldap.referral:#{null}}")
+  @Value("${security.auth.ldap.referral:#{null}}")
   private String referral;
 
-  @Value("${security.ldap.system.password}")
+  @Value("${security.auth.ldap.system.password}")
   private String systemPassword;
 
-  @Value("${security.ldap.ignore.partial.result.exception:false}")
+  @Value("${security.auth.ldap.ignore.partial.result.exception:false}")
   private Boolean ldapIgnorePartialResultException;
 
-  @Value("${security.ldap.userImport.loginAttr}")
+  @Value("${security.auth.ldap.userImport.loginAttr}")
   private String loginAttr;
 
-  @Value("${security.ldap.userImport.usernameAttr}")
+  @Value("${security.auth.ldap.userImport.usernameAttr}")
   private String usernameAttr;
 
   private String[] userAttributes;

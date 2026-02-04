@@ -90,13 +90,13 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final GenericConversionService conversionService;
 
-  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  @Value("${security.auth.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
 
-  @Value("${security.ad.url}")
+  @Value("${security.auth.ad.url}")
   private String adUrl;
 
-  @Value("${security.ldap.url}")
+  @Value("${security.auth.ldap.url}")
   private String ldapUrl;
 
   public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,

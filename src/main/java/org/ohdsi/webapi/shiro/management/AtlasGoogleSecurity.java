@@ -28,12 +28,12 @@ public class AtlasGoogleSecurity extends AtlasSecurity {
 
     // Execute in console to get the ID:
     // gcloud config get-value account | tr -cd "[0-9]"
-    @Value("${security.googleIap.cloudProjectId}")
+    @Value("${security.auth.googleIap.cloudProjectId}")
     private Long googleCloudProjectId;
 
     // Execute in console to get the ID:
     // gcloud compute backend-services describe my-backend-service --global --format="value(id)"
-    @Value("${security.googleIap.backendServiceId}")
+    @Value("${security.auth.googleIap.backendServiceId}")
     private Long googleBackendServiceId;
 
     public AtlasGoogleSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {

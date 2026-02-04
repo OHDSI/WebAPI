@@ -87,106 +87,106 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
 
-    @Value("${security.oauth.callback.ui}")
+    @Value("${security.auth.oauth.callback.ui}")
     private String oauthUiCallback;
 
-    @Value("${security.oauth.callback.api}")
+    @Value("${security.auth.oauth.callback.api}")
     private String oauthApiCallback;
 
-    @Value("${security.oauth.callback.urlResolver}")
+    @Value("${security.auth.oauth.callback.urlResolver}")
     private String oauthCallbackUrlResolver;
 
-    @Value("${security.oauth.google.apiKey}")
+    @Value("${security.auth.oauth.google.apiKey}")
     private String googleApiKey;
 
-    @Value("${security.oauth.google.apiSecret}")
+    @Value("${security.auth.oauth.google.apiSecret}")
     private String googleApiSecret;
 
-    @Value("${security.oauth.facebook.apiKey}")
+    @Value("${security.auth.oauth.facebook.apiKey}")
     private String facebookApiKey;
 
-    @Value("${security.oauth.facebook.apiSecret}")
+    @Value("${security.auth.oauth.facebook.apiSecret}")
     private String facebookApiSecret;
 
-    @Value("${security.oauth.github.apiKey}")
+    @Value("${security.auth.oauth.github.apiKey}")
     private String githubApiKey;
 
-    @Value("${security.oauth.github.apiSecret}")
+    @Value("${security.auth.oauth.github.apiSecret}")
     private String githubApiSecret;
 
-    @Value("${security.kerberos.spn}")
+    @Value("${security.auth.kerberos.spn}")
     private String kerberosSpn;
 
-    @Value("${security.kerberos.keytabPath}")
+    @Value("${security.auth.kerberos.keytabPath}")
     private String kerberosKeytabPath;
 
-    @Value("${security.ldap.dn}")
+    @Value("${security.auth.ldap.dn}")
     private String userDnTemplate;
 
-    @Value("${security.ldap.url}")
+    @Value("${security.auth.ldap.url}")
     private String ldapUrl;
 
-    @Value("${security.ldap.searchString}")
+    @Value("${security.auth.ldap.searchString}")
     private String ldapSearchString;
 
-    @Value("${security.ldap.searchBase}")
+    @Value("${security.auth.ldap.searchBase}")
     private String ldapSearchBase;
 
-    @Value("${security.ad.url}")
+    @Value("${security.auth.ad.url}")
     private String adUrl;
 
-    @Value("${security.ad.searchBase}")
+    @Value("${security.auth.ad.searchBase}")
     private String adSearchBase;
 
-    @Value("${security.ad.principalSuffix}")
+    @Value("${security.auth.ad.principalSuffix}")
     private String adPrincipalSuffix;
 
-    @Value("${security.ad.system.username}")
+    @Value("${security.auth.ad.system.username}")
     private String adSystemUsername;
 
-    @Value("${security.ad.system.password}")
+    @Value("${security.auth.ad.system.password}")
     private String adSystemPassword;
 
-    @Value("${security.db.datasource.authenticationQuery}")
+    @Value("${security.auth.jdbc.datasource.authenticationQuery}")
     private String jdbcAuthenticationQuery;
 
-    @Value("${security.ad.searchFilter}")
+    @Value("${security.auth.ad.searchFilter}")
     private String adSearchFilter;
 
-    @Value("${security.ad.searchString}")
+    @Value("${security.auth.ad.searchString}")
     private String adSearchString;
 
-    @Value("${security.ad.ignore.partial.result.exception}")
+    @Value("${security.auth.ad.ignore.partial.result.exception}")
     private Boolean adIgnorePartialResultException;
 
-    @Value("${security.google.accessToken.enabled}")
+    @Value("${security.auth.google.accessToken.enabled}")
     private Boolean googleAccessTokenEnabled;
 
-    @Value("${security.saml.keyManager.storePassword}")
+    @Value("${security.auth.saml.keyManager.storePassword}")
     private String keyStorePassword;
 
-    @Value("${security.saml.keyManager.passwords.arachnenetwork}")
+    @Value("${security.auth.saml.keyManager.passwords.arachnenetwork}")
     private String privateKeyPassword;
 
-    @Value("${security.saml.entityId}")
+    @Value("${security.auth.saml.entityId}")
     private String identityProviderEntityId;
 
-    @Value("${security.saml.idpMetadataLocation}")
+    @Value("${security.auth.saml.idpMetadataLocation}")
     private String metadataLocation;
 
-    @Value("${security.saml.keyManager.keyStoreFile}")
+    @Value("${security.auth.saml.keyManager.keyStoreFile}")
     private String keyStoreFile;
 
-    @Value("${security.saml.keyManager.defaultKey}")
+    @Value("${security.auth.saml.keyManager.defaultKey}")
     private String alias;
 
-    @Value("${security.saml.metadataLocation}")
+    @Value("${security.auth.saml.metadataLocation}")
     private String spMetadataLocation;
 
-    @Value("${security.saml.callbackUrl}")
+    @Value("${security.auth.saml.callbackUrl}")
     private String samlCallbackUrl;
 
-    @Value("${security.saml.maximumAuthenticationLifetime}")
+    @Value("${security.auth.saml.maximumAuthenticationLifetime}")
     private int maximumAuthenticationLifetime;
 
     @Autowired
@@ -209,25 +209,25 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Autowired
     private LdapUserMapper ldapUserMapper;
 
-    @Value("${security.oid.redirectUrl}")
+    @Value("${security.auth.openId.redirectUrl}")
     private String redirectUrl;
 
-    @Value("${security.cas.loginUrl}")
+    @Value("${security.auth.cas.loginUrl}")
     private String casLoginUrl;
 
-    @Value("${security.cas.callbackUrl}")
+    @Value("${security.auth.cas.callbackUrl}")
     private String casCallbackUrl;
 
-    @Value("${security.cas.serverUrl}")
+    @Value("${security.auth.cas.serverUrl}")
     private String casServerUrl;
 
-    @Value("${security.cas.cassvcs}")
+    @Value("${security.auth.cas.cassvcs}")
     private String casSvcs;
 
-    @Value("${security.cas.casticket}")
+    @Value("${security.auth.cas.casticket}")
     private String casticket;
 
-    @Value("${security.saml.enabled:false}")
+    @Value("${security.auth.saml.enabled:false}")
     private boolean samlEnabled;
 
     @Value("${security.auth.windows.enabled}")
@@ -248,16 +248,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.auth.cas.enabled}")
     private boolean casAuthEnabled;
 
-    @Value("${security.auth.openid.enabled}")
+    @Value("${security.auth.openId.enabled}")
     private boolean openidAuthEnabled;
 
-    @Value("${security.auth.facebook.enabled}")
+    @Value("${security.auth.oauth.facebook.enabled}")
     private boolean facebookAuthEnabled;
 
-    @Value("${security.auth.github.enabled}")
+    @Value("${security.auth.oauth.github.enabled}")
     private boolean githubAuthEnabled;
 
-    @Value("${security.auth.google.enabled}")
+    @Value("${security.auth.oauth.google.enabled}")
     private boolean googleAuthEnabled;
 
     private RestTemplate restTemplate = new RestTemplate();

@@ -24,40 +24,40 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsList;
 
 @Component
-@ConditionalOnProperty("security.ad.url")
+@ConditionalOnProperty("security.auth.ad.url")
 public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
-  @Value("${security.ad.url}")
+  @Value("${security.auth.ad.url}")
   private String adUrl;
 
-  @Value("${security.ad.searchBase}")
+  @Value("${security.auth.ad.searchBase}")
   private String adSearchBase;
 
-  @Value("${security.ad.principalSuffix}")
+  @Value("${security.auth.ad.principalSuffix}")
   private String adPrincipalSuffix;
 
-  @Value("${security.ad.system.username}")
+  @Value("${security.auth.ad.system.username}")
   private String adSystemUsername;
 
-  @Value("${security.ad.system.password}")
+  @Value("${security.auth.ad.system.password}")
   private String adSystemPassword;
 
-  @Value("${security.ad.referral:#{null}}")
+  @Value("${security.auth.ad.referral:#{null}}")
   private String referral;
 
-  @Value("${security.ad.ignore.partial.result.exception:false}")
+  @Value("${security.auth.ad.ignore.partial.result.exception:false}")
   private Boolean adIgnorePartialResultException;
 
-  @Value("${security.ad.result.count.limit:30000}")
+  @Value("${security.auth.ad.result.count.limit:30000}")
   private Long countLimit;
 
-  @Value("${security.ad.searchFilter}")
+  @Value("${security.auth.ad.searchFilter}")
   private String adSearchFilter;
 
-  @Value("${security.ad.userImport.loginAttr}")
+  @Value("${security.auth.ad.userImport.loginAttr}")
   private String loginAttr;
 
-  @Value("${security.ad.userImport.usernameAttr}")
+  @Value("${security.auth.ad.userImport.usernameAttr}")
   private String usernameAttr;
 
   private String[] userAttributes;

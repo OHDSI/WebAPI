@@ -24,6 +24,62 @@ The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc
 
 Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
+## WebAPI Configuration in version 3.0
+
+Application configuration has moved from a maven build-based pipeline (in version 2.x) to external configuration in WebAPI 3.0 (and using a new YAML format) as described in this [Atlas Sandbox project](https://github.com/OHDSI/AtlasWebAPISandbox/tree/main/ExternalConfig).
+
+### VS.Code Launch settings Example
+
+In VS Code, to launch the app using an external config, you can define a new launch settings in your local .vscode/launch.json file:
+
+```
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "WebApi",
+      "request": "launch",
+      "mainClass": "org.ohdsi.webapi.WebApi",
+      "projectName": "WebAPI",
+      "vmArgs": "-Dspring.config.additional-location=file:C:/localsource/VSCodeWorkspace/webapi30-application.yaml"
+    }
+	]
+}
+```
+_Note the format of Windows paths in this example_
+
+This will pass the necessary VM arg to load additional Spring configuration from the specified file.  For example, for a local Postgres install with Windows Authentication enabled:
+
+```
+datasource:
+  dialect: postgresql
+  dialect.source: postgresql
+  driverClassName: org.postgresql.Driver
+  ohdsi:
+    schema: webapi
+  password: app1
+  url: jdbc:postgresql://localhost:5436/OHDSI_30
+  username: ohdsi_app_user
+security:
+  auth:
+    windows: 
+        enabled: true  
+  origin: http://localhost
+  provider: AtlasRegularSecurity
+```
+### Deploying WAR to Tomcat
+
+You can provide the enviornment variable `spring.config.additional-location` using a context.xml that is uploaded along with the WAR:
+
+```
+<Context>
+    <Environment name="spring.config.additional-location"
+                 value="file:/some/path/webapi/config/local-config.yaml"
+                 type="java.lang.String"
+                 override="false"/>
+</Context>
+```
+
 ## JAR Build (Executable)
 
 WebAPI can also be built as a self-contained executable JAR with embedded Tomcat:
@@ -56,39 +112,41 @@ java -jar target/WebAPI.jar \
 Notes:
 - Batch uses a table prefix and the security datasource can be overridden if you choose a separate connection, but both are optional when you keep everything on the main datasource/schema.
 
-## SAML Auth support
+## SAML Auth support (Updated for 3.0)
 
 The following parameters are used:
 
-- `security.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
-- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
-- `security.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
-- `security.saml.keyManager.storePassword=nalle123` - keystore password
-- `security.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
-- `security.saml.keyManager.defaultKey=apollo` - keystore alias
-- `security.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
-- `security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
+- `security.auth.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
+- `security.auth.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
+- `security.auth.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
+- `security.auth.saml.keyManager.storePassword=nalle123` - keystore password
+- `security.auth.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
+- `security.auth.saml.keyManager.defaultKey=apollo` - keystore alias
+- `security.auth.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
+- `security.auth.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
 
 Sample idp metadata and sp metadata config files for okta:
 - `saml/dev/idp-metadata-okta.xml`
 - `saml/dev/sp-metadata-okta.xml`
 
-## Managing auth providers
+## Managing auth providers (Updated for v3.0)
 
 The following parameters are used to enable/disable certain provider:
 
-- `security.auth.windows.enabled`
-- `security.auth.kerberos.enabled`
-- `security.auth.openid.enabled`
-- `security.auth.facebook.enabled`
-- `security.auth.github.enabled`
-- `security.auth.google.enabled`
-- `security.auth.jdbc.enabled`
-- `security.auth.ldap.enabled`
 - `security.auth.ad.enabled`
 - `security.auth.cas.enabled`
+- `security.auth.jdbc.enabled`
+- `security.auth.kerberos.enabled`
+- `security.auth.ldap.enabled`
+- `security.auth.oauth.facebook.enabled`
+- `security.auth.oauth.github.enabled`
+- `security.auth.oauth.google.enabled`
+- `security.auth.openid.enabled`
+- `security.auth.windows.enabled`
 
 Acceptable values are `true` and `false`
+
+Default paramaters for each of these authentication providers are provided as an example in the embedded application.yaml file.  All providers are disabled by default.
 
 ## Geospatial support
 

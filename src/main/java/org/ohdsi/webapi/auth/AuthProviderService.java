@@ -50,22 +50,22 @@ public class AuthProviderService {
     @Value("${security.auth.cas.enabled}")
     private boolean casAuthEnabled;
 
-    @Value("${security.auth.openid.enabled}")
+    @Value("${security.auth.openId.enabled}")
     private boolean openidAuthEnabled;
 
-    @Value("${security.auth.facebook.enabled}")
+    @Value("${security.auth.oauth.facebook.enabled}")
     private boolean facebookAuthEnabled;
 
-    @Value("${security.auth.github.enabled}")
+    @Value("${security.auth.oauth.github.enabled}")
     private boolean githubAuthEnabled;
 
-    @Value("${security.auth.google.enabled}")
+    @Value("${security.auth.oauth.google.enabled}")
     private boolean googleAuthEnabled;
 
-    @Value("${security.auth.saml.enabled:false}")
+    @Value("${security.auth.saml.enabled}")
     private boolean samlAuthEnabled;
 
-    @Value("${security.oid.logoutUrl:}")
+    @Value("${security.auth.openId.logoutUrl:}")
     private String oidcLogoutUrl;
 
     /**

@@ -187,10 +187,20 @@ public class ReviewService {
 			))
 			.entrySet().stream()
 			.filter(entry -> !entry.getValue().isEmpty())
+			.filter(entry -> {
+				Integer assetId = entry.getKey();
+				Integer maxReviewVersion = entry.getValue().keySet().stream().max(Comparator.comparingInt(value -> value)).orElse(0);
+				return hasNoLaterVersions(assetId, maxReviewVersion);
+			})
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
 				Map.Entry::getValue
 			));
+	}
+
+	private boolean hasNoLaterVersions(Integer assetId, Integer approvedVersion) {
+		Integer nextVersion = VersionService.getLatest(em, ConceptSetVersion.class, assetId);
+		return !(nextVersion > approvedVersion);
 	}
 
 	@GET

@@ -37,6 +37,7 @@ services:
       mock-oauth2:
         condition: service_started
     environment:
+      - SERVER_SERVLET_CONTEXT_PATH=/WebAPI
       - SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT=60000
       - SPRING_DATASOURCE_HIKARI_INITIALIZATIONFAILTIMEOUT=60000
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi

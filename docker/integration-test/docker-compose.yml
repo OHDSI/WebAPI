@@ -64,6 +64,7 @@ services:
       mock-oauth2:
         condition: service_started
     environment:
+      - SERVER_SERVLET_CONTEXT_PATH=/WebAPI
       - SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT=60000
       - SPRING_DATASOURCE_HIKARI_INITIALIZATIONFAILTIMEOUT=60000
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
@@ -85,24 +86,24 @@ services:
       - SECURITY_AUTH_CAS_ENABLED=false
       - SECURITY_AUTH_WINDOWS_ENABLED=false
       - SECURITY_AUTH_KERBEROS_ENABLED=false
-      - SECURITY_AUTH_GOOGLE_ENABLED=false
-      - SECURITY_AUTH_FACEBOOK_ENABLED=false
-      - SECURITY_AUTH_GITHUB_ENABLED=false
-      - SECURITY_OID_CLIENTID=webapi-client
-      - SECURITY_OID_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
-      - SECURITY_OID_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
-      - SECURITY_OID_EXTERNALURL=http://localhost:9090/default
-      - SECURITY_OID_LOGOUTURL=http://localhost:9090/default/endsession
-      - SECURITY_OID_EXTRASCOPES=profile email
-      - SECURITY_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
-      - SECURITY_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
-      - SECURITY_OAUTH_CALLBACK_URLRESOLVER=query
-      - SECURITY_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
-      - SECURITY_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
-      - SECURITY_DB_DATASOURCE_USERNAME=postgres
-      - SECURITY_DB_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - SECURITY_DB_DATASOURCE_SCHEMA=webapi
-      - SECURITY_DB_DATASOURCE_AUTHENTICATIONQUERY=select password from webapi.users where lower(login) = lower(?)
+      - SECURITY_AUTH_OAUTH_GOOGLE_ENABLED=false
+      - SECURITY_AUTH_OAUTH_FACEBOOK_ENABLED=false
+      - SECURITY_AUTH_OAUTH_GITHUB_ENABLED=false
+      - SECURITY_AUTH_OPENID_CLIENTID=webapi-client
+      - SECURITY_AUTH_OPENID_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
+      - SECURITY_AUTH_OPENID_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
+      - SECURITY_AUTH_OPENID_EXTERNALURL=http://localhost:9090/default
+      - SECURITY_AUTH_OPENID_LOGOUTURL=http://localhost:9090/default/endsession
+      - SECURITY_AUTH_OPENID_EXTRASCOPES=profile email
+      - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
+      - SECURITY_AUTH_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
+      - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query
+      - SECURITY_AUTH_JDBC_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SECURITY_AUTH_JDBC_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SECURITY_AUTH_JDBC_DATASOURCE_USERNAME=postgres
+      - SECURITY_AUTH_JDBC_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - SECURITY_AUTH_JDBC_DATASOURCE_SCHEMA=webapi
+      - SECURITY_AUTH_JDBC_DATASOURCE_AUTHENTICATIONQUERY=select password from webapi.users where lower(login) = lower(?)
     ports:
       - "18080:8080"
     healthcheck:

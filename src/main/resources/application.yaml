@@ -277,7 +277,8 @@ sensitiveinfo:
 
 # EMBEDDED SERVER CONFIGURATION (ServerProperties)
 server:
-  context-path: /WebAPI
+  servlet:
+    context-path: /WebAPI
   port: 8080
   ssl:
     enabled: false

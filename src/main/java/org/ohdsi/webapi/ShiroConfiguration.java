@@ -9,10 +9,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.ohdsi.webapi.shiro.AtlasWebSecurityManager;
 import org.ohdsi.webapi.shiro.lockout.*;
-import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
-import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.subject.WebDelegatingRunAsSubjectFactory;
 import org.slf4j.Logger;
@@ -20,13 +17,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 
 import jakarta.servlet.Filter;
 import java.util.Map;
@@ -37,6 +34,7 @@ import java.util.stream.Collectors;
  */
 
 @Configuration
+@Lazy(false)
 public class ShiroConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(ShiroConfiguration.class);
@@ -47,8 +45,6 @@ public class ShiroConfiguration {
     private long initialDuration;
     @Value("${security.duration.increment}")
     private long increment;
-    @Value("${spring.aop.proxy-target-class:false}")
-    private Boolean proxyTargetClass;
     @Autowired
     protected ApplicationEventPublisher eventPublisher;
 
@@ -119,13 +115,6 @@ public class ShiroConfiguration {
     public LockoutStrategy lockoutStrategy() {
 
         return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(value = DisabledSecurity.class)
-    public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
-
-        return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
     }
 
     /**

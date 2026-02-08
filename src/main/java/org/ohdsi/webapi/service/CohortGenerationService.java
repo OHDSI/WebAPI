@@ -31,7 +31,6 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -39,9 +38,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import jakarta.annotation.PostConstruct;
-
 import java.util.Arrays;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +57,6 @@ import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
 
 @Component
-@DependsOn("flyway")
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
 
   private final CohortDefinitionRepository cohortDefinitionRepository;
@@ -193,7 +192,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     return builder;
   }
 
-  @PostConstruct
+  @EventListener(ApplicationReadyEvent.class)
   public void init(){
 
     invalidateCohortGenerations();

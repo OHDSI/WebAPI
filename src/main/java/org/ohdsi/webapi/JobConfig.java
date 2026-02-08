@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,6 +37,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * Spring Batch 5.x configuration for Java 21 / Spring Boot 3.2
  */
 @Configuration
+@Lazy(false)
 @EnableBatchProcessing
 public class JobConfig {
     

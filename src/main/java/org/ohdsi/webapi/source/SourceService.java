@@ -35,8 +35,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.PersistenceException;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import javax.cache.CacheManager;
 import org.springframework.context.annotation.Lazy;
 import javax.cache.configuration.MutableConfiguration;
@@ -108,8 +110,8 @@ public class SourceService extends AbstractDaoService {
         this.publisher = publisher;
     }
 
-    @PostConstruct
-    private void postConstruct() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void postConstruct() {
         ensureSourceEncrypted();
     }
 

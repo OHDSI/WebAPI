@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import com.zaxxer.hikari.HikariDataSource;
 
 
@@ -19,6 +20,7 @@ import com.zaxxer.hikari.HikariDataSource;
  * Java-based migrations can access Spring beans via the static ApplicationContextHolder.
  */
 @Configuration
+@Lazy(false)
 @ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
 

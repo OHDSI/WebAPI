@@ -60,7 +60,7 @@ fi
 if [ "$BUILD_WEBAPI" = true ]; then
     log_info "Building WebAPI..."
     cd ../..
-    mvn clean package -DskipTests -Dpackaging.type=jar -P webapi-postgresql,trexsql -B
+    mvn clean package -DskipTests -Dpackaging.type=jar -P webapi-postgresql -B
     cd "$SCRIPT_DIR"
 fi
 

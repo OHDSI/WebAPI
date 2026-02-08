@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.arachne.logging.event.*;
+import org.ohdsi.webapi.plugins.WebApiPlugin;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -31,8 +32,8 @@ public class UserService {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
-  @Value("${trexsql.enabled:false}")
-  private boolean trexsqlCacheEnabled;
+  @Autowired(required = false)
+  private List<WebApiPlugin> plugins = Collections.emptyList();
 
   @Value("${security.auth.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
@@ -114,7 +115,8 @@ public class UserService {
     user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
     user.permissionIdx = authorizer.queryUserPermissions(currentUser.getLogin()).permissions;
-    user.trexsqlCacheEnabled = trexsqlCacheEnabled;
+    user.trexsqlCacheEnabled = plugins.stream()
+        .anyMatch(p -> "trexsql".equals(p.getId()) && p.isActive());
 
     return user;
   }

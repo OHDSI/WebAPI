@@ -2,7 +2,6 @@ FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /code
 
-ARG MAVEN_PROFILE=trexsql
 ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
@@ -17,8 +16,7 @@ COPY src /code/src
 RUN mvn package ${MAVEN_PARAMS} \
     -Dpackaging.type=jar \
     -Dgit.branch=${GIT_BRANCH} \
-    -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
-    -P${MAVEN_PROFILE}
+    -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV}
 
 # OHDSI WebAPI running as a Spring Boot executable JAR with Java 21
 FROM index.docker.io/library/eclipse-temurin:21-jre
@@ -40,15 +38,24 @@ RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /code/opentelemetry-javaagent.jar .
 COPY --from=builder /code/target/WebAPI.jar .
 
+# Plugin setup: download trexsql-ext plugin JAR
+ARG TREXSQL_VERSION=v0.1.23
+RUN mkdir -p /opt/webapi/plugins && \
+    if curl -fL -o /opt/webapi/plugins/trexsql-ext.jar \
+      "https://github.com/p-hoffmann/trexsql-ext/releases/download/${TREXSQL_VERSION}/trexsql-ext.jar"; then \
+      echo "Downloaded trexsql-ext plugin ${TREXSQL_VERSION}"; \
+    else \
+      echo "WARNING: Failed to download trexsql-ext plugin ${TREXSQL_VERSION}, trexsql will be unavailable"; \
+    fi
+
+# Extract native lib from plugin JAR
 RUN mkdir -p /tmp/trexsql && \
-    unzip -j WebAPI.jar 'BOOT-INF/lib/trexsql-ext-*.jar' -d /tmp && \
-    unzip -j /tmp/trexsql-ext-*.jar 'libtrexsql_java.so_linux_amd64' -d /tmp/trexsql 2>/dev/null || true && \
-    mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null || true && \
-    rm -f /tmp/trexsql-ext-*.jar
+    unzip -j /opt/webapi/plugins/trexsql-ext.jar 'libtrexsql_java.so_linux_amd64' -d /tmp/trexsql 2>/dev/null || true && \
+    mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null || true
 
 EXPOSE 8080
 
 USER 101
 
-# Run the executable JAR with TrexSQL native library path
-CMD ["sh", "-c", "exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} -Dorg.duckdb.lib_path=/tmp/trexsql/libtrexsql_java.so --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED -jar WebAPI.jar"]
+# Run the executable JAR with plugin directory and TrexSQL native library path
+CMD ["sh", "-c", "exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} -Dloader.path=/opt/webapi/plugins -Dorg.duckdb.lib_path=/tmp/trexsql/libtrexsql_java.so --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED -jar WebAPI.jar"]

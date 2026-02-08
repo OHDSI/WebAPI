@@ -128,6 +128,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
         <configuration>
+          <layout>ZIP</layout>
           <addResources>false</addResources>
           <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
@@ -182,10 +183,6 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
-          <!-- Exclude TrexSQL sources by default (included when -Ptcache is active) -->
-          <excludes>
-            <exclude>**/trexsql/**</exclude>
-          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -900,38 +897,6 @@
   </dependencies>
 
   <profiles>
-    <profile>
-      <id>trexsql</id>
-      <properties>
-        <trexsql.enabled>true</trexsql.enabled>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.github.p-hoffmann</groupId>
-          <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.23</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <!-- Include TrexSQL sources when tcache profile is active -->
-              <excludes combine.self="override"/>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-              <includeSystemScope>true</includeSystemScope>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>webapi-oracle</id>
       <dependencies>

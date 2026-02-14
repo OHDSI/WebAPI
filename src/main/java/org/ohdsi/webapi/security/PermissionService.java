@@ -43,8 +43,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import jakarta.annotation.PostConstruct;
 import java.io.Serializable;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -106,8 +108,8 @@ public class PermissionService {
         this.conversionService = conversionService;
     }
 
-    @PostConstruct
-    private void postConstruct() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void postConstruct() {
 
         this.repositories = new Repositories(appContext);
 

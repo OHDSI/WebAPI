@@ -9,15 +9,15 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import jakarta.annotation.PostConstruct;
 import java.util.Calendar;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+
 @Component
-@DependsOn("flyway")
 public class JobInvalidator {
 
     private static final Logger log = LoggerFactory.getLogger(JobInvalidator.class);
@@ -37,8 +37,8 @@ public class JobInvalidator {
         this.jobExecutionDao = jobExecutionDao;
     }
 
-    @PostConstruct
-    private void invalidateGenerations() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void invalidateGenerations() {
         transactionTemplateRequiresNew.execute(s -> {
             jobExecutionDao.getRunningJobExecutions().forEach(this::invalidationJobExecution);
             return null;

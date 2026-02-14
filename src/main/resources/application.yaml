@@ -84,14 +84,6 @@ jasypt:
     password: ""
 jdbc:
   suppressInvalidApiException: true
-jersey:
-  config:
-    server:
-      wadl:
-        disableWadl: true
-  resources:
-    root:
-      package: org.ohdsi.webapi
 kerberos:
   configPath: /etc/krb5.conf
   kinitPath: ""
@@ -99,8 +91,6 @@ kerberos:
 logging:
   level:
     org:
-      apache:
-        shiro: warn
       hibernate: info
       ohdsi: info
       springframework:
@@ -294,6 +284,8 @@ source:
 sparql:
   endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=
 spring:
+  main:
+    lazy-initialization: true
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
   batch:

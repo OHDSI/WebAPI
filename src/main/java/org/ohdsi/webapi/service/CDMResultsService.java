@@ -34,11 +34,9 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,8 +50,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.annotation.PostConstruct;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +80,7 @@ import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.TREEMAP;
  */
 @RestController
 @RequestMapping("/cdmresults")
-@DependsOn({"jobInvalidator", "flyway"})
-public class CDMResultsService extends AbstractDaoService implements InitializingBean {
+public class CDMResultsService extends AbstractDaoService {
     private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
     private static final String CONCEPT_COUNT_SQL = "/resources/cdmresults/sql/getConceptRecordCount.sql";
@@ -135,9 +135,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private ConversionService conversionService;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    @PostConstruct
+    public void initQueryRunner() {
         queryRunner.init(this.getSourceDialect(), objectMapper);
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
         warmCaches();
     }
 

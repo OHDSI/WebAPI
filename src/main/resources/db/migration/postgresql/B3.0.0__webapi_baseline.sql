@@ -1062,7 +1062,7 @@ CREATE TABLE ${ohdsiSchema}.reusable_version (
 
 -- NOTE: schema_version table removed - Flyway manages this table automatically
 
-CREATE SEQUENCE ${ohdsiSchema}.sec_permission_seq
+CREATE SEQUENCE ${ohdsiSchema}.sec_permission_sequence
     START WITH 1000
     INCREMENT BY 1
     NO MINVALUE
@@ -1070,7 +1070,7 @@ CREATE SEQUENCE ${ohdsiSchema}.sec_permission_seq
     CACHE 1;
 
 CREATE TABLE ${ohdsiSchema}.sec_permission (
-    id integer DEFAULT nextval('${ohdsiSchema}.sec_permission_seq'::regclass) NOT NULL,
+    id integer DEFAULT nextval('${ohdsiSchema}.sec_permission_sequence'::regclass) NOT NULL,
     value character varying(255) NOT NULL,
     description character varying(255)
 );
@@ -1993,5 +1993,139 @@ ALTER TABLE ONLY ${ohdsiSchema}.tool
 
 ALTER TABLE ONLY ${ohdsiSchema}.tool
     ADD CONSTRAINT fk_tool_ser_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+
+--- Baseline Inserts (default roles, users, permissions)
+
+-- Permissions
+
+insert into ${ohdsiSchema}.sec_permission(id, value, description)
+select nextval('${ohdsiSchema}.sec_permission_sequence'), value, description
+FROM (
+	VALUES
+	('*', 'All Permissions'),
+	('admin', 'All Admin Permissions'),
+	('admin:source', 'Manage Sources'),
+	('admin:tags', 'Manage Tags'),
+	('admin:tools', 'Manage Tools'),
+	('admin:security', 'Manage users, roles, permissions'),
+	('admin:cache', 'View and manage chache functions'),
+	('create', 'Create any asset'),
+	('create:conceptset', 'Create concept sets'),
+	('create:cohort-definition', 'Create cohort definitions'),
+	('create:cohort-characterization', 'Create characterization designs'),
+	('create:feature-analysis', 'Create feature analysis'),
+	('create:incidence', 'Create incidence designs'),
+	('create:pathway', 'Create pathway designs'),
+	('create:reusable', 'Create reusable components'),
+	('read', 'Read any asset'),
+	('read:conceptset', 'Read concept sets'),
+	('read:cohort-definition', 'Read cohort definitions'),
+	('read:cohort-characterization', 'Read characterization designs'),
+	('read:feature-analysis', 'Read feature analysis'),
+	('read:incidence', 'Read incidence designs'),
+	('read:pathway', 'Read pathway designs'),
+	('read:reusable', 'Read reusable components'),
+	('read:source', 'Read source results'),
+	('write', 'Update any asset'),
+	('write:conceptset', 'Update concept sets'),
+	('write:cohort-definition', 'Update cohort definitions'),
+	('write:cohort-characterization', 'Update characterization designs'),
+	('write:feature-analysis', 'Update feature analysis'),
+	('write:incidence', 'Update incidence designs'),
+	('write:pathway', 'Update pathway designs'),
+	('write:reusable', 'Update reusable components'),
+	('write:source', 'Generate source results')
+) p (value, description)
+;
+
+-- Anonymous User and anonymous role:
+INSERT INTO ${ohdsiSchema}.sec_user (id, login, name, origin)
+VALUES (-1, 'anonymous', 'Anonymous', 'SYSTEM');
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (-1, 'anonymous', false);
+
+INSERT INTO ${ohdsiSchema}.sec_user_role (id, user_id, role_id, origin)
+VALUES (nextval('${ohdsiSchema}.sec_user_role_sequence'), -1, -1, 'SYSTEM');
+
+-- Default groups and default permissions
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (1, 'public', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 1, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('read')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (2, 'admin', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 2, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('*')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (3, 'concept set creator', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 3, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('create:conceptset')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (4, 'Tag Admin', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 4, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('admin:tags')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (5, 'cohort creator', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 5, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('create:cohort-definition')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (6, 'cohort reader', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 6, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('read:cohort-definition')
+) p;
+
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (15, 'Read-restricted', true);
+
+insert into ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 15, p.id
+from (
+    select id
+    from ${ohdsiSchema}.sec_permission
+    where value in ('create')
+) p;
+
 
 

@@ -5,6 +5,12 @@
 INSERT INTO ${ohdsiSchema}.sec_user (id, login, name, origin)
 VALUES (-1, 'anonymous', 'Anonymous', 'SYSTEM');
 
+INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
+VALUES (-1, 'anonymous', false);
+
+INSERT INTO ${ohdsiSchema}.sec_user_role (id, user_id, role_id, origin)
+VALUES (nextval('${ohdsiSchema}.sec_user_role_sequence'), -1, -1, 'SYSTEM');
+
 -- migrate all null created_by to be associated to the anonymous user
 
 UPDATE ${ohdsiSchema}.cohort_definition set created_by = -1 where created_by_id is null;

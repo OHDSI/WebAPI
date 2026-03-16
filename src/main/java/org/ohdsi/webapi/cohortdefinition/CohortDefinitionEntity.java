@@ -61,7 +61,7 @@ public class CohortDefinitionEntity extends CommonEntityExt<Integer> implements 
     
   @Id
   @SequenceGenerator(name = "cohort_definition_generator", sequenceName = "cohort_definition_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_definition_seq")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_definition_generator")
   @Access(AccessType.PROPERTY)
   private Integer id;
   

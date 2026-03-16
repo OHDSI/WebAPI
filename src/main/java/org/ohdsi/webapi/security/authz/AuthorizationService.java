@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class AuthorizationService {
   private final UserService userService;
   private final RoleService roleService;
   private final PermissionService permissionService;
-  private final EntityAccessService entityAccessService;
+  private final SourceRepository sourceRepository;
 
   public AuthorizationService(
       AuthorizationCacheService authorizationCacheService,
@@ -36,13 +37,13 @@ public class AuthorizationService {
       RoleService roleService,
       PermissionService permissionService,
       JdbcTemplate jdbcTemplate,
-      EntityAccessService entityAccessService) {
+      SourceRepository sourceRepository) {
 
     this.authorizationCacheService = authorizationCacheService;
     this.userService = userService;
     this.roleService = roleService;
     this.permissionService = permissionService;
-    this.entityAccessService = entityAccessService;
+    this.sourceRepository = sourceRepository;
   }
 
   // -------------------------
@@ -290,7 +291,10 @@ public class AuthorizationService {
         EntityGrant grant = authz.cohortDefinitionAccess.get(entityId);
         yield grant != null && grant.isOwner();
       }
-      case CONCEPT_SET -> false; // TODO: implement when concept set access exists
+      case CONCEPT_SET -> {
+        EntityGrant grant = authz.conceptSetAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
       case SOURCE -> false;
     };
   }
@@ -319,7 +323,10 @@ public class AuthorizationService {
         EntityGrant grant = authz.cohortDefinitionAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
-      case CONCEPT_SET -> false; // TODO: implement when concept set access exists
+      case CONCEPT_SET -> {
+        EntityGrant grant = authz.conceptSetAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
       // infrastructure types that don't have ownership (ie: sources, tools, etc)
       case SOURCE -> {
         Set<AccessType> granted = authz.sourceAccess.get(entityId);
@@ -327,6 +334,25 @@ public class AuthorizationService {
       }
     };
   }
+
+  /**
+   * Check if the current principal has specific access to a source.
+   * This special implemnetation exists because requests can be made by a source key
+   * and this method handles resolving it back to an ID and then calling hasEntityAccess.
+   *
+   * @param sourceKey The source key
+   * @param accessType The type of access (READ, WRITE)
+   * @return true if the principal has the specified access
+   */
+  public boolean hasSourceAccess(String sourceKey, AccessType accessType) {
+    WebApiPrincipal principal = getCurrentPrincipal();
+    if (principal == null) {
+      return false;
+    }
+    Long sourceId = sourceRepository.findBySourceKey(sourceKey).getId().longValue();
+    return hasEntityAccess(sourceId, EntityType.SOURCE, accessType);
+  }
+
 
   /**
    * Check if the current principal has a wildcard permission (global entitlement)

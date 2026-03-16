@@ -34,6 +34,7 @@ public class WebApiSecurityExpressionRoot
   // EntityType
   public final EntityType COHORT_DEFINITION = EntityType.COHORT_DEFINITION;
   public final EntityType CONCEPT_SET = EntityType.CONCEPT_SET;
+  public final EntityType SOURCE = EntityType.SOURCE;
 
   public WebApiSecurityExpressionRoot(
       Authentication authentication,
@@ -87,6 +88,17 @@ public class WebApiSecurityExpressionRoot
       }
     }
     return false;
+  }
+
+  /**
+   * Check if the current user has specific access to a source
+   * 
+   * @param sourceKey  The source key
+   * @param accessType The type of access (READ, WRITE)
+   * @return true if the user has the specified access
+   */
+  public boolean hasSourceAccess(String sourceKey, AccessType accessType) {
+    return authorizationService.hasSourceAccess(sourceKey, accessType);
   }
 
   /**

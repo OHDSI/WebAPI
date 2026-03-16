@@ -78,6 +78,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Provides REST services for working with
@@ -89,26 +90,29 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/conceptset")
 @Transactional
 public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
-	//create cache
-	@Component
-	public static class CachingSetup implements JCacheManagerCustomizer {
+    // create cache
+    @Component
+    public static class CachingSetup implements JCacheManagerCustomizer {
 
-		public static final String CONCEPT_SET_LIST_CACHE = "conceptSetList";
+        public static final String CONCEPT_SET_LIST_CACHE = "conceptSetList";
 
-		@Override
-		public void customize(CacheManager cacheManager) {
-			// due to unit tests causing application contexts to reload cache manager caches, we
-			// have to check for the existance of a cache before creating it
-			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
-			// Evict when a cohort definition is created or updated, or permissions, or tags
-			if (!cacheNames.contains(CONCEPT_SET_LIST_CACHE)) {
-				cacheManager.createCache(CONCEPT_SET_LIST_CACHE, new MutableConfiguration<Long, Collection<ConceptSetDTO>>()
-					.setTypes(Long.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
-					.setStoreByValue(false)
-					.setStatisticsEnabled(true));
-			}
-		}
-	}
+        @Override
+        public void customize(CacheManager cacheManager) {
+            // due to unit tests causing application contexts to reload cache manager
+            // caches, we
+            // have to check for the existance of a cache before creating it
+            Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
+            // Evict when a cohort definition is created or updated, or permissions, or tags
+            if (!cacheNames.contains(CONCEPT_SET_LIST_CACHE)) {
+                cacheManager.createCache(CONCEPT_SET_LIST_CACHE,
+                        new MutableConfiguration<Long, Collection<ConceptSetDTO>>()
+                                .setTypes(Long.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
+                                .setStoreByValue(false)
+                                .setStatisticsEnabled(true));
+            }
+        }
+    }
+
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
 
@@ -134,11 +138,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     private VersionService<ConceptSetVersion> versionService;
 
     @Autowired
-    private  SearchDataTransformer searchDataTransformer;
+    private SearchDataTransformer searchDataTransformer;
 
     @Autowired
     private ObjectMapper mapper;
-
 
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
@@ -153,9 +156,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @return The concept set definition
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetDTO getConceptSet(@PathVariable("id") final int id) {
         ConceptSet conceptSet = getConceptSetRepository().findById(id).orElse(null);
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet,
+                String.format("There is no concept set with id = %d.", id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 
@@ -170,8 +175,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional(readOnly = true)
     public Collection<ConceptSetDTO> getConceptSets() {
         UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
-        boolean globalRead = authorizationService.isPermitted("read:concept-set");
-        boolean globalWrite = authorizationService.isPermitted("write:concept-set");
+        boolean globalRead = authorizationService.isPermitted("read:conceptset");
+        boolean globalWrite = authorizationService.isPermitted("write:conceptset");
 
         List<ConceptSet> conceptSets = getConceptSetRepository().list();
         Map<Integer, List<TagDTO>> tagMap = getConceptSetRepository().getConceptSetTagMap();
@@ -186,7 +191,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                     dto.setCreatedDate(cs.getCreatedDate());
                     dto.setModifiedDate(cs.getModifiedDate());
                     List<TagDTO> tags = tagMap.getOrDefault(cs.getId(), Collections.emptyList());
-                    if (!tags.isEmpty()) dto.setTags(new HashSet<>(tags));
+                    if (!tags.isEmpty())
+                        dto.setTags(new HashSet<>(tags));
                     EntityGrant grant = authz.conceptSetAccess.getOrDefault(Long.valueOf(cs.getId()), EntityGrant.NONE);
                     dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
                     dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
@@ -204,6 +210,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @return A list of concept set items
      */
     @GetMapping(value = "/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public Iterable<ConceptSetItem> getConceptSetItems(@PathVariable("id") final int id) {
         return getConceptSetItemRepository().findAllByConceptSetId(id);
     }
@@ -212,11 +219,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * Get the concept set expression for a selected version of the expression
      *
      * @summary Get concept set expression by version
-     * @param id The concept set ID
+     * @param id      The concept set ID
      * @param version The version identifier
      * @return The concept set expression
      */
     @GetMapping(value = "/{id}/version/{version}/expression", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetExpression getConceptSetExpressionByVersion(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version) {
@@ -234,12 +242,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * code.
      *
      * @summary Get concept set expression by version and source.
-     * @param id The concept set identifier
-     * @param version The version of the concept set
+     * @param id        The concept set identifier
+     * @param version   The version of the concept set
      * @param sourceKey The source key
      * @return The concept set expression for the selected version
      */
     @GetMapping(value = "/{id}/version/{version}/expression/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetExpression getConceptSetExpressionByVersionAndSource(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version,
@@ -259,6 +268,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @return The concept set expression
      */
     @GetMapping(value = "/{id}/expression", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetExpression getConceptSetExpressionById(@PathVariable("id") final int id) {
         SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
         if (sourceInfo == null) {
@@ -271,11 +281,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * Get the concept set expression by identifier and source key
      *
      * @summary Get concept set by ID and source
-     * @param id The concept set ID
+     * @param id        The concept set ID
      * @param sourceKey The source key
      * @return The concept set expression
      */
     @GetMapping(value = "/{id}/expression/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetExpression getConceptSetExpressionByIdAndSource(
             @PathVariable("id") final int id,
             @PathVariable("sourceKey") final String sourceKey) {
@@ -326,20 +337,22 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                     .collect(Collectors.joining(",", "(", ")"));
             throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
         }
-        for(Concept concept : concepts) {
+        for (Concept concept : concepts) {
             map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }
 
-        // put the concept information into the expression along with the concept set item information
+        // put the concept information into the expression along with the concept set
+        // item information
         for (ConceptSetItem repositoryItem : repositoryItems) {
-            ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
+            ConceptSetExpression.ConceptSetItem currentItem = new ConceptSetExpression.ConceptSetItem();
             currentItem.concept = map.get(repositoryItem.getConceptId());
             currentItem.includeDescendants = (repositoryItem.getIncludeDescendants() == 1);
             currentItem.includeMapped = (repositoryItem.getIncludeMapped() == 1);
             currentItem.isExcluded = (repositoryItem.getIsExcluded() == 1);
             expressionItems.add(currentItem);
         }
-        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]); // this will return a new array
+        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]); // this will return a
+                                                                                                // new array
 
         return expression;
     }
@@ -349,7 +362,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary DO NOT USE
      * @deprecated
-     * @param id The concept set ID
+     * @param id   The concept set ID
      * @param name The concept set name
      * @return The concept set expression
      */
@@ -371,10 +384,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * to ensure that only the selected concept set ID has the name specified.
      *
      * @summary Concept set with same name exists
-     * @param id The concept set ID
+     * @param id   The concept set ID
      * @param name The name of the concept set
      * @return The count of concept sets with the name, excluding the
-     * specified concept set ID.
+     *         specified concept set ID.
      */
     @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
     public int getCountCSetWithSameName(
@@ -392,19 +405,21 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * contain the concepts and their mapping (i.e. include descendants).
      *
      * @summary Update concept set items
-     * @param id The concept set ID
+     * @param id    The concept set ID
      * @param items An array of ConceptSetItems
      * @return Boolean: true if the save is successful
      */
     @PutMapping(value = "/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public boolean saveConceptSetItems(
             @PathVariable("id") final int id,
             @RequestBody ConceptSetItem[] items) {
         getConceptSetItemRepository().deleteByConceptSetId(id);
 
         for (ConceptSetItem csi : items) {
-            // ID must be set to null in case of copying from version, so the new item will be created
+            // ID must be set to null in case of copying from version, so the new item will
+            // be created
             csi.setId(0);
             csi.setConceptSetId(id);
             getConceptSetItemRepository().save(csi);
@@ -420,21 +435,23 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Export concept set list to CSV files
      * @param conceptSetList A list of concept set identifiers in the format
-     * conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>
+     *                       conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>
      * @return
      * @throws Exception
      */
     @GetMapping(value = "/exportlist")
     public ResponseEntity<byte[]> exportConceptSetList(
             @RequestParam("conceptsets") final String conceptSetList) throws Exception {
+        // TODO: Need to filter out the conceptsets that do not have read-access to.
         ArrayList<Integer> conceptSetIds = new ArrayList<>();
         try {
             String[] conceptSetItems = conceptSetList.split("\\+");
-            for(String csi : conceptSetItems) {
+            for (String csi : conceptSetItems) {
                 conceptSetIds.add(Integer.valueOf(csi));
             }
             if (conceptSetIds.size() <= 0) {
-                throw new IllegalArgumentException("You must supply a querystring value for conceptsets that is of the form: ?conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>");
+                throw new IllegalArgumentException(
+                        "You must supply a querystring value for conceptsets that is of the form: ?conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>");
             }
         } catch (Exception e) {
             throw e;
@@ -468,12 +485,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Exports a single concept set to a comma separated value (CSV)
      * file, compresses to a ZIP file and sends to the client.
-
+     * 
      * @param id The concept set ID
      * @return A zip file containing the exported concept set
      * @throws Exception
      */
     @GetMapping(value = "/{id}/export")
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ResponseEntity<byte[]> exportConceptSetToCSV(@PathVariable("id") final String id) throws Exception {
         return this.exportConceptSetList(id);
     }
@@ -487,9 +505,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isPermitted('create:conceptset')")
     public ConceptSetDTO createConceptSet(@RequestBody ConceptSetDTO conceptSetDTO) {
 
-        UserEntity user = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
+        UserEntity user = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId())
+                .orElseThrow();
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
@@ -508,18 +528,19 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary Get concept set name suggestion for copying
      * @param id The concept set ID
      * @return A map of the new concept set name and the existing concept set
-     * name
+     *         name
      */
     @GetMapping(value = "/{id}/copy-name", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> getNameForCopy(@PathVariable("id") final int id) {
         ConceptSetDTO source = getConceptSet(id);
-        String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
+        String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike,
+                getConceptSetRepository().findByName(source.getName()));
         return Collections.singletonMap(COPY_NAME, name);
     }
 
     public List<String> getNamesLike(String copyName) {
-
-        return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName).collect(Collectors.toList());
+        return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -530,7 +551,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * contain the concepts and their mapping (i.e. include descendants).
      *
      * @summary Update concept set
-     * @param id The concept set identifier
+     * @param id            The concept set identifier
      * @param conceptSetDTO The concept set header
      * @return The
      * @throws Exception
@@ -538,6 +559,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public ConceptSetDTO updateConceptSet(
             @PathVariable("id") final int id,
             @RequestBody ConceptSetDTO conceptSetDTO) {
@@ -554,7 +576,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     private ConceptSet updateConceptSetInternal(ConceptSet dst, ConceptSet src) {
 
-        UserEntity user = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
+        UserEntity user = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId())
+                .orElseThrow();
         dst.setName(src.getName());
         dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
@@ -575,13 +598,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         cs.csExpression = this.getConceptSetExpressionById(conceptSetId);
 
         // Lookup the identifiers
-        cs.identifierConcepts = vocabService.executeIncludedConceptLookup(vocabSource.sourceKey, cs.csExpression); //vocabService.executeIdentifierLookup(vocabSource.sourceKey, conceptIds);
+        cs.identifierConcepts = vocabService.executeIncludedConceptLookup(vocabSource.sourceKey, cs.csExpression); // vocabService.executeIdentifierLookup(vocabSource.sourceKey,
+                                                                                                                   // conceptIds);
         // Lookup the mapped items
         cs.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, cs.csExpression);
 
         return cs;
     }
-
 
     /**
      * Get the concept set generation information for the selected concept
@@ -595,6 +618,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @return A collection of concept set generation info objects
      */
     @GetMapping(value = "/{id}/generationinfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathVariable("id") final int id) {
         return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
     }
@@ -608,6 +632,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @DeleteMapping(value = "/{id}")
     @Transactional(rollbackFor = Exception.class, noRollbackFor = EmptyResultDataAccessException.class)
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void deleteConceptSet(@PathVariable("id") final int id) {
         // Remove any generation info
         try {
@@ -615,8 +640,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         } catch (EmptyResultDataAccessException e) {
             // Ignore - there may be no data
             log.warn("Failed to delete Generation Info by ConceptSet with ID = {}, {}", id, e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw e;
         }
 
@@ -626,8 +650,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         } catch (EmptyResultDataAccessException e) {
             // Ignore - there may be no data
             log.warn("Failed to delete ConceptSet items with ID = {}, {}", id, e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw e;
         }
 
@@ -637,8 +660,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         } catch (EmptyResultDataAccessException e) {
             // Ignore - there may be no data
             log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw e;
         }
     }
@@ -648,13 +670,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Assign concept set tag
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id    The concept set ID
      * @param tagId The tag ID
      */
     @PostMapping(value = "/{id}/tag/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     @Override
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void assignTag(
             @PathVariable("id") final Integer id,
             @RequestBody int tagId) {
@@ -667,13 +690,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Remove tag from concept set
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id    The concept set ID
      * @param tagId The tag ID
      */
     @DeleteMapping(value = "/{id}/tag/{tagId}")
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     @Override
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void unassignTag(
             @PathVariable("id") final Integer id,
             @PathVariable("tagId") final int tagId) {
@@ -686,11 +710,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Assign protected concept set tag
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id    The concept set ID
      * @param tagId The tag ID
      */
     @PostMapping(value = "/{id}/protectedtag/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void assignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @RequestBody final int tagId) {
@@ -702,12 +727,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Remove protected concept set tag
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id    The concept set ID
      * @param tagId The tag ID
      */
     @DeleteMapping(value = "/{id}/protectedtag/{tagId}")
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void unassignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @PathVariable("tagId") final int tagId) {
@@ -740,6 +766,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final int id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.CONCEPT_SET, id);
         return versions.stream()
@@ -752,12 +779,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Get concept set by version
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id      The concept set ID
      * @param version The version ID
      * @return The concept set for the selected version
      */
     @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ConceptSetVersionFullDTO getVersion(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version) {
@@ -772,13 +800,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Update a concept set version
      * @since v2.10.0
-     * @param id The concept set ID
-     * @param version The version ID
+     * @param id        The concept set ID
+     * @param version   The version ID
      * @param updateDTO The version update
      * @return The version information
      */
     @PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public VersionDTO updateVersion(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version,
@@ -796,11 +825,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Delete a concept set version
      * @since v2.10.0
-     * @param id The concept ID
+     * @param id      The concept ID
      * @param version The version ID
      */
     @DeleteMapping(value = "/{id}/version/{version}")
     @Transactional
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void deleteVersion(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version) {
@@ -814,13 +844,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *
      * @summary Create a concept set copy from a specific concept set version
      * @since v2.10.0
-     * @param id The concept set ID
+     * @param id      The concept set ID
      * @param version The version ID
      * @return The concept set copy
      */
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @PreAuthorize("(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)) and isPermitted('create:conceptset')")
     public ConceptSetDTO copyAssetFromVersion(
             @PathVariable("id") final int id,
             @PathVariable("version") final int version) {
@@ -832,7 +863,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         // Reset id so it won't be used during saving
         conceptSetDTO.setId(0);
         conceptSetDTO.setTags(null);
-        conceptSetDTO.setName(NameUtils.getNameForCopy(conceptSetDTO.getName(), this::getNamesLike, getConceptSetRepository().findByName(conceptSetDTO.getName())));
+        conceptSetDTO.setName(NameUtils.getNameForCopy(conceptSetDTO.getName(), this::getNamesLike,
+                getConceptSetRepository().findByName(conceptSetDTO.getName())));
         ConceptSetDTO createdDTO = createConceptSet(conceptSetDTO);
         saveConceptSetItems(createdDTO.getId(), fullDTO.getItems().toArray(new ConceptSetItem[0]));
 
@@ -860,7 +892,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     private void checkVersion(int id, int version) {
         Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion,
+                String.format("There is no concept set version with id = %d.", version));
     }
 
     private ConceptSetVersion saveVersion(int id) {
@@ -881,13 +914,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * The body has two parts: 1) the elements new concept which added to the
      * concept set. 2) the elements concept which remove from concept set.
      *
-     * @param conceptSetId  The concept set ID
-     * @param request An object of 2 Array new annotation and remove annotation
+     * @param conceptSetId The concept set ID
+     * @param request      An object of 2 Array new annotation and remove annotation
      * @return Boolean: true if the save is successful
      * @summary Create new or delete concept set annotation items
      */
     @PutMapping(value = "/{id}/annotation", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#conceptSetId, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#conceptSetId, CONCEPT_SET, WRITE)")
     public boolean saveConceptSetAnnotation(
             @PathVariable("id") final int conceptSetId,
             @RequestBody SaveConceptSetAnnotationsRequest request) {
@@ -896,48 +930,69 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             List<ConceptSetAnnotation> annotationList = request.getNewAnnotation()
                     .stream()
                     .map(newAnnotationData -> {
-                ConceptSetAnnotation conceptSetAnnotation = new ConceptSetAnnotation();
-                conceptSetAnnotation.setConceptSetId(conceptSetId);
-                try {
-                    AnnotationDetailsDTO annotationDetailsDTO = new AnnotationDetailsDTO();
-                    annotationDetailsDTO.setId(newAnnotationData.getId());
-                    annotationDetailsDTO.setConceptId(newAnnotationData.getConceptId());
-                    annotationDetailsDTO.setSearchData(newAnnotationData.getSearchData());
-                    conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
-                } catch (JsonProcessingException e) {
-                    log.error("Could not serialize Concept Set AnnotationDetailsDTO", e);
-                    throw new RuntimeException(e);
-                }
-                conceptSetAnnotation.setVocabularyVersion(newAnnotationData.getVocabularyVersion());
-                conceptSetAnnotation.setConceptSetVersion(newAnnotationData.getConceptSetVersion());
-                conceptSetAnnotation.setConceptId(newAnnotationData.getConceptId());
-                conceptSetAnnotation.setCreatedBy(getCurrentUser());
-                conceptSetAnnotation.setCreatedDate(new Date());
-                return conceptSetAnnotation;
-            }).collect(Collectors.toList());
+                        ConceptSetAnnotation conceptSetAnnotation = new ConceptSetAnnotation();
+                        conceptSetAnnotation.setConceptSetId(conceptSetId);
+                        try {
+                            AnnotationDetailsDTO annotationDetailsDTO = new AnnotationDetailsDTO();
+                            annotationDetailsDTO.setId(newAnnotationData.getId());
+                            annotationDetailsDTO.setConceptId(newAnnotationData.getConceptId());
+                            annotationDetailsDTO.setSearchData(newAnnotationData.getSearchData());
+                            conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
+                        } catch (JsonProcessingException e) {
+                            log.error("Could not serialize Concept Set AnnotationDetailsDTO", e);
+                            throw new RuntimeException(e);
+                        }
+                        conceptSetAnnotation.setVocabularyVersion(newAnnotationData.getVocabularyVersion());
+                        conceptSetAnnotation.setConceptSetVersion(newAnnotationData.getConceptSetVersion());
+                        conceptSetAnnotation.setConceptId(newAnnotationData.getConceptId());
+                        conceptSetAnnotation.setCreatedBy(getCurrentUser());
+                        conceptSetAnnotation.setCreatedDate(new Date());
+                        return conceptSetAnnotation;
+                    }).collect(Collectors.toList());
 
             this.getConceptSetAnnotationRepository().saveAll(annotationList);
         }
 
         return true;
     }
-    private void removeAnnotations(int id, SaveConceptSetAnnotationsRequest request){
+
+    private void removeAnnotations(int id, SaveConceptSetAnnotationsRequest request) {
         if (request.getRemoveAnnotation() != null && !request.getRemoveAnnotation().isEmpty()) {
             for (AnnotationDTO annotationDTO : request.getRemoveAnnotation()) {
-                this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id, annotationDTO.getConceptId());
+                this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id,
+                        annotationDTO.getConceptId());
             }
         }
     }
+
     @PostMapping(value = "/copy-annotations", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("""
+        (
+            isPermitted('read:conceptset') 
+            or isPermitted('write:conceptset') 
+            or isOwner(#copyAnnotationsRequest.sourceConceptSetId, CONCEPT_SET)
+            or hasEntityAccess(#copyAnnotationsRequest.sourceConceptSetId, CONCEPT_SET, READ)
+        )
+        and 
+        (
+            isPermitted('write:conceptset') 
+            or isOwner(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET)
+            or hasEntityAccess(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET, WRITE))"
+        )
+    """)
     public void copyAnnotations(@RequestBody CopyAnnotationsRequest copyAnnotationsRequest) {
-        List<ConceptSetAnnotation> sourceAnnotations = getConceptSetAnnotationRepository().findByConceptSetId(copyAnnotationsRequest.getSourceConceptSetId());
-        List<ConceptSetAnnotation> copiedAnnotations= sourceAnnotations.stream()
-                .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getSourceConceptSetId(), copyAnnotationsRequest.getTargetConceptSetId()))
+        List<ConceptSetAnnotation> sourceAnnotations = getConceptSetAnnotationRepository()
+                .findByConceptSetId(copyAnnotationsRequest.getSourceConceptSetId());
+        List<ConceptSetAnnotation> copiedAnnotations = sourceAnnotations.stream()
+                .map(sourceAnnotation -> copyAnnotation(sourceAnnotation,
+                        copyAnnotationsRequest.getSourceConceptSetId(), copyAnnotationsRequest.getTargetConceptSetId()))
                 .collect(Collectors.toList());
         getConceptSetAnnotationRepository().saveAll(copiedAnnotations);
     }
-    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId, int targetConceptSetId){
+
+    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId,
+            int targetConceptSetId) {
         ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
         targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
         targetConceptSetAnnotation.setConceptSetVersion(sourceConceptSetAnnotation.getConceptSetVersion());
@@ -948,28 +1003,32 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         targetConceptSetAnnotation.setCreatedDate(sourceConceptSetAnnotation.getCreatedDate());
         targetConceptSetAnnotation.setModifiedBy(sourceConceptSetAnnotation.getModifiedBy());
         targetConceptSetAnnotation.setModifiedDate(sourceConceptSetAnnotation.getModifiedDate());
-        targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
+        targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(
+                sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
         return targetConceptSetAnnotation;
     }
+
     private String appendCopiedFromConceptSetId(String copiedFromConceptSetIds, int sourceConceptSetId) {
-        if(copiedFromConceptSetIds == null || copiedFromConceptSetIds.isEmpty()){
+        if (copiedFromConceptSetIds == null || copiedFromConceptSetIds.isEmpty()) {
             return Integer.toString(sourceConceptSetId);
         }
         return copiedFromConceptSetIds.concat(",").concat(Integer.toString(sourceConceptSetId));
     }
+
     @GetMapping(value = "/{id}/annotation", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public List<AnnotationDTO> getConceptSetAnnotation(@PathVariable("id") final int id) {
         List<ConceptSetAnnotation> annotationList = getConceptSetAnnotationRepository().findByConceptSetId(id);
         return annotationList.stream()
-                       .map(this::convertAnnotationEntityToDTO)
-                       .collect(Collectors.toList());
+                .map(this::convertAnnotationEntityToDTO)
+                .collect(Collectors.toList());
     }
-
 
     private AnnotationDTO convertAnnotationEntityToDTO(ConceptSetAnnotation conceptSetAnnotation) {
         AnnotationDetailsDTO annotationDetails;
         try {
-            annotationDetails = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDetailsDTO.class);
+            annotationDetails = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(),
+                    AnnotationDetailsDTO.class);
         } catch (JsonProcessingException e) {
             log.error("Could not deserialize Concept Set AnnotationDetailsDTO", e);
             throw new RuntimeException(e);
@@ -977,21 +1036,26 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         AnnotationDTO annotationDTO = new AnnotationDTO();
 
-           annotationDTO.setId(conceptSetAnnotation.getId());
-           annotationDTO.setConceptId(conceptSetAnnotation.getConceptId());
+        annotationDTO.setId(conceptSetAnnotation.getId());
+        annotationDTO.setConceptId(conceptSetAnnotation.getConceptId());
 
-           String searchDataJSON = annotationDetails.getSearchData();
-           String humanReadableData = searchDataTransformer.convertJsonToReadableFormat(searchDataJSON);
-           annotationDTO.setSearchData(humanReadableData);
+        String searchDataJSON = annotationDetails.getSearchData();
+        String humanReadableData = searchDataTransformer.convertJsonToReadableFormat(searchDataJSON);
+        annotationDTO.setSearchData(humanReadableData);
 
-           annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
-           annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
-           annotationDTO.setCopiedFromConceptSetIds(conceptSetAnnotation.getCopiedFromConceptSetIds());
-           annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
-           annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
-           return annotationDTO;
+        annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
+        annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
+        annotationDTO.setCopiedFromConceptSetIds(conceptSetAnnotation.getCopiedFromConceptSetIds());
+        annotationDTO.setCreatedBy(
+                conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
+        annotationDTO.setCreatedDate(
+                conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString()
+                        : null);
+        return annotationDTO;
     }
+
     @DeleteMapping(value = "/{conceptSetId}/annotation/{annotationId}")
+    @PreAuthorize("isOwner(#conceptSetId, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#conceptSetId, CONCEPT_SET, WRITE)")
     public ResponseEntity<Void> deleteConceptSetAnnotation(
             @PathVariable("conceptSetId") final int conceptSetId,
             @PathVariable("annotationId") final int annotationId) {

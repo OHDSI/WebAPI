@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.source.Source;
 
 import jakarta.persistence.Column;

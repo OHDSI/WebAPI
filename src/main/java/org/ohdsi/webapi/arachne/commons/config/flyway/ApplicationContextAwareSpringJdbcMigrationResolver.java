@@ -24,6 +24,10 @@ public class ApplicationContextAwareSpringJdbcMigrationResolver implements Migra
         this.applicationContext = applicationContext;
     }
 
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
     @Override
     public List<ResolvedMigration> resolveMigrations(MigrationResolver.Context context) {
         // Return empty list - migrations are discovered by JavaMigrationResolver

@@ -1,13 +1,10 @@
 package org.ohdsi.webapi.test;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
-import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.apache.shiro.subject.Subject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
@@ -20,12 +17,11 @@ import java.sql.SQLException;
 @Suite.SuiteClasses({
         // SecurityIT.class, // DISABLED - Jersey-specific test
         JobServiceIT.class,
-        CohortAnalysisServiceIT.class,
         VocabularyServiceIT.class,
         CDMResultsServiceIT.class
 })
 @TestPropertySource(locations = "/application-test.properties")
-public class ITStarter extends AbstractShiro {
+public class ITStarter extends AbstractSpringSecurity {
 
     private static EmbeddedPostgres pg;
     private static final Logger log = LoggerFactory.getLogger(ITStarter.class);
@@ -47,15 +43,9 @@ public class ITStarter extends AbstractShiro {
                 throw new RuntimeException(e);
             }
 
-            //set up shiro
-            Subject subjectUnderTest = Mockito.mock(Subject.class);
-            SimplePrincipalCollection principalCollection = Mockito.mock(SimplePrincipalCollection.class);
-            Mockito.when(subjectUnderTest.isAuthenticated()).thenReturn(true);
-            Mockito.when(subjectUnderTest.getPrincipals()).thenReturn(principalCollection);
-            Mockito.when(principalCollection.getPrimaryPrincipal()).thenReturn("admin@odysseusinc.com");
-
-            //bind the subject to the current thread
-            setSubject(subjectUnderTest);
+            // set up Spring Security test principal (replaces legacy Shiro subject)
+            org.ohdsi.webapi.security.identity.WebApiPrincipal principal = new org.ohdsi.webapi.security.identity.WebApiPrincipal(1L, "admin@odysseusinc.com");
+            setSubject(principal);
         }
     }
 

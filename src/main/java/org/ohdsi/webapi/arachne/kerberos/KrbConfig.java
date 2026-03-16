@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class KrbConfig {
     private static final String KINIT_COMMAND = "kinit";
@@ -62,6 +63,9 @@ public class KrbConfig {
                     String[] kinitParams = Arrays.copyOfRange(kinitCommand, 1, kinitCommand.length);
                     kinitParamsLine = StringUtils.join(kinitParams, " ").replace(components.getKeytabPath().toString(), KRB_KEYTAB_PATH);
                     break;
+                }
+                default: {
+                    throw new NoSuchElementException("getAuthMechanism() was not either PASSWORD or Keytab. Found: %s".formatted(components.getAuthMechanism()));
                 }
             }
         }

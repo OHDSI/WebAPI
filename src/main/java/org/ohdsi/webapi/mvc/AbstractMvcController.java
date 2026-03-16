@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.mvc;
 
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
-import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -12,13 +12,13 @@ import org.springframework.http.ResponseEntity;
 public abstract class AbstractMvcController extends AbstractAdminService {
 
     @Autowired
-    protected Security security;
+    protected AuthorizationService authorizationService;
 
     /**
      * Get the current user's subject/login
      */
     protected String getCurrentUser() {
-        return security.getSubject();
+        return authorizationService.getAuthenticatedPrincipal().getName();
     }
 
     /**

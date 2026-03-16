@@ -8,12 +8,13 @@ import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
 import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.admin.service.*;
+import org.ohdsi.webapi.batch.JdbcSearchableJobExecutionDao;
+import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -29,7 +30,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -62,7 +62,7 @@ public class JobConfig {
     private DataSource dataSource;
     
     @Autowired
-    private Security security;
+    private AuthorizationService authorizationService;
     
     @Autowired
     private AuditTrailJobListener auditTrailJobListener;
@@ -124,23 +124,15 @@ public class JobConfig {
     }
     
     @Bean
-    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, Security security,
+    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, AuthorizationService authorizationService,
                                    @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
-        return new JobTemplate(jobLauncher, jobRepository, security, batchTransactionManager);
+        return new JobTemplate(jobLauncher, jobRepository, authorizationService, batchTransactionManager);
     }
     
     @Bean
     public SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
         JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
         dao.setDataSource(dataSource);
-        dao.setTablePrefix(this.tablePrefix); 
-        return dao;
-    }
-    
-    @Bean
-    public SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
-        JdbcSearchableJobInstanceDao dao = new JdbcSearchableJobInstanceDao();
-        dao.setJdbcTemplate(jdbcTemplate);
         dao.setTablePrefix(this.tablePrefix); 
         return dao;
     }

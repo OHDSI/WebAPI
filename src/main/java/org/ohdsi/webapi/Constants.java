@@ -35,7 +35,7 @@ public interface Constants {
           "prediction_analysis_id"
   );
 
-  String SESSION_ID = "Session-ID";
+  String SESSION_ID = "sid";
 
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";

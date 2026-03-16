@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.conceptset.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;

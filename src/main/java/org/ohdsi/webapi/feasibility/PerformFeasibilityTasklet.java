@@ -20,7 +20,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -155,7 +155,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
     FeasibilityStudy study = this.feasibilityStudyRepository.findById(studyId).orElse(null);
     
-    CohortDefinition resultDef = study.getResultRule();
+    CohortDefinitionEntity resultDef = study.getResultRule();
     if (resultDef != null) {
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
       resultInfo.setIsValid(false)

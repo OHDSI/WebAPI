@@ -6,11 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.apache.shiro.SecurityUtils;
+import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tool.dto.ToolDTO;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,7 +34,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     @Override
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ToolDTO> getTools() {
-        List<Tool> tools = (isAdmin() || canManageTools()) ? toolRepository.findAll() : toolRepository.findAllByEnabled(true);
+        List<Tool> tools = toolRepository.findAll();
         return tools.stream()
                 .map(this::toDTO).collect(Collectors.toList());
     }
@@ -74,11 +72,6 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
         return saveTool(toolDTO);
     }
 
-    private boolean canManageTools() {
-        return Stream.of("tool:put", "tool:post", "tool:*:delete")
-                .allMatch(permission -> SecurityUtils.getSubject().isPermitted(permission));
-    }
-    
     Tool toEntity(ToolDTO toolDTO) {
         boolean isNewTool = toolDTO.getId() == null;
         Tool tool = isNewTool ? new Tool() : toolRepository.findById(toolDTO.getId()).orElse(null);

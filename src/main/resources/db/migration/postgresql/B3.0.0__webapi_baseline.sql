@@ -113,298 +113,100 @@ CREATE SEQUENCE ${ohdsiSchema}.batch_step_execution_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE ${ohdsiSchema}.cca (
-    cca_id integer NOT NULL,
-    name character varying(255),
-    treatment_id integer NOT NULL,
-    comparator_id integer NOT NULL,
-    outcome_id integer NOT NULL,
-    model_type character varying(50) NOT NULL,
-    time_at_risk_start integer NOT NULL,
-    time_at_risk_end integer NOT NULL,
-    add_exposure_days_to_end integer NOT NULL,
-    minimum_washout_period integer NOT NULL,
-    minimum_days_at_risk integer NOT NULL,
-    rm_subjects_in_both_cohorts integer NOT NULL,
-    rm_prior_outcomes integer NOT NULL,
-    ps_adjustment integer NOT NULL,
-    ps_exclusion_id integer NOT NULL,
-    ps_inclusion_id integer NOT NULL,
-    ps_demographics integer NOT NULL,
-    ps_demographics_gender integer NOT NULL,
-    ps_demographics_race integer NOT NULL,
-    ps_demographics_ethnicity integer NOT NULL,
-    ps_demographics_age integer NOT NULL,
-    ps_demographics_year integer NOT NULL,
-    ps_demographics_month integer NOT NULL,
-    ps_trim integer NOT NULL,
-    ps_trim_fraction double precision NOT NULL,
-    ps_match integer NOT NULL,
-    ps_match_max_ratio integer NOT NULL,
-    ps_strat integer NOT NULL,
-    ps_strat_num_strata integer NOT NULL,
-    ps_condition_occ integer NOT NULL,
-    ps_condition_occ_365d integer NOT NULL,
-    ps_condition_occ_30d integer NOT NULL,
-    ps_condition_occ_inpt180d integer NOT NULL,
-    ps_condition_era integer NOT NULL,
-    ps_condition_era_ever integer NOT NULL,
-    ps_condition_era_overlap integer NOT NULL,
-    ps_condition_group integer NOT NULL,
-    ps_condition_group_meddra integer NOT NULL,
-    ps_condition_group_snomed integer NOT NULL,
-    ps_drug_exposure integer NOT NULL,
-    ps_drug_exposure_365d integer NOT NULL,
-    ps_drug_exposure_30d integer NOT NULL,
-    ps_drug_era integer NOT NULL,
-    ps_drug_era_365d integer NOT NULL,
-    ps_drug_era_30d integer NOT NULL,
-    ps_drug_era_overlap integer NOT NULL,
-    ps_drug_era_ever integer NOT NULL,
-    ps_drug_group integer NOT NULL,
-    ps_procedure_occ integer NOT NULL,
-    ps_procedure_occ_365d integer NOT NULL,
-    ps_procedure_occ_30d integer NOT NULL,
-    ps_procedure_group integer NOT NULL,
-    ps_observation integer NOT NULL,
-    ps_observation_365d integer NOT NULL,
-    ps_observation_30d integer NOT NULL,
-    ps_observation_count_365d integer NOT NULL,
-    ps_measurement integer NOT NULL,
-    ps_measurement_365d integer NOT NULL,
-    ps_measurement_30d integer NOT NULL,
-    ps_measurement_count_365d integer NOT NULL,
-    ps_measurement_below integer NOT NULL,
-    ps_measurement_above integer NOT NULL,
-    ps_concept_counts integer NOT NULL,
-    ps_risk_scores integer NOT NULL,
-    ps_risk_scores_charlson integer NOT NULL,
-    ps_risk_scores_dcsi integer NOT NULL,
-    ps_risk_scores_chads2 integer NOT NULL,
-    ps_risk_scores_chads2vasc integer NOT NULL,
-    ps_interaction_year integer NOT NULL,
-    ps_interaction_month integer NOT NULL,
-    om_covariates integer NOT NULL,
-    om_exclusion_id integer NOT NULL,
-    om_inclusion_id integer NOT NULL,
-    om_demographics integer NOT NULL,
-    om_demographics_gender integer NOT NULL,
-    om_demographics_race integer NOT NULL,
-    om_demographics_ethnicity integer NOT NULL,
-    om_demographics_age integer NOT NULL,
-    om_demographics_year integer NOT NULL,
-    om_demographics_month integer NOT NULL,
-    om_trim integer NOT NULL,
-    om_trim_fraction double precision NOT NULL,
-    om_match integer NOT NULL,
-    om_match_max_ratio integer NOT NULL,
-    om_strat integer NOT NULL,
-    om_strat_num_strata integer NOT NULL,
-    om_condition_occ integer NOT NULL,
-    om_condition_occ_365d integer NOT NULL,
-    om_condition_occ_30d integer NOT NULL,
-    om_condition_occ_inpt180d integer NOT NULL,
-    om_condition_era integer NOT NULL,
-    om_condition_era_ever integer NOT NULL,
-    om_condition_era_overlap integer NOT NULL,
-    om_condition_group integer NOT NULL,
-    om_condition_group_meddra integer NOT NULL,
-    om_condition_group_snomed integer NOT NULL,
-    om_drug_exposure integer NOT NULL,
-    om_drug_exposure_365d integer NOT NULL,
-    om_drug_exposure_30d integer NOT NULL,
-    om_drug_era integer NOT NULL,
-    om_drug_era_365d integer NOT NULL,
-    om_drug_era_30d integer NOT NULL,
-    om_drug_era_overlap integer NOT NULL,
-    om_drug_era_ever integer NOT NULL,
-    om_drug_group integer NOT NULL,
-    om_procedure_occ integer NOT NULL,
-    om_procedure_occ_365d integer NOT NULL,
-    om_procedure_occ_30d integer NOT NULL,
-    om_procedure_group integer NOT NULL,
-    om_observation integer NOT NULL,
-    om_observation_365d integer NOT NULL,
-    om_observation_30d integer NOT NULL,
-    om_observation_count_365d integer NOT NULL,
-    om_measurement integer NOT NULL,
-    om_measurement_365d integer NOT NULL,
-    om_measurement_30d integer NOT NULL,
-    om_measurement_count_365d integer NOT NULL,
-    om_measurement_below integer NOT NULL,
-    om_measurement_above integer NOT NULL,
-    om_concept_counts integer NOT NULL,
-    om_risk_scores integer NOT NULL,
-    om_risk_scores_charlson integer NOT NULL,
-    om_risk_scores_dcsi integer NOT NULL,
-    om_risk_scores_chads2 integer NOT NULL,
-    om_risk_scores_chads2vasc integer NOT NULL,
-    om_interaction_year integer NOT NULL,
-    om_interaction_month integer NOT NULL,
-    del_covariates_small_count integer NOT NULL,
-    negative_control_id integer NOT NULL,
-    created timestamp(3) without time zone NOT NULL,
-    modified timestamp(3) without time zone NOT NULL,
-    sec_user_id integer NOT NULL,
+CREATE SEQUENCE ${ohdsiSchema}.cohort_characterization_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.cohort_characterization
+(
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.cohort_characterization_seq'::regclass),
+    name character varying(255) NOT NULL,
     created_by_id integer,
-    modified_by_id integer
+    created_date timestamp NOT NULL DEFAULT now(),
+    modified_by_id integer,
+    modified_date timestamp,
+    hash_code integer,
+    stratified_by character varying(255),
+    strata_only boolean DEFAULT false,
+    description character varying(1000),
+    CONSTRAINT cohort_characterization_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_cc_name UNIQUE (name)
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.cca_execution_sequence
+CREATE SEQUENCE ${ohdsiSchema}.cc_analysis_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE ${ohdsiSchema}.cca_execution (
-    cca_execution_id integer DEFAULT nextval('${ohdsiSchema}.cca_execution_sequence'::regclass) NOT NULL,
-    cca_id integer NOT NULL,
-    source_id integer NOT NULL,
-    treatment_id integer NOT NULL,
-    comparator_id integer NOT NULL,
-    outcome_id integer NOT NULL,
-    model_type character varying(50) NOT NULL,
-    time_at_risk_start integer NOT NULL,
-    time_at_risk_end integer NOT NULL,
-    add_exposure_days_to_end integer NOT NULL,
-    minimum_washout_period integer NOT NULL,
-    minimum_days_at_risk integer NOT NULL,
-    rm_subjects_in_both_cohorts integer NOT NULL,
-    rm_prior_outcomes integer NOT NULL,
-    ps_adjustment integer NOT NULL,
-    ps_exclusion_id integer NOT NULL,
-    ps_inclusion_id integer NOT NULL,
-    ps_demographics integer NOT NULL,
-    ps_demographics_gender integer NOT NULL,
-    ps_demographics_race integer NOT NULL,
-    ps_demographics_ethnicity integer NOT NULL,
-    ps_demographics_age integer NOT NULL,
-    ps_demographics_year integer NOT NULL,
-    ps_demographics_month integer NOT NULL,
-    ps_trim integer NOT NULL,
-    ps_trim_fraction double precision NOT NULL,
-    ps_match integer NOT NULL,
-    ps_match_max_ratio integer NOT NULL,
-    ps_strat integer NOT NULL,
-    ps_strat_num_strata integer NOT NULL,
-    ps_condition_occ integer NOT NULL,
-    ps_condition_occ_365d integer NOT NULL,
-    ps_condition_occ_30d integer NOT NULL,
-    ps_condition_occ_inpt180d integer NOT NULL,
-    ps_condition_era integer NOT NULL,
-    ps_condition_era_ever integer NOT NULL,
-    ps_condition_era_overlap integer NOT NULL,
-    ps_condition_group integer NOT NULL,
-    ps_condition_group_meddra integer NOT NULL,
-    ps_condition_group_snomed integer NOT NULL,
-    ps_drug_exposure integer NOT NULL,
-    ps_drug_exposure_365d integer NOT NULL,
-    ps_drug_exposure_30d integer NOT NULL,
-    ps_drug_era integer NOT NULL,
-    ps_drug_era_365d integer NOT NULL,
-    ps_drug_era_30d integer NOT NULL,
-    ps_drug_era_overlap integer NOT NULL,
-    ps_drug_era_ever integer NOT NULL,
-    ps_drug_group integer NOT NULL,
-    ps_procedure_occ integer NOT NULL,
-    ps_procedure_occ_365d integer NOT NULL,
-    ps_procedure_occ_30d integer NOT NULL,
-    ps_procedure_group integer NOT NULL,
-    ps_observation integer NOT NULL,
-    ps_observation_365d integer NOT NULL,
-    ps_observation_30d integer NOT NULL,
-    ps_observation_count_365d integer NOT NULL,
-    ps_measurement integer NOT NULL,
-    ps_measurement_365d integer NOT NULL,
-    ps_measurement_30d integer NOT NULL,
-    ps_measurement_count_365d integer NOT NULL,
-    ps_measurement_below integer NOT NULL,
-    ps_measurement_above integer NOT NULL,
-    ps_concept_counts integer NOT NULL,
-    ps_risk_scores integer NOT NULL,
-    ps_risk_scores_charlson integer NOT NULL,
-    ps_risk_scores_dcsi integer NOT NULL,
-    ps_risk_scores_chads2 integer NOT NULL,
-    ps_risk_scores_chads2vasc integer NOT NULL,
-    ps_interaction_year integer NOT NULL,
-    ps_interaction_month integer NOT NULL,
-    om_covariates integer NOT NULL,
-    om_exclusion_id integer NOT NULL,
-    om_inclusion_id integer NOT NULL,
-    om_demographics integer NOT NULL,
-    om_demographics_gender integer NOT NULL,
-    om_demographics_race integer NOT NULL,
-    om_demographics_ethnicity integer NOT NULL,
-    om_demographics_age integer NOT NULL,
-    om_demographics_year integer NOT NULL,
-    om_demographics_month integer NOT NULL,
-    om_trim integer NOT NULL,
-    om_trim_fraction double precision NOT NULL,
-    om_match integer NOT NULL,
-    om_match_max_ratio integer NOT NULL,
-    om_strat integer NOT NULL,
-    om_strat_num_strata integer NOT NULL,
-    om_condition_occ integer NOT NULL,
-    om_condition_occ_365d integer NOT NULL,
-    om_condition_occ_30d integer NOT NULL,
-    om_condition_occ_inpt180d integer NOT NULL,
-    om_condition_era integer NOT NULL,
-    om_condition_era_ever integer NOT NULL,
-    om_condition_era_overlap integer NOT NULL,
-    om_condition_group integer NOT NULL,
-    om_condition_group_meddra integer NOT NULL,
-    om_condition_group_snomed integer NOT NULL,
-    om_drug_exposure integer NOT NULL,
-    om_drug_exposure_365d integer NOT NULL,
-    om_drug_exposure_30d integer NOT NULL,
-    om_drug_era integer NOT NULL,
-    om_drug_era_365d integer NOT NULL,
-    om_drug_era_30d integer NOT NULL,
-    om_drug_era_overlap integer NOT NULL,
-    om_drug_era_ever integer NOT NULL,
-    om_drug_group integer NOT NULL,
-    om_procedure_occ integer NOT NULL,
-    om_procedure_occ_365d integer NOT NULL,
-    om_procedure_occ_30d integer NOT NULL,
-    om_procedure_group integer NOT NULL,
-    om_observation integer NOT NULL,
-    om_observation_365d integer NOT NULL,
-    om_observation_30d integer NOT NULL,
-    om_observation_count_365d integer NOT NULL,
-    om_measurement integer NOT NULL,
-    om_measurement_365d integer NOT NULL,
-    om_measurement_30d integer NOT NULL,
-    om_measurement_count_365d integer NOT NULL,
-    om_measurement_below integer NOT NULL,
-    om_measurement_above integer NOT NULL,
-    om_concept_counts integer NOT NULL,
-    om_risk_scores integer NOT NULL,
-    om_risk_scores_charlson integer NOT NULL,
-    om_risk_scores_dcsi integer NOT NULL,
-    om_risk_scores_chads2 integer NOT NULL,
-    om_risk_scores_chads2vasc integer NOT NULL,
-    om_interaction_year integer NOT NULL,
-    om_interaction_month integer NOT NULL,
-    del_covariates_small_count integer NOT NULL,
-    negative_control_id integer NOT NULL,
-    executed timestamp(3) without time zone NOT NULL,
-    execution_duration integer NOT NULL,
-    execution_status integer NOT NULL,
-    sec_user_id integer NOT NULL
+CREATE TABLE ${ohdsiSchema}.cc_analysis
+(
+    cohort_characterization_id bigint NOT NULL,
+    fe_analysis_id bigint NOT NULL,
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_analysis_seq'::regclass),
+    include_annual boolean DEFAULT false,
+    include_temporal boolean DEFAULT false,
+    CONSTRAINT cc_analysis_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE ${ohdsiSchema}.cca_execution_ext (
-    cca_execution_id integer NOT NULL,
-    update_password character varying
+CREATE TABLE ${ohdsiSchema}.cc_cohort
+(
+    cohort_characterization_id bigint NOT NULL,
+    cohort_id integer NOT NULL,
+    CONSTRAINT cc_cohort_pkey PRIMARY KEY (cohort_characterization_id, cohort_id)
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.cca_sequence
+CREATE SEQUENCE ${ohdsiSchema}.cc_param_sequence
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.cc_param
+(
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_param_sequence'::regclass),
+    cohort_characterization_id bigint NOT NULL,
+    name character varying(255),
+    value character varying(255),
+    CONSTRAINT cc_param_pkey PRIMARY KEY (id)
+);
+
+CREATE SEQUENCE ${ohdsiSchema}.cc_strata_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.cc_strata
+(
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_strata_seq'::regclass),
+    cohort_characterization_id bigint NOT NULL,
+    name character varying(255) NOT NULL,
+    expression character varying,
+    CONSTRAINT pk_cc_strata_id PRIMARY KEY (id),
+    CONSTRAINT cc_strata_name_uq UNIQUE (cohort_characterization_id, name)
+);
+
+CREATE SEQUENCE ${ohdsiSchema}.cc_strata_conceptset_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.cc_strata_conceptset
+(
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_strata_conceptset_seq'::regclass),
+    cohort_characterization_id bigint NOT NULL,
+    expression character varying,
+    CONSTRAINT pk_cc_strata_conceptset_id PRIMARY KEY (id)
+);
 
 CREATE SEQUENCE ${ohdsiSchema}.cdm_cache_seq
     START WITH 1
@@ -421,13 +223,6 @@ CREATE TABLE ${ohdsiSchema}.cdm_cache (
     descendant_record_count bigint,
     person_count bigint,
     descendant_person_count bigint
-);
-
-CREATE TABLE ${ohdsiSchema}.cohort (
-    cohort_definition_id integer NOT NULL,
-    subject_id bigint NOT NULL,
-    cohort_start_date date NOT NULL,
-    cohort_end_date date NOT NULL
 );
 
 CREATE TABLE ${ohdsiSchema}.cohort_analysis_gen_info (
@@ -791,9 +586,32 @@ COMMENT ON COLUMN ${ohdsiSchema}.evidence_sources.coverage_start_date IS 'The st
 
 COMMENT ON COLUMN ${ohdsiSchema}.evidence_sources.coverage_end_date IS 'The date of coverage for the resource. Data can be trusted on or after the coverage_start_date date and up to and including this date';
 
-CREATE TABLE ${ohdsiSchema}.exampleapp_widget (
-    id bigint NOT NULL,
-    name character varying(50)
+CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_sequence
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analysis
+(
+    id integer NOT NULL DEFAULT nextval('${ohdsiSchema}.fe_analysis_sequence'::regclass),
+    type character varying(255) COLLATE pg_catalog."default",
+    name character varying(255) COLLATE pg_catalog."default",
+    domain character varying(255) COLLATE pg_catalog."default",
+    descr character varying(1000) COLLATE pg_catalog."default",
+    value character varying(255) COLLATE pg_catalog."default",
+    design text COLLATE pg_catalog."default",
+    is_locked boolean,
+    stat_type character varying(255) COLLATE pg_catalog."default" NOT NULL DEFAULT 'PREVALENCE'::character varying,
+    created_by_id integer,
+    created_date timestamp without time zone,
+    modified_by_id integer,
+    modified_date timestamp without time zone,
+    supports_annual boolean DEFAULT false,
+    supports_temporal boolean DEFAULT false,
+    CONSTRAINT fe_analysis_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_fe_name UNIQUE (name)
 );
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_aggregate_sequence
@@ -802,6 +620,23 @@ CREATE SEQUENCE ${ohdsiSchema}.fe_aggregate_sequence
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analysis_aggregate
+(
+    id integer NOT NULL DEFAULT nextval('${ohdsiSchema}.fe_aggregate_sequence'::regclass),
+    name character varying(255) NOT NULL,
+    domain character varying(50),
+    agg_function character varying(50),
+    criteria_columns character varying(255),
+    expression character varying,
+    join_table character varying(50) ,
+    join_type character varying(50),
+    join_condition character varying(50),
+    is_default boolean DEFAULT false,
+    missing_means_zero boolean DEFAULT false,
+    CONSTRAINT pk_fe_aggregate PRIMARY KEY (id)
+);
+
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_conceptset_sequence
     START WITH 1
@@ -816,63 +651,25 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis_conceptset (
     expression character varying
 );
 
-CREATE TABLE ${ohdsiSchema}.feas_study_generation_info (
-    study_id integer NOT NULL,
-    source_id integer NOT NULL,
-    start_time timestamp(3) without time zone,
-    execution_duration integer,
-    status integer NOT NULL,
-    is_valid boolean NOT NULL,
-    is_canceled boolean DEFAULT false NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.feas_study_inclusion_stats (
-    study_id integer NOT NULL,
-    rule_sequence integer NOT NULL,
-    name character varying(255) NOT NULL,
-    person_count bigint NOT NULL,
-    gain_count bigint NOT NULL,
-    person_total bigint NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.feas_study_index_stats (
-    study_id integer NOT NULL,
-    person_count bigint NOT NULL,
-    match_count bigint NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.feas_study_result (
-    study_id integer NOT NULL,
-    inclusion_rule_mask bigint NOT NULL,
-    person_count bigint NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.feasibility_inclusion (
-    study_id integer NOT NULL,
-    sequence integer NOT NULL,
-    name character varying(255),
-    description character varying(1000),
-    expression text
-);
-
-CREATE TABLE ${ohdsiSchema}.feasibility_study (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    description character varying(1000),
-    index_def_id integer,
-    result_def_id integer,
-    created_date timestamp(3) without time zone,
-    modified_date timestamp(3) without time zone,
-    created_by_id integer,
-    modified_by_id integer
-);
-
-CREATE SEQUENCE ${ohdsiSchema}.feasibility_study_sequence
+CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analysis_criteria
+(
+    id bigint NOT NULL DEFAULT nextval('${ohdsiSchema}.fe_analysis_criteria_sequence'::regclass),
+    name character varying(255) COLLATE pg_catalog."default",
+    expression text COLLATE pg_catalog."default",
+    fe_analysis_id bigint,
+    criteria_type character varying COLLATE pg_catalog."default",
+    fe_aggregate_id integer,
+    CONSTRAINT fe_analysis_criteria_pkey PRIMARY KEY (id)
+);
+
+
 
 CREATE SEQUENCE ${ohdsiSchema}.generation_cache_sequence
     START WITH 1
@@ -997,41 +794,54 @@ CREATE SEQUENCE ${ohdsiSchema}.heracles_viz_data_sequence
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE ${ohdsiSchema}.hibernate_sequence
+
+CREATE SEQUENCE ${ohdsiSchema}.ir_analysis_sequence
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE ${ohdsiSchema}.ir_analysis_dist (
-    analysis_id integer NOT NULL,
-    target_id integer NOT NULL,
-    outcome_id integer NOT NULL,
-    strata_sequence integer,
-    dist_type integer NOT NULL,
-    total bigint NOT NULL,
-    avg_value double precision NOT NULL,
-    std_dev double precision NOT NULL,
-    min_value integer NOT NULL,
-    p10_value integer NOT NULL,
-    p25_value integer NOT NULL,
-    median_value integer NOT NULL,
-    p75_value integer NOT NULL,
-    p90_value integer NOT NULL,
-    max_value integer,
-    id integer NOT NULL
+CREATE TABLE ${ohdsiSchema}.ir_analysis
+(
+    id integer DEFAULT nextval('${ohdsiSchema}.ir_analysis_sequence'::regclass) NOT NULL,
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description character varying(1000) COLLATE pg_catalog."default",
+    created_date timestamp(3) without time zone,
+    modified_date timestamp(3) without time zone,
+    created_by_id integer,
+    modified_by_id integer,
+    CONSTRAINT pk_ir_analysis PRIMARY KEY (id),
+    CONSTRAINT uq_ir_name UNIQUE (name)
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.ir_analysis_dist_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+CREATE TABLE ${ohdsiSchema}.ir_analysis_details
+(
+    id integer NOT NULL,
+    expression text,
+    CONSTRAINT pk_ir_analysis_details PRIMARY KEY (id)
+);
 
-ALTER SEQUENCE ${ohdsiSchema}.ir_analysis_dist_id_seq OWNED BY ${ohdsiSchema}.ir_analysis_dist.id;
+CREATE TABLE ${ohdsiSchema}.ir_execution
+(
+    analysis_id integer NOT NULL,
+    source_id integer NOT NULL,
+    start_time timestamp(3) without time zone,
+    execution_duration integer,
+    is_valid boolean NOT NULL,
+    message character varying(2000),
+    is_canceled boolean NOT NULL DEFAULT false,
+    status character varying(128),
+    CONSTRAINT pk_ir_execution PRIMARY KEY (analysis_id, source_id)
+);
+
+CREATE TABLE ${ohdsiSchema}.ir_tag
+(
+    asset_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    CONSTRAINT pk_ir_tags_id PRIMARY KEY (asset_id, tag_id)
+);
+
 
 CREATE TABLE ${ohdsiSchema}.ir_version (
     asset_id bigint NOT NULL,
@@ -1104,6 +914,64 @@ CREATE TABLE ${ohdsiSchema}.output_file_contents (
     file_contents bytea
 );
 
+CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.pathway_analysis
+(
+    id integer NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_analysis_sequence'::regclass),
+    name character varying(255) NOT NULL,
+    combination_window integer,
+    min_cell_count integer,
+    max_depth integer,
+    allow_repeats boolean DEFAULT false,
+    created_by_id integer,
+    created_date timestamp without time zone,
+    modified_by_id integer,
+    modified_date timestamp without time zone,
+    hash_code integer,
+    min_segment_length integer,
+    description character varying(1000),
+    CONSTRAINT pk_pathway_analysis PRIMARY KEY (id),
+    CONSTRAINT uq_pw_name UNIQUE (name)
+);
+
+CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
+(
+    id integer NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_cohort_sequence'::regclass),
+    name character varying(255) NOT NULL,
+    cohort_definition_id integer NOT NULL,
+    pathway_analysis_id integer NOT NULL,
+    CONSTRAINT pk_pathway_event_cohort PRIMARY KEY (id)
+);
+
+CREATE TABLE ${ohdsiSchema}.pathway_tag
+(
+    asset_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    CONSTRAINT pk_pathway_tags_id PRIMARY KEY (asset_id, tag_id)
+);
+
+CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
+(
+    id integer NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_cohort_sequence'::regclass),
+    name character varying(255) NOT NULL,
+    cohort_definition_id integer NOT NULL,
+    pathway_analysis_id integer NOT NULL,
+    CONSTRAINT pk_pathway_target_cohort PRIMARY KEY (id)
+);
+
 CREATE TABLE ${ohdsiSchema}.pathway_version (
     asset_id bigint NOT NULL,
     comment character varying,
@@ -1158,112 +1026,6 @@ CREATE TABLE ${ohdsiSchema}.penelope_laertes_universe (
     evidence_linkouts text
 );
 
-CREATE TABLE ${ohdsiSchema}.plp (
-    plp_id integer NOT NULL,
-    name character varying(255),
-    treatment_id integer NOT NULL,
-    outcome_id integer NOT NULL,
-    model_type character varying(255) NOT NULL,
-    time_at_risk_start integer NOT NULL,
-    time_at_risk_end integer NOT NULL,
-    add_exposure_days_to_end integer NOT NULL,
-    minimum_washout_period integer NOT NULL,
-    minimum_days_at_risk integer NOT NULL,
-    require_time_at_risk integer NOT NULL,
-    minimum_time_at_risk integer NOT NULL,
-    sample integer NOT NULL,
-    sample_size integer NOT NULL,
-    first_exposure_only integer NOT NULL,
-    include_all_outcomes integer NOT NULL,
-    rm_prior_outcomes integer NOT NULL,
-    prior_outcome_lookback integer NOT NULL,
-    test_split integer NOT NULL,
-    test_fraction character varying(255),
-    n_fold character varying(255),
-    mo_alpha character varying(255),
-    mo_class_weight character varying(255),
-    mo_index_folder character varying(255),
-    mo_k character varying(255),
-    mo_learn_rate character varying(255),
-    mo_learning_rate character varying(255),
-    mo_max_depth character varying(255),
-    mo_min_impurity_split character varying(255),
-    mo_min_rows character varying(255),
-    mo_min_samples_leaf character varying(255),
-    mo_min_samples_split character varying(255),
-    mo_mtries character varying(255),
-    mo_nestimators character varying(255),
-    mo_nthread character varying(255),
-    mo_ntrees character varying(255),
-    mo_plot character varying(255),
-    mo_seed character varying(255),
-    mo_size character varying(255),
-    mo_variance character varying(255),
-    mo_var_imp character varying(255),
-    cv_exclusion_id integer NOT NULL,
-    cv_inclusion_id integer NOT NULL,
-    cv_demographics integer NOT NULL,
-    cv_demographics_gender integer NOT NULL,
-    cv_demographics_race integer NOT NULL,
-    cv_demographics_ethnicity integer NOT NULL,
-    cv_demographics_age integer NOT NULL,
-    cv_demographics_year integer NOT NULL,
-    cv_demographics_month integer NOT NULL,
-    cv_condition_occ integer NOT NULL,
-    cv_condition_occ_365d integer NOT NULL,
-    cv_condition_occ_30d integer NOT NULL,
-    cv_condition_occ_inpt180d integer NOT NULL,
-    cv_condition_era integer NOT NULL,
-    cv_condition_era_ever integer NOT NULL,
-    cv_condition_era_overlap integer NOT NULL,
-    cv_condition_group integer NOT NULL,
-    cv_condition_group_meddra integer NOT NULL,
-    cv_condition_group_snomed integer NOT NULL,
-    cv_drug_exposure integer NOT NULL,
-    cv_drug_exposure_365d integer NOT NULL,
-    cv_drug_exposure_30d integer NOT NULL,
-    cv_drug_era integer NOT NULL,
-    cv_drug_era_365d integer NOT NULL,
-    cv_drug_era_30d integer NOT NULL,
-    cv_drug_era_overlap integer NOT NULL,
-    cv_drug_era_ever integer NOT NULL,
-    cv_drug_group integer NOT NULL,
-    cv_procedure_occ integer NOT NULL,
-    cv_procedure_occ_365d integer NOT NULL,
-    cv_procedure_occ_30d integer NOT NULL,
-    cv_procedure_group integer NOT NULL,
-    cv_observation integer NOT NULL,
-    cv_observation_365d integer NOT NULL,
-    cv_observation_30d integer NOT NULL,
-    cv_observation_count_365d integer NOT NULL,
-    cv_measurement integer NOT NULL,
-    cv_measurement_365d integer NOT NULL,
-    cv_measurement_30d integer NOT NULL,
-    cv_measurement_count_365d integer NOT NULL,
-    cv_measurement_below integer NOT NULL,
-    cv_measurement_above integer NOT NULL,
-    cv_concept_counts integer NOT NULL,
-    cv_risk_scores integer NOT NULL,
-    cv_risk_scores_charlson integer NOT NULL,
-    cv_risk_scores_dcsi integer NOT NULL,
-    cv_risk_scores_chads2 integer NOT NULL,
-    cv_risk_scores_chads2vasc integer NOT NULL,
-    cv_interaction_year integer NOT NULL,
-    cv_interaction_month integer NOT NULL,
-    del_covariates_small_count integer NOT NULL,
-    created timestamp(3) without time zone NOT NULL,
-    modified timestamp(3) without time zone,
-    created_by_id integer,
-    modified_by_id integer
-);
-
-CREATE SEQUENCE ${ohdsiSchema}.plp_sequence
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 CREATE SEQUENCE ${ohdsiSchema}.reusable_seq
     START WITH 1
     INCREMENT BY 1
@@ -1300,7 +1062,7 @@ CREATE TABLE ${ohdsiSchema}.reusable_version (
 
 -- NOTE: schema_version table removed - Flyway manages this table automatically
 
-CREATE SEQUENCE ${ohdsiSchema}.sec_permission_sequence
+CREATE SEQUENCE ${ohdsiSchema}.sec_permission_seq
     START WITH 1000
     INCREMENT BY 1
     NO MINVALUE
@@ -1308,7 +1070,7 @@ CREATE SEQUENCE ${ohdsiSchema}.sec_permission_sequence
     CACHE 1;
 
 CREATE TABLE ${ohdsiSchema}.sec_permission (
-    id integer DEFAULT nextval('${ohdsiSchema}.sec_permission_sequence'::regclass) NOT NULL,
+    id integer DEFAULT nextval('${ohdsiSchema}.sec_permission_seq'::regclass) NOT NULL,
     value character varying(255) NOT NULL,
     description character varying(255)
 );
@@ -1318,13 +1080,6 @@ COMMENT ON COLUMN ${ohdsiSchema}.sec_permission.id IS 'Primary key';
 COMMENT ON COLUMN ${ohdsiSchema}.sec_permission.value IS 'Permission';
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_permission.description IS 'Desctiption of permission';
-
-CREATE SEQUENCE ${ohdsiSchema}.sec_permission_id_seq
-    START WITH 500
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 CREATE SEQUENCE ${ohdsiSchema}.sec_role_sequence
     START WITH 1000
@@ -1360,7 +1115,7 @@ CREATE TABLE ${ohdsiSchema}.sec_role_group (
 );
 
 CREATE SEQUENCE ${ohdsiSchema}.sec_role_permission_sequence
-    START WITH 1000
+    START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -1424,6 +1179,125 @@ COMMENT ON COLUMN ${ohdsiSchema}.sec_user_role.user_id IS 'Foreign key to SEC_US
 COMMENT ON COLUMN ${ohdsiSchema}.sec_user_role.role_id IS 'Foreign key to SEC_ROLE';
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_user_role.status IS 'Status of relation between user and role';
+
+
+--- Start: New SEC tables for entiy access permissions
+
+CREATE TABLE ${ohdsiSchema}.sec_cohort_characterization
+(
+    role_id integer NOT NULL,
+    cohort_characterization_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_cohort_characterization PRIMARY KEY (role_id, cohort_characterization_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_characterization.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_characterization.cohort_characterization_id IS 'Composite Primary key, FK to cohort_characterization';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_characterization.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_cohort_definition
+(
+    role_id integer NOT NULL,
+    cohort_definition_id integer NOT NULL,
+    access_type character varying(50),
+    CONSTRAINT pk_sec_cohort_definition PRIMARY KEY (role_id, cohort_definition_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_definition.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_definition.cohort_definition_id IS 'Composite Primary key, FK to cohort_definition';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_cohort_definition.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_concept_set
+(
+    role_id integer NOT NULL,
+    concept_set_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_concept_set PRIMARY KEY (role_id, concept_set_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_concept_set.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_concept_set.concept_set_id IS 'Composite Primary key, FK to concept_set';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_concept_set.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_fe_analysis
+(
+    role_id integer NOT NULL,
+    fe_analysis_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_fe_analysis PRIMARY KEY (role_id, fe_analysis_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_fe_analysis.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_fe_analysis.fe_analysis_id IS 'Composite Primary key, FK to fe_analysis';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_fe_analysis.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_ir_analysis
+(
+    role_id integer NOT NULL,
+    ir_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_ir_analysis PRIMARY KEY (role_id, ir_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_ir_analysis.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_ir_analysis.ir_id IS 'Composite Primary key, FK to ir_analysis';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_ir_analysis.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_pathway_analysis
+(
+    role_id integer NOT NULL,
+    pathway_analysis_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_pathway_analysis PRIMARY KEY (role_id, pathway_analysis_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_pathway_analysis.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_pathway_analysis.pathway_analysis_id IS 'Composite Primary key, FK to pathway_analysis';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_pathway_analysis.access_type IS 'Composite Primary key';
+
+CREATE TABLE ${ohdsiSchema}.sec_reusable
+(
+    role_id integer NOT NULL,
+    reusable_id integer NOT NULL,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_reusable PRIMARY KEY (role_id, reusable_id, access_type)
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.role_id IS 'Composite Primary key, FK to SEC_ROLE';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.reusable_id IS 'Composite Primary key, FK to reusable';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.access_type IS 'Composite Primary key';
+
+-- END sec_{entity} tables
+
+CREATE TABLE ${ohdsiSchema}.sec_session
+(
+    session_id uuid NOT NULL,
+    login character varying(255) NOT NULL,
+    created_at timestamp NOT NULL,
+    expires_at timestamp NOT NULL,
+    revoked boolean NOT NULL DEFAULT false,
+    CONSTRAINT sec_session_pkey PRIMARY KEY (session_id)
+);
+
+CREATE INDEX idx_sec_session_login
+    ON ${ohdsiSchema}.sec_session(login);
+
+-- Legacy permission table, will be empty for baseline, but including it for consistency.
+CREATE TABLE ${ohdsiSchema}.sec_permission_legacy
+(
+    id integer NOT NULL,
+    value character varying(255) NOT NULL,
+    description character varying(255)
+);
+
+-- Legacy role_permission table, will be empty for baseline, but including it for consistency.
+CREATE TABLE ${ohdsiSchema}.sec_role_permission_legacy
+(
+    id integer NOT NULL,
+    role_id integer NOT NULL,
+    permission_id integer NOT NULL,
+    status character varying(255)
+);
 
 CREATE SEQUENCE ${ohdsiSchema}.source_sequence
     START WITH 1
@@ -1556,8 +1430,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.heracles_results ALTER COLUMN id SET DEFAULT nex
 
 ALTER TABLE ONLY ${ohdsiSchema}.heracles_results_dist ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.heracles_results_dist_id_seq'::regclass);
 
-ALTER TABLE ONLY ${ohdsiSchema}.ir_analysis_dist ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.ir_analysis_dist_id_seq'::regclass);
-
 ALTER TABLE ONLY ${ohdsiSchema}.penelope_laertes_uni_pivot ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.penelope_laertes_uni_pivot_id_seq'::regclass);
 
 ALTER TABLE ONLY ${ohdsiSchema}.achilles_cache
@@ -1584,12 +1456,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution_context
 ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution
     ADD CONSTRAINT batch_step_execution_pkey PRIMARY KEY (step_execution_id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.cca_execution_ext
-    ADD CONSTRAINT cca_execution_ext_pkey PRIMARY KEY (cca_execution_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cca_execution
-    ADD CONSTRAINT cca_execution_pk PRIMARY KEY (cca_execution_id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.cdm_cache
     ADD CONSTRAINT cdm_cache_pk PRIMARY KEY (id);
 
@@ -1614,29 +1480,11 @@ ALTER TABLE ONLY ${ohdsiSchema}.cohort_inclusion_result
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_inclusion_stats
     ADD CONSTRAINT cohort_inclusion_stats_pkey PRIMARY KEY (cohort_definition_id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.cohort
-    ADD CONSTRAINT cohort_pkey PRIMARY KEY (cohort_definition_id, subject_id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_sample
     ADD CONSTRAINT cohort_sample_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_summary_stats
     ADD CONSTRAINT cohort_summary_stats_pkey PRIMARY KEY (cohort_definition_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.exampleapp_widget
-    ADD CONSTRAINT exampleapp_widget_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feas_study_inclusion_stats
-    ADD CONSTRAINT feas_study_inclusion_stats_pkey PRIMARY KEY (study_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feas_study_index_stats
-    ADD CONSTRAINT feas_study_index_stats_pkey PRIMARY KEY (study_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feas_study_result
-    ADD CONSTRAINT feas_study_result_pkey PRIMARY KEY (study_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_inclusion
-    ADD CONSTRAINT feasibility_inclusion_pkey PRIMARY KEY (study_id, sequence);
 
 ALTER TABLE ONLY ${ohdsiSchema}.heracles_analysis
     ADD CONSTRAINT heracles_analysis_pkey PRIMARY KEY (analysis_id);
@@ -1649,9 +1497,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.heracles_results_dist
 
 ALTER TABLE ONLY ${ohdsiSchema}.heracles_results
     ADD CONSTRAINT heracles_results_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.ir_analysis_dist
-    ADD CONSTRAINT ir_analysis_dist_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.batch_job_instance
     ADD CONSTRAINT job_inst_un UNIQUE (job_name, job_key);
@@ -1667,12 +1512,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.penelope_laertes_universe
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_permission
     ADD CONSTRAINT permission_unique UNIQUE (value);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cca
-    ADD CONSTRAINT pk_cca_cca_id PRIMARY KEY (cca_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_study
-    ADD CONSTRAINT pk_clinical_trial_protocol PRIMARY KEY (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
     ADD CONSTRAINT pk_cohort_definition PRIMARY KEY (id);
@@ -1731,9 +1570,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.evidence_sources
 ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis_conceptset
     ADD CONSTRAINT pk_fe_conceptset_id PRIMARY KEY (id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.feas_study_generation_info
-    ADD CONSTRAINT pk_feas_study_generation_info PRIMARY KEY (study_id, source_id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.generation_cache
     ADD CONSTRAINT pk_generation_cache PRIMARY KEY (id);
 
@@ -1748,9 +1584,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.laertes_summary
 
 ALTER TABLE ONLY ${ohdsiSchema}.pathway_version
     ADD CONSTRAINT pk_pathway_version_id PRIMARY KEY (asset_id, version);
-
-ALTER TABLE ONLY ${ohdsiSchema}.plp
-    ADD CONSTRAINT pk_plp_plp_id PRIMARY KEY (plp_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.reusable
     ADD CONSTRAINT pk_reusable_id PRIMARY KEY (id);
@@ -1891,47 +1724,44 @@ CREATE UNIQUE INDEX tags_name_idx ON ${ohdsiSchema}.tag USING btree (lower((name
 ALTER TABLE ONLY ${ohdsiSchema}.achilles_cache
     ADD CONSTRAINT achilles_cache_fk FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY ${ohdsiSchema}.cca
-    ADD CONSTRAINT cca_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution
+    ADD CONSTRAINT job_inst_exec_fk FOREIGN KEY (job_instance_id) REFERENCES ${ohdsiSchema}.batch_job_instance(job_instance_id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.cca
-    ADD CONSTRAINT cca_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution_context
+    ADD CONSTRAINT job_exec_ctx_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution_params
+    ADD CONSTRAINT job_exec_params_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution
+    ADD CONSTRAINT job_exec_step_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution_context
+    ADD CONSTRAINT step_exec_ctx_fk FOREIGN KEY (step_execution_id) REFERENCES ${ohdsiSchema}.batch_step_execution(step_execution_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_analysis
+    ADD CONSTRAINT fk_c_char_a_cc FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_analysis
+    ADD CONSTRAINT fk_c_char_a_fe_analysis FOREIGN KEY (fe_analysis_id) REFERENCES ${ohdsiSchema}.fe_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_cohort
+    ADD CONSTRAINT fk_c_char_c_cc FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_cohort
+    ADD CONSTRAINT fk_c_char_c_fe_analysis FOREIGN KEY (cohort_id) REFERENCES ${ohdsiSchema}.cohort_definition (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_param
+    ADD CONSTRAINT fk_ccp_cc FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_strata
+    ADD CONSTRAINT fk_cc_strata_cc FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cc_strata_conceptset
+    ADD CONSTRAINT fk_cc_strata_conceptset_cc FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cdm_cache
     ADD CONSTRAINT cdm_cache_fk FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
-    ADD CONSTRAINT cohort_definition_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
-    ADD CONSTRAINT cohort_definition_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_generation_info
-    ADD CONSTRAINT cohort_generation_info_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_tag
-    ADD CONSTRAINT cohort_tags_fk_definitions FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_definition(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_tag
-    ADD CONSTRAINT cohort_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.concept_set
-    ADD CONSTRAINT concept_set_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.concept_set
-    ADD CONSTRAINT concept_set_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.concept_set_tag
-    ADD CONSTRAINT concept_set_tags_fk_sets FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.concept_set(concept_set_id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.concept_set_tag
-    ADD CONSTRAINT concept_set_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_study
-    ADD CONSTRAINT feasibility_study_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_study
-    ADD CONSTRAINT feasibility_study_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_gen_info
     ADD CONSTRAINT fk_cagi_cohort_id FOREIGN KEY (cohort_id) REFERENCES ${ohdsiSchema}.cohort_definition(id);
@@ -1939,11 +1769,23 @@ ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_gen_info
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_list_xref
     ADD CONSTRAINT fk_calx_source_id FOREIGN KEY (source_id, cohort_id) REFERENCES ${ohdsiSchema}.cohort_analysis_gen_info(source_id, cohort_id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.analysis_generation_info
-    ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization
+    ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization
+    ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
+    ADD CONSTRAINT cohort_definition_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
+    ADD CONSTRAINT cohort_definition_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition_details
     ADD CONSTRAINT fk_cohort_definition_details_cohort_definition FOREIGN KEY (id) REFERENCES ${ohdsiSchema}.cohort_definition(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_generation_info
+    ADD CONSTRAINT cohort_generation_info_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_generation_info
     ADD CONSTRAINT fk_cohort_generation_info_cohort_definition FOREIGN KEY (id) REFERENCES ${ohdsiSchema}.cohort_definition(id) ON UPDATE CASCADE ON DELETE CASCADE;
@@ -1954,17 +1796,35 @@ ALTER TABLE ONLY ${ohdsiSchema}.cohort_sample
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_sample
     ADD CONSTRAINT fk_cohort_sample_source_id FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_tag
+    ADD CONSTRAINT cohort_tags_fk_definitions FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_definition(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_tag
+    ADD CONSTRAINT cohort_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_version
     ADD CONSTRAINT fk_cohort_version_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_definition(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_version
     ADD CONSTRAINT fk_cohort_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
+ALTER TABLE ONLY ${ohdsiSchema}.concept_set
+    ADD CONSTRAINT concept_set_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.concept_set
+    ADD CONSTRAINT concept_set_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
 ALTER TABLE ONLY ${ohdsiSchema}.concept_set_annotation
     ADD CONSTRAINT fk_concept_set FOREIGN KEY (concept_set_id) REFERENCES ${ohdsiSchema}.concept_set(concept_set_id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.concept_set_generation_info
     ADD CONSTRAINT fk_concept_set_generation_info_concept_set FOREIGN KEY (concept_set_id) REFERENCES ${ohdsiSchema}.concept_set(concept_set_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.concept_set_tag
+    ADD CONSTRAINT concept_set_tags_fk_sets FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.concept_set(concept_set_id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.concept_set_tag
+    ADD CONSTRAINT concept_set_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.concept_set_version
     ADD CONSTRAINT fk_concept_set_version_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.concept_set(concept_set_id) ON DELETE CASCADE;
@@ -1978,23 +1838,56 @@ ALTER TABLE ONLY ${ohdsiSchema}.drug_hoi_evidence
 ALTER TABLE ONLY ${ohdsiSchema}.drug_hoi_evidence
     ADD CONSTRAINT fk_evidence_sources FOREIGN KEY (evidence_source_code_id) REFERENCES ${ohdsiSchema}.evidence_sources(id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.feas_study_generation_info
-    ADD CONSTRAINT fk_feas_study_generation_info_feasibility_study FOREIGN KEY (study_id) REFERENCES ${ohdsiSchema}.feasibility_study(id);
+ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis
+    ADD CONSTRAINT fe_analysis_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES webapi.sec_user (id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_inclusion
-    ADD CONSTRAINT fk_feasibility_inclusion_feasibility_study FOREIGN KEY (study_id) REFERENCES ${ohdsiSchema}.feasibility_study(id);
+ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis
+    ADD CONSTRAINT fe_analysis_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES webapi.sec_user (id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_study
-    ADD CONSTRAINT fk_feasibility_study_cohort_definition_index FOREIGN KEY (index_def_id) REFERENCES ${ohdsiSchema}.cohort_definition(id);
+ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis_criteria
+    ADD CONSTRAINT fk_criteria_aggregate FOREIGN KEY (fe_aggregate_id) REFERENCES ${ohdsiSchema}.fe_analysis_aggregate (id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.feasibility_study
-    ADD CONSTRAINT fk_feasibility_study_cohort_definition_result FOREIGN KEY (result_def_id) REFERENCES ${ohdsiSchema}.cohort_definition(id);
+ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis_criteria
+    ADD CONSTRAINT fk_fec_fe_analysis FOREIGN KEY (fe_analysis_id) REFERENCES ${ohdsiSchema}.fe_analysis (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.generation_cache
     ADD CONSTRAINT fk_gc_source_id_source FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id);
 
+ALTER TABLE ONLY ${ohdsiSchema}.ir_analysis
+    ADD CONSTRAINT ir_analysis_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.ir_analysis
+    ADD CONSTRAINT ir_analysis_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.ir_analysis_details
+    ADD CONSTRAINT fk_irad_ira FOREIGN KEY (id) REFERENCES ${ohdsiSchema}.ir_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.ir_tag
+    ADD CONSTRAINT ir_tags_fk_irs FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.ir_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.ir_tag
+    ADD CONSTRAINT ir_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag (id);
+
 ALTER TABLE ONLY ${ohdsiSchema}.ir_version
     ADD CONSTRAINT fk_ir_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_event_cohort
+    ADD CONSTRAINT fk_pec_cd_id FOREIGN KEY (cohort_definition_id) REFERENCES ${ohdsiSchema}.cohort_definition (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_event_cohort
+    ADD CONSTRAINT fk_pec_pa_id FOREIGN KEY (pathway_analysis_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_tag
+    ADD CONSTRAINT ir_tags_fk_irs FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_tag
+    ADD CONSTRAINT ir_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_target_cohort
+    ADD CONSTRAINT fk_ptc_cd_id FOREIGN KEY (cohort_definition_id) REFERENCES ${ohdsiSchema}.cohort_definition (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+ALTER TABLE ONLY ${ohdsiSchema}.pathway_target_cohort
+    ADD CONSTRAINT fk_ptc_pa_id FOREIGN KEY (pathway_analysis_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 ALTER TABLE ONLY ${ohdsiSchema}.pathway_version
     ADD CONSTRAINT fk_pathway_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
@@ -2005,11 +1898,59 @@ ALTER TABLE ONLY ${ohdsiSchema}.reusable
 ALTER TABLE ONLY ${ohdsiSchema}.reusable
     ADD CONSTRAINT fk_reusable_sec_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
+ALTER TABLE ONLY ${ohdsiSchema}.reusable_tag
+    ADD CONSTRAINT reusable_tag_fk_reusable FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.reusable(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.reusable_tag
+    ADD CONSTRAINT reusable_tag_fk_tag FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY ${ohdsiSchema}.reusable_version
     ADD CONSTRAINT fk_reusable_version_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.reusable(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.reusable_version
     ADD CONSTRAINT fk_reusable_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_cohort_characterization
+    ADD CONSTRAINT fk_scc_cohort_characterization_id FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_cohort_characterization
+    ADD CONSTRAINT fk_scc_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_cohort_definition
+    ADD CONSTRAINT fk_scd_cohort_definition_id FOREIGN KEY (cohort_definition_id) REFERENCES ${ohdsiSchema}.cohort_definition (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_cohort_definition
+    ADD CONSTRAINT fk_scd_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_concept_set
+    ADD CONSTRAINT fk_scs_concept_set_id FOREIGN KEY (concept_set_id) REFERENCES ${ohdsiSchema}.concept_set (concept_set_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_concept_set
+    ADD CONSTRAINT fk_scs_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_fe_analysis
+    ADD CONSTRAINT fk_sfa_fe_analysis_id FOREIGN KEY (fe_analysis_id) REFERENCES ${ohdsiSchema}.fe_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_fe_analysis
+    ADD CONSTRAINT fk_sfa_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_ir_analysis
+    ADD CONSTRAINT fk_sia_ir_analysis_id FOREIGN KEY (ir_id) REFERENCES ${ohdsiSchema}.ir_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_ir_analysis
+    ADD CONSTRAINT fk_sia_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_pathway_analysis
+    ADD CONSTRAINT fk_spa_pathway_analysis_id FOREIGN KEY (pathway_analysis_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_pathway_analysis
+    ADD CONSTRAINT fk_spa_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_reusable
+    ADD CONSTRAINT fk_sr_reusable_id FOREIGN KEY (reusable_id) REFERENCES ${ohdsiSchema}.reusable (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_reusable
+    ADD CONSTRAINT fk_sr_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
     ADD CONSTRAINT fk_role_group_job FOREIGN KEY (job_id) REFERENCES ${ohdsiSchema}.user_import_job(id) ON DELETE CASCADE;
@@ -2020,6 +1961,18 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
     ADD CONSTRAINT fk_role_permission_to_role FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role(id);
 
+ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
+    ADD CONSTRAINT fk_user_role_to_role FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
+    ADD CONSTRAINT fk_user_role_to_user FOREIGN KEY (user_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.source
+    ADD CONSTRAINT source_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.source
+    ADD CONSTRAINT source_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
 ALTER TABLE ONLY ${ohdsiSchema}.source_daimon
     ADD CONSTRAINT fk_source_daimon_source_id FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id);
 
@@ -2029,55 +1982,16 @@ ALTER TABLE ONLY ${ohdsiSchema}.tag
 ALTER TABLE ONLY ${ohdsiSchema}.tag
     ADD CONSTRAINT fk_tags_sec_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.tool
-    ADD CONSTRAINT fk_tool_ser_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.tool
-    ADD CONSTRAINT fk_tool_ser_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
-    ADD CONSTRAINT fk_user_role_to_role FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
-    ADD CONSTRAINT fk_user_role_to_user FOREIGN KEY (user_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution_context
-    ADD CONSTRAINT job_exec_ctx_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution_params
-    ADD CONSTRAINT job_exec_params_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution
-    ADD CONSTRAINT job_exec_step_fk FOREIGN KEY (job_execution_id) REFERENCES ${ohdsiSchema}.batch_job_execution(job_execution_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.batch_job_execution
-    ADD CONSTRAINT job_inst_exec_fk FOREIGN KEY (job_instance_id) REFERENCES ${ohdsiSchema}.batch_job_instance(job_instance_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.plp
-    ADD CONSTRAINT plp_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.plp
-    ADD CONSTRAINT plp_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.reusable_tag
-    ADD CONSTRAINT reusable_tag_fk_reusable FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.reusable(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.reusable_tag
-    ADD CONSTRAINT reusable_tag_fk_tag FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.source
-    ADD CONSTRAINT source_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.source
-    ADD CONSTRAINT source_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.batch_step_execution_context
-    ADD CONSTRAINT step_exec_ctx_fk FOREIGN KEY (step_execution_id) REFERENCES ${ohdsiSchema}.batch_step_execution(step_execution_id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.tag_group
     ADD CONSTRAINT tag_groups_group_fk FOREIGN KEY (group_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.tag_group
     ADD CONSTRAINT tag_groups_tag_fk FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.tool
+    ADD CONSTRAINT fk_tool_ser_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.tool
+    ADD CONSTRAINT fk_tool_ser_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
 

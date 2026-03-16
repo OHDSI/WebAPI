@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationService;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.source.Source;

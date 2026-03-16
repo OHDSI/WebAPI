@@ -3,7 +3,7 @@ package org.ohdsi.webapi.db.migartion;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import java.util.List;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 
 /**
@@ -20,8 +20,8 @@ public class V2_6_0_20180807192421__cohortDetailsHashcodes extends ApplicationCo
         CohortDefinitionDetailsRepository detailsRepository =
             applicationContext.getBean(CohortDefinitionDetailsRepository.class);
 
-        final List<CohortDefinitionDetails> allDetails = detailsRepository.findAll();
-        for (CohortDefinitionDetails details: allDetails) {
+        final List<CohortDefinitionDetailsEntity> allDetails = detailsRepository.findAll();
+        for (CohortDefinitionDetailsEntity details: allDetails) {
             details.updateHashCode();
             detailsRepository.save(details);
         }

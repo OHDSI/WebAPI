@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.text.SimpleDateFormat;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
@@ -44,7 +44,7 @@ public class AnalysisCohortDefinition implements Cohort {
      *
      * @param def
      */
-    public AnalysisCohortDefinition(CohortDefinition def) {
+    public AnalysisCohortDefinition(CohortDefinitionEntity def) {
       this.dateFormatter = new SimpleDateFormat(this.dateFormat);
       this.id = def.getId();
       this.name = def.getName();

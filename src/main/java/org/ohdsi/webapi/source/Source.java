@@ -32,9 +32,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;

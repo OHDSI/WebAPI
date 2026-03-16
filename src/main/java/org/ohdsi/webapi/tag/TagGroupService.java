@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.tag;
 
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
+import org.ohdsi.webapi.conceptset.ConceptSetService;
 import org.ohdsi.webapi.reusable.ReusableService;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.tag.domain.HasTags;

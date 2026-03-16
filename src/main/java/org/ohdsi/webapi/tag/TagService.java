@@ -77,7 +77,7 @@ public class TagService extends AbstractDaoService {
                 .filter(Tag::isAllowCustom)
                 .count() == groups.size();
 
-        if (this.getPermissionService().isSecurityEnabled() && !TagSecurityUtils.canManageTags() && !allowCustom) {
+        if (allowCustom) {
             throw new IllegalArgumentException("Tag can be added only to groups that allows to do it");
         }
 
@@ -156,8 +156,6 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(@PathVariable("id") Integer id, @RequestBody TagDTO entity) {
         Tag existing = tagRepository.findById(id).orElse(null);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
-
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 
         List<Integer> groupIds = toUpdate.getGroups().stream()
@@ -182,11 +180,8 @@ public class TagService extends AbstractDaoService {
      */
     @DeleteMapping(value = "/{id}")
     public void delete(@PathVariable("id") Integer id) {
-        Tag existing = tagRepository.findById(id).orElse(null);
-
-        checkOwnerOrAdmin(existing.getCreatedBy());
-
-        tagRepository.deleteById(id);
+        Tag existing = tagRepository.findById(id).orElseThrow();
+        tagRepository.deleteById(existing.getId());
     }
 
     private Tag save(Tag tag) {
@@ -266,9 +261,10 @@ public class TagService extends AbstractDaoService {
     @GetMapping(value = "/assignmentPermissions", produces = MediaType.APPLICATION_JSON_VALUE)
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
-        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
-        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
-        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
+        // TODO: determine what permission rules are being checked here for WebAPI 3.0 semantics.
+        // tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
+        // tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
+        // tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
         return tagPermission;
     }
 

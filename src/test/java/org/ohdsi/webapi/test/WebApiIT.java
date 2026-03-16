@@ -45,8 +45,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
-import javax.sql.DataSource;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {WebApi.class, WebApiIT.DbUnitConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")

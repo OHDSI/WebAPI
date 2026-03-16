@@ -17,8 +17,6 @@ import org.ohdsi.webapi.arachne.scheduler.api.v1.dto.ArachneJobDTO;
 import org.ohdsi.webapi.arachne.scheduler.model.ArachneJob;
 import org.ohdsi.webapi.arachne.scheduler.model.JobExecutingType;
 import java.time.DayOfWeek;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +61,6 @@ public abstract class BaseArachneJobDTOToArachneJobConverter<S extends ArachneJo
         final int hour = calendar.get(Calendar.HOUR_OF_DAY);
         final int day = calendar.get(Calendar.DAY_OF_MONTH);
         final int month = calendar.get(Calendar.MONTH) + 1;
-        final int year = calendar.get(Calendar.YEAR);
 
         Cron cron;
         switch (frequency) {

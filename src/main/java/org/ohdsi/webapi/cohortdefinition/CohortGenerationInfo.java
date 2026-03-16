@@ -17,7 +17,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -43,7 +43,7 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   {    
   }
 
-  public  CohortGenerationInfo(CohortDefinition definition, Integer sourceId)
+  public  CohortGenerationInfo(CohortDefinitionEntity definition, Integer sourceId)
   {    
     this.id = new CohortGenerationInfoId(definition.getId(), sourceId);
     this.cohortDefinition = definition;
@@ -55,7 +55,7 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @ManyToOne
   @MapsId("cohortDefinitionId")
   @JoinColumn(name="id", referencedColumnName="id")
-  private CohortDefinition cohortDefinition;
+  private CohortDefinitionEntity cohortDefinition;
   
   @Column(name="start_time")
   private Date startTime;  

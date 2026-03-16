@@ -3,6 +3,7 @@ package org.ohdsi.webapi;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
@@ -22,7 +23,7 @@ import java.util.TimeZone;
  * - WAR: Deploy to external servlet container (mvn package -Pwar)
  */
 @EnableScheduling
-@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class, LdapAutoConfiguration.class})
+@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class, LdapAutoConfiguration.class, DataSourceAutoConfiguration.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class WebApi extends SpringBootServletInitializer {
 

@@ -42,8 +42,8 @@ import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 /**
  *
@@ -90,11 +90,11 @@ public class FeasibilityStudy {
   
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name="index_def_id")
-  private CohortDefinition indexRule;
+  private CohortDefinitionEntity indexRule;
   
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name="result_def_id")
-  private CohortDefinition resultRule;  
+  private CohortDefinitionEntity resultRule;  
 
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study", orphanRemoval=true)
   private Set<StudyGenerationInfo> studyGenerationInfoList = new HashSet<StudyGenerationInfo>();  
@@ -145,20 +145,20 @@ public class FeasibilityStudy {
     return this;
   }
   
-  public CohortDefinition getIndexRule() {
+  public CohortDefinitionEntity getIndexRule() {
     return indexRule;
   }
 
-  public FeasibilityStudy setIndexRule(CohortDefinition indexRule) {
+  public FeasibilityStudy setIndexRule(CohortDefinitionEntity indexRule) {
     this.indexRule = indexRule;
     return this;
   }
 
-  public CohortDefinition getResultRule() {
+  public CohortDefinitionEntity getResultRule() {
     return resultRule;
   }
 
-  public FeasibilityStudy setResultRule(CohortDefinition resultRule) {
+  public FeasibilityStudy setResultRule(CohortDefinitionEntity resultRule) {
     this.resultRule = resultRule;
     return this;
   }

@@ -112,6 +112,9 @@ public abstract class AtlasSecurity extends Security {
 
             .addRestPath("/permission/access/**/*", JWT_AUTHC) // Authorization check is done inside controller
 
+            // Plugin endpoints (authenticated, no per-URL authorization)
+            .addRestPath("/cohort-query/**", JWT_AUTHC)
+
             //i18n
             .addRestPath("/i18n")
             .addRestPath("/i18n/**")

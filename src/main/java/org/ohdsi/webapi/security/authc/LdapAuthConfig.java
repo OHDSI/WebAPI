@@ -19,6 +19,7 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @ConditionalOnProperty(prefix = "security.auth.ldap", name = "enabled", havingValue = "true")
@@ -55,7 +56,8 @@ public class LdapAuthConfig {
 
   @Bean
   @Order(1)
-  SecurityFilterChain ldapSecurityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain ldapSecurityFilterChain(HttpSecurity http,
+			CorsConfigurationSource corsConfigurationSource) throws Exception {
 
     // --- Context ---
     DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(ldapUrl + "/" + baseDn);
@@ -108,16 +110,12 @@ public class LdapAuthConfig {
 
     ProviderManager authManager = new ProviderManager(provider);
     authManager.setAuthenticationEventPublisher(new DefaultAuthenticationEventPublisher());
-
+    HttpSecurityShared.configureDefaults(http);
     http
       .securityMatcher("/user/login/ldap")
-      .csrf(AbstractHttpConfigurer::disable)
-      .requestCache(AbstractHttpConfigurer::disable)
-      .sessionManagement(AbstractHttpConfigurer::disable)
-      .logout(AbstractHttpConfigurer::disable)
-      .anonymous(AbstractHttpConfigurer::disable)
-      .formLogin(AbstractHttpConfigurer::disable)
+      // Let Spring handle Basic auth
       .httpBasic(Customizer.withDefaults())
+      // Attach the AuthenticationManager
       .authorizeHttpRequests(auth -> auth
         .anyRequest().authenticated())
       .authenticationManager(authManager);

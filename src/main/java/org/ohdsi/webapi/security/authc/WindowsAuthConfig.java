@@ -5,10 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 import waffle.servlet.spi.NegotiateSecurityFilterProvider;
 import waffle.servlet.spi.SecurityFilterProvider;
@@ -23,8 +21,7 @@ public class WindowsAuthConfig {
 
 	@Bean
 	@Order(1)
-	public SecurityFilterChain windowsAuthChain(HttpSecurity http,
-			CorsConfigurationSource corsConfigurationSource) throws Exception {
+	public SecurityFilterChain windowsAuthChain(HttpSecurity http) throws Exception {
 
     // Waffle filters wrap native providers iniside filter providers, and builds a collection.
     WindowsAuthProviderImpl windowsAuthProvider = new WindowsAuthProviderImpl();
@@ -37,16 +34,10 @@ public class WindowsAuthConfig {
     NegotiateSecurityFilter negotiateFilter = new NegotiateSecurityFilter();
     negotiateFilter.setProvider(providers);
 
+		HttpSecurityShared.configureDefaults(http);
+
 		http
 				.securityMatcher("/user/login/windows")
-				.csrf(AbstractHttpConfigurer::disable)
-				.cors(cors -> cors.configurationSource(corsConfigurationSource))
-				// Disable all unecessary filters
-				.requestCache(AbstractHttpConfigurer::disable)
-				.sessionManagement(AbstractHttpConfigurer::disable)
-				.logout(AbstractHttpConfigurer::disable)
-				.anonymous(AbstractHttpConfigurer::disable)
-				.formLogin(AbstractHttpConfigurer::disable)
 				// ⬇️ REQUIRE authentication
 				.authorizeHttpRequests(authz -> authz.anyRequest().authenticated())
 				// ⬇️ This is what triggers the Negotiate challenge

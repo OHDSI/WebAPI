@@ -58,23 +58,17 @@ public class DatabaseAuthConfig {
         lockoutProps);
     AuthenticationManager authManager = new ProviderManager(List.of(provider));
 
+    HttpSecurityShared.configureDefaults(http);
+
     http
       // Only apply this chain to DB login endpoints
       .securityMatcher("/user/login/db")
-      .csrf(AbstractHttpConfigurer::disable)
-      .cors(cors -> cors.configurationSource(corsConfigurationSource))
-      // Disable all unecessary filters
-      .requestCache(AbstractHttpConfigurer::disable)
-      .sessionManagement(AbstractHttpConfigurer::disable)
-      .logout(AbstractHttpConfigurer::disable)
-      .anonymous(AbstractHttpConfigurer::disable)
-      .formLogin(AbstractHttpConfigurer::disable)
+      // Let Spring handle Basic auth
+      .httpBasic(Customizer.withDefaults())
       // Attach the AuthenticationManager
       .authorizeHttpRequests(auth -> auth
         .anyRequest().authenticated())
-      .authenticationManager(authManager)
-      // Let Spring handle Basic auth
-      .httpBasic(Customizer.withDefaults());
+      .authenticationManager(authManager);
 
     return http.build();
   }

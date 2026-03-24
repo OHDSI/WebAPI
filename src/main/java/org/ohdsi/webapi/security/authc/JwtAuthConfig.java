@@ -229,14 +229,9 @@ public class JwtAuthConfig {
   @Order(100)
   public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
 
+  HttpSecurityShared.configureDefaults(http); 
+ 
     http
-        .csrf(AbstractHttpConfigurer::disable)
-        .cors(Customizer.withDefaults())
-        // Disable unneeded filters
-        .requestCache(AbstractHttpConfigurer::disable)
-        .sessionManagement(AbstractHttpConfigurer::disable)
-        .logout(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         // Allow all requests at the filter level; authorization handled downstream
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())

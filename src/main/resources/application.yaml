@@ -259,9 +259,6 @@ security:
 
   maxLoginAttempts: 3
 
-  ssl:
-    enabled: false
-
   sessions:
     single-login: false
     expiration: 30m
@@ -283,6 +280,9 @@ server:
   servlet:
     context-path: /WebAPI
   port: 8080
+  # Trust X-Forwarded-* headers from reverse proxies (nginx, Apache, load balancers)
+  # Required for SSL redirect to detect original protocol when behind a proxy
+  forward-headers-strategy: NATIVE
   ssl:
     enabled: false
     key-password: ""

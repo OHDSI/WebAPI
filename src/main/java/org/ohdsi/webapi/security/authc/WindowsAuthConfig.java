@@ -19,6 +19,12 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 @ConditionalOnProperty(prefix = "security.auth.windows", name = "enabled", havingValue = "true")
 public class WindowsAuthConfig {
 
+	private final HttpSecurityShared httpSecurityShared;
+
+	public WindowsAuthConfig(HttpSecurityShared httpSecurityShared) {
+		this.httpSecurityShared = httpSecurityShared;
+	}
+
 	@Bean
 	@Order(1)
 	public SecurityFilterChain windowsAuthChain(HttpSecurity http) throws Exception {
@@ -34,7 +40,7 @@ public class WindowsAuthConfig {
     NegotiateSecurityFilter negotiateFilter = new NegotiateSecurityFilter();
     negotiateFilter.setProvider(providers);
 
-		HttpSecurityShared.configureDefaults(http);
+		httpSecurityShared.configureDefaults(http);
 
 		http
 				.securityMatcher("/user/login/windows")

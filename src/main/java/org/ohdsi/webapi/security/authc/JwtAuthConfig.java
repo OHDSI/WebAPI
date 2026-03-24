@@ -71,6 +71,7 @@ public class JwtAuthConfig {
   public static final MacAlgorithm DEFAULT_HS_ALGORITHM = MacAlgorithm.HS256;
   private final SessionService sessionService;
   private final UserRepository userRepository;
+  private final HttpSecurityShared httpSecurityShared;
 
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
@@ -87,10 +88,10 @@ public class JwtAuthConfig {
   @Value("${security.jwt.kid:}")
   private String configuredKid;
 
-  // Constructor now injects both session store and user repository
-  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository) {
+  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository, HttpSecurityShared httpSecurityShared) {
     this.sessionService = sessionService;
     this.userRepository = userRepository;
+    this.httpSecurityShared = httpSecurityShared;
   }
 
   /**
@@ -229,7 +230,7 @@ public class JwtAuthConfig {
   @Order(100)
   public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
 
-  HttpSecurityShared.configureDefaults(http); 
+    httpSecurityShared.configureDefaults(http); 
  
     http
         .httpBasic(AbstractHttpConfigurer::disable)

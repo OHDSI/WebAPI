@@ -28,6 +28,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @ConditionalOnProperty(prefix = "security.auth.db", name = "enabled", havingValue = "true")
 public class DatabaseAuthConfig {
 
+  private final HttpSecurityShared httpSecurityShared;
+
+  public DatabaseAuthConfig(HttpSecurityShared httpSecurityShared) {
+    this.httpSecurityShared = httpSecurityShared;
+  }
+
   @Bean
   DatabaseUserDetailsService dbUserDetailsService(
       @Qualifier("authDataSource") DataSource dataSource,
@@ -58,7 +64,7 @@ public class DatabaseAuthConfig {
         lockoutProps);
     AuthenticationManager authManager = new ProviderManager(List.of(provider));
 
-    HttpSecurityShared.configureDefaults(http);
+    httpSecurityShared.configureDefaults(http);
 
     http
       // Only apply this chain to DB login endpoints

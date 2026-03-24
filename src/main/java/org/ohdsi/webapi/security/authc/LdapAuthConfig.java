@@ -27,6 +27,12 @@ public class LdapAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(LdapAuthConfig.class);
 
+  private final HttpSecurityShared httpSecurityShared;
+
+  public LdapAuthConfig(HttpSecurityShared httpSecurityShared) {
+    this.httpSecurityShared = httpSecurityShared;
+  }
+
   @Value("${security.auth.ldap.url}")
   private String ldapUrl;
 
@@ -110,7 +116,7 @@ public class LdapAuthConfig {
 
     ProviderManager authManager = new ProviderManager(provider);
     authManager.setAuthenticationEventPublisher(new DefaultAuthenticationEventPublisher());
-    HttpSecurityShared.configureDefaults(http);
+    httpSecurityShared.configureDefaults(http);
     http
       .securityMatcher("/user/login/ldap")
       // Let Spring handle Basic auth

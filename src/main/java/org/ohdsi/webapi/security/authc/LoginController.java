@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +80,16 @@ public class LoginController {
     @GetMapping("/user/login/db")
     public LoginService.Result login(Authentication authentication) {
       return loginSvc.onSuccess(authentication);
+    }
+
+    @PostMapping("/user/login/db")
+    public LoginService.Result loginPost(
+        @RequestParam String login,
+        @RequestParam String password,
+        @Qualifier("dbAuthenticationManager") AuthenticationManager authManager) {
+      Authentication auth = authManager.authenticate(
+          new UsernamePasswordAuthenticationToken(login, password));
+      return loginSvc.onSuccess(auth);
     }
   }
 

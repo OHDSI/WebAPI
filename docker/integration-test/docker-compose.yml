@@ -103,6 +103,7 @@ services:
       - SECURITY_AUTH_JDBC_DATASOURCE_USERNAME=postgres
       - SECURITY_AUTH_JDBC_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - SECURITY_AUTH_JDBC_DATASOURCE_SCHEMA=webapi
+      - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-32chars!
       - SECURITY_AUTH_JDBC_DATASOURCE_AUTHENTICATIONQUERY=select password from webapi.users where lower(login) = lower(?)
     ports:
       - "18080:8080"

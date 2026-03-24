@@ -220,6 +220,7 @@ security:
       apiSecret: ""
       clientId: ""
       customParams: "{:}"
+      externalUrl: ""
       extraScopes: ""
       logoutUrl: ""
       redirectUrl: http://localhost/index.html#/welcome/
@@ -241,7 +242,7 @@ security:
       sloUrl: ""
     
     windows:
-      enabled: true
+      enabled: false
 
   cors: # Cross origin requests
     enabled: true

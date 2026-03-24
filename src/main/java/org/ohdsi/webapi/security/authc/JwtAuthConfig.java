@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.security.authc;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Locale;
+
+import jakarta.annotation.PostConstruct;
 
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
@@ -61,6 +64,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
@@ -72,10 +76,13 @@ public class JwtAuthConfig {
   private final SessionService sessionService;
   private final UserRepository userRepository;
 
+  @Value("${security.provider:DisabledSecurity}")
+  private String securityProvider;
+
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
 
-  @Value("${security.jwt.secret:super-secret-key-super-secret-key}")
+  @Value("${security.jwt.secret:}")
   private String configuredSecret;
 
   @Value("${security.jwt.rsa.private-key-path:}")
@@ -86,6 +93,23 @@ public class JwtAuthConfig {
 
   @Value("${security.jwt.kid:}")
   private String configuredKid;
+
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthConfig.class);
+
+  @PostConstruct
+  void validateConfiguration() {
+    if ("DisabledSecurity".equals(securityProvider)) {
+      return; // Skip JWT validation when security is disabled
+    }
+    if ("HS256".equalsIgnoreCase(configuredAlgorithm) || configuredAlgorithm == null) {
+      if (configuredSecret == null || configuredSecret.isBlank()) {
+        throw new IllegalStateException("security.jwt.secret must be set for HS256 algorithm");
+      }
+      if ("super-secret-key-super-secret-key".equals(configuredSecret)) {
+        log.warn("Using default JWT secret — change security.jwt.secret before deploying to production");
+      }
+    }
+  }
 
   // Constructor now injects both session store and user repository
   public JwtAuthConfig(SessionService sessionService, UserRepository userRepository) {
@@ -101,7 +125,7 @@ public class JwtAuthConfig {
   @ConditionalOnProperty(prefix = "security.jwt", name = "algorithm", havingValue = "HS256", matchIfMissing = true)
   public SecretKey jwtSecretKey() {
     return new SecretKeySpec(
-        configuredSecret.getBytes(),
+        configuredSecret.getBytes(StandardCharsets.UTF_8),
         DEFAULT_HS_ALGORITHM.getName() // maps to HmacSHA256
     );
   }
@@ -227,25 +251,49 @@ public class JwtAuthConfig {
 
   @Bean
   @Order(100)
-  public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain apiChain(HttpSecurity http,
+      CorsConfigurationSource corsConfigurationSource) throws Exception {
+
+    boolean securityEnabled = !"DisabledSecurity".equals(securityProvider);
 
     http
         .csrf(AbstractHttpConfigurer::disable)
-        .cors(Customizer.withDefaults())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
         // Disable unneeded filters
         .requestCache(AbstractHttpConfigurer::disable)
         .sessionManagement(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
-        .httpBasic(AbstractHttpConfigurer::disable)
-        // Allow all requests at the filter level; authorization handled downstream
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-        // Configure JWT authentication
-        .oauth2ResourceServer(oauth -> oauth
-            .jwt(jwt -> jwt.jwtAuthenticationConverter(
-                new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
-        // Fallback to anonymous if JWT not present
-        .anonymous(anon -> anon
+        .httpBasic(AbstractHttpConfigurer::disable);
+
+    if (securityEnabled) {
+      // Public endpoints that don't require authentication
+      http.authorizeHttpRequests(auth -> auth
+              .requestMatchers("/info", "/auth/**", "/user/login/**", "/user/oauth/**",
+                               "/.well-known/**", "/actuator/**").permitAll()
+              .anyRequest().authenticated())
+          // Return 401 JSON for unauthenticated requests
+          .exceptionHandling(ex -> ex.authenticationEntryPoint((req, resp, authEx) -> {
+              resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+              resp.setContentType("application/json");
+              resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+          }))
+          // Configure JWT authentication
+          .oauth2ResourceServer(oauth -> oauth
+              .authenticationEntryPoint((req, resp, authEx) -> {
+                  resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                  resp.setContentType("application/json");
+                  resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+              })
+              .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                  new JwtToWebApiAuthenticationConverter(sessionService, userRepository))));
+    } else {
+      // DisabledSecurity: permit all requests, no JWT validation
+      http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    }
+
+    // Fallback to anonymous if JWT not present
+    http.anonymous(anon -> anon
             .principal(WebApiPrincipal.ANONYMOUS)
             .authorities("ROLE_ANONYMOUS"));
 

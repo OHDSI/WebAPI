@@ -78,6 +78,7 @@ services:
       - SECURITY_AUTH_JDBC_DATASOURCE_SCHEMA=webapi
       - SECURITY_AUTH_JDBC_DATASOURCE_AUTHENTICATIONQUERY=select password, firstname, middlename, lastname from webapi.users where lower(email) = lower(?)
       - LOGGING_LEVEL_ORG_OHDSI_WEBAPI_SECURITY=DEBUG
+      - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-32chars!
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     ports:
       - "18080:8080"

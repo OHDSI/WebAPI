@@ -1,5 +1,6 @@
 -- WebAPI 3.0.0 Baseline: Complete schema for fresh installations
 
+CREATE SCHEMA IF NOT EXISTS ${ohdsiSchema};
 
 CREATE SEQUENCE ${ohdsiSchema}.achilles_cache_seq
     START WITH 1
@@ -1267,6 +1268,14 @@ COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.role_id IS 'Composite Primary key,
 COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.reusable_id IS 'Composite Primary key, FK to reusable';
 COMMENT ON COLUMN ${ohdsiSchema}.sec_reusable.access_type IS 'Composite Primary key';
 
+CREATE TABLE ${ohdsiSchema}.sec_source
+(
+    role_id integer,
+    source_id integer,
+    access_type character varying(50) NOT NULL,
+    CONSTRAINT pk_sec_source PRIMARY KEY (role_id, source_id, access_type)
+);
+
 -- END sec_{entity} tables
 
 CREATE TABLE ${ohdsiSchema}.sec_session
@@ -1839,10 +1848,10 @@ ALTER TABLE ONLY ${ohdsiSchema}.drug_hoi_evidence
     ADD CONSTRAINT fk_evidence_sources FOREIGN KEY (evidence_source_code_id) REFERENCES ${ohdsiSchema}.evidence_sources(id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis
-    ADD CONSTRAINT fe_analysis_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES webapi.sec_user (id);
+    ADD CONSTRAINT fe_analysis_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis
-    ADD CONSTRAINT fe_analysis_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES webapi.sec_user (id);
+    ADD CONSTRAINT fe_analysis_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis_criteria
     ADD CONSTRAINT fk_criteria_aggregate FOREIGN KEY (fe_aggregate_id) REFERENCES ${ohdsiSchema}.fe_analysis_aggregate (id);
@@ -1972,6 +1981,12 @@ ALTER TABLE ONLY ${ohdsiSchema}.source
 
 ALTER TABLE ONLY ${ohdsiSchema}.source
     ADD CONSTRAINT source_modified_by_id_fkey FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_source
+    ADD CONSTRAINT fk_ss_source_id FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_source
+    ADD CONSTRAINT fk_ss_sec_role_id FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role(id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.source_daimon
     ADD CONSTRAINT fk_source_daimon_source_id FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id);

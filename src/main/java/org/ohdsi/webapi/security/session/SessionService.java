@@ -17,7 +17,7 @@ public class SessionService {
   private final SessionProperties props;
 
   // Flag to avoid unnecessary cleanup DB hits
-  private boolean cleanupRequired = false;
+  private volatile boolean cleanupRequired = false;
 
   private static final Logger log = LoggerFactory.getLogger(SessionService.class);
 

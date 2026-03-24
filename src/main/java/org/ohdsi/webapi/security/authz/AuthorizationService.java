@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +18,7 @@ import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * The AuthorizatonService is part of security.authz which orchastrates the permission assignments for users, roles, and permisisons
@@ -30,6 +32,7 @@ public class AuthorizationService {
   private final RoleService roleService;
   private final PermissionService permissionService;
   private final SourceRepository sourceRepository;
+  private final boolean securityDisabled;
 
   public AuthorizationService(
       AuthorizationCacheService authorizationCacheService,
@@ -37,13 +40,15 @@ public class AuthorizationService {
       RoleService roleService,
       PermissionService permissionService,
       JdbcTemplate jdbcTemplate,
-      SourceRepository sourceRepository) {
+      SourceRepository sourceRepository,
+      @Value("${security.provider:DisabledSecurity}") String securityProvider) {
 
     this.authorizationCacheService = authorizationCacheService;
     this.userService = userService;
     this.roleService = roleService;
     this.permissionService = permissionService;
     this.sourceRepository = sourceRepository;
+    this.securityDisabled = "DisabledSecurity".equals(securityProvider);
   }
 
   // -------------------------
@@ -198,13 +203,6 @@ public class AuthorizationService {
       roleService.addUserToRole(userEntity, publicRole, UserOrigin.SYSTEM);
     }
 
-    // Assign default roles
-    if (defaultRoles != null) {
-      for (String role : defaultRoles) {
-        roleService.addUserToRole(login, role, origin);
-      }
-    }
-
     return User.fromEntity(userEntity);
   }
 
@@ -263,9 +261,15 @@ public class AuthorizationService {
    * @return
    */
   public WebApiPrincipal getAuthenticatedPrincipal() {
-    return (WebApiPrincipal) SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getPrincipal();
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || auth.getPrincipal() == null) {
+      return WebApiPrincipal.ANONYMOUS;
+    }
+    Object principal = auth.getPrincipal();
+    if (principal instanceof WebApiPrincipal wap) {
+      return wap;
+    }
+    return WebApiPrincipal.ANONYMOUS;
   }  
 
   // -------------------------
@@ -279,6 +283,9 @@ public class AuthorizationService {
    * @return true if the principal created the entity
    */
   public boolean isOwner(Long entityId, EntityType entityType) {
+    if (securityDisabled) {
+      return true;
+    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
@@ -311,6 +318,9 @@ public class AuthorizationService {
    * @return true if the principal has the specified access
    */
   public boolean hasEntityAccess(Long entityId, EntityType entityType, AccessType accessType) {
+    if (securityDisabled) {
+      return true;
+    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
@@ -345,11 +355,18 @@ public class AuthorizationService {
    * @return true if the principal has the specified access
    */
   public boolean hasSourceAccess(String sourceKey, AccessType accessType) {
+    if (securityDisabled) {
+      return true;
+    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
     }
-    Long sourceId = sourceRepository.findBySourceKey(sourceKey).getId().longValue();
+    Source source = sourceRepository.findBySourceKey(sourceKey);
+    if (source == null) {
+      return false;
+    }
+    Long sourceId = source.getId().longValue();
     return hasEntityAccess(sourceId, EntityType.SOURCE, accessType);
   }
 
@@ -360,6 +377,9 @@ public class AuthorizationService {
    * @return true if the principal has the permission
    */
   public boolean isPermitted(String permission) {
+    if (securityDisabled) {
+      return true;
+    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;

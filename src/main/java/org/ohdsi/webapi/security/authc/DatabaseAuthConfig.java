@@ -46,21 +46,25 @@ public class DatabaseAuthConfig {
     return new LockoutPolicyProperties();
   }
 
+  @Bean(name = "dbAuthenticationManager")
+  public AuthenticationManager dbAuthenticationManager(
+      DatabaseUserDetailsService dbUserDetailsService,
+      LockoutPolicyProperties lockoutProps,
+      PasswordEncoder authEncoder) {
+    DatabaseAuthenticationProvider provider = new DatabaseAuthenticationProvider(dbUserDetailsService, authEncoder, lockoutProps);
+    return new ProviderManager(List.of(provider));
+  }
+
   @Bean
   @Order(1)
   public SecurityFilterChain databaseAuthChain(HttpSecurity http,
-      DatabaseUserDetailsService dbUserDetailsService,
-      LockoutPolicyProperties lockoutProps,
-      PasswordEncoder authEncoder,
+      @Qualifier("dbAuthenticationManager") AuthenticationManager authManager,
       CorsConfigurationSource corsConfigurationSource) throws Exception {
 
-    DatabaseAuthenticationProvider provider = new DatabaseAuthenticationProvider(dbUserDetailsService, authEncoder,
-        lockoutProps);
-    AuthenticationManager authManager = new ProviderManager(List.of(provider));
-
     http
-      // Only apply this chain to DB login endpoints
-      .securityMatcher("/user/login/db")
+      // Only apply this chain to DB login endpoints (GET uses Basic auth, POST is handled by controller)
+      .securityMatcher(request ->
+          "/user/login/db".equals(request.getServletPath()) && "GET".equalsIgnoreCase(request.getMethod()))
       .csrf(AbstractHttpConfigurer::disable)
       .cors(cors -> cors.configurationSource(corsConfigurationSource))
       // Disable all unecessary filters

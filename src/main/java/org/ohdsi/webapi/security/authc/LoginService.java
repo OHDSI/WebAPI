@@ -19,8 +19,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import com.amazon.redshift.jdbc.UUIDArrayAssistant;
-
 @Service
 public class LoginService {
 
@@ -35,7 +33,7 @@ public class LoginService {
   private final JwtService jwtService;
   private final SessionProperties sessionProps;
   private final AuthorizationService authorizationService;
-  private final List<String> deafultRoles;
+  private final List<String> defaultRoles;
 
   private static final Logger log = LoggerFactory.getLogger(LoginService.class);
   public final static Result NO_SESSION = new Result(null, null, null, "No session.");
@@ -50,7 +48,7 @@ public class LoginService {
     this.authorizationService = authorizationService;
     this.jwtService = jwtService;
     this.sessionProps = sessionProps;
-    this.deafultRoles = defaultRoles;
+    this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
   }
 
   public Result onSuccess(Authentication authentication) {
@@ -63,7 +61,7 @@ public class LoginService {
         .toArray(String[]::new);
 
     // ensure the user exists
-    authorizationService.ensureUserExists(login, login, null, this.deafultRoles);
+    authorizationService.ensureUserExists(login, login, null, this.defaultRoles);
 
     // Generate a unique session ID and store session
     UUID sessionId = sessionService.createSession(login);

@@ -126,17 +126,17 @@
       ]
     },
     {
-      "name": "Unauthenticated Access",
+      "name": "Anonymous Access",
       "item": [
         {
-          "name": "Protected Endpoint Without Token - Should Return 401",
+          "name": "Endpoint Without Token - Should Return Anonymous Identity",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Protected endpoint returns 401 without token', function() {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "pm.test('Endpoint accessible as anonymous user without token', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -159,14 +159,14 @@
           }
         },
         {
-          "name": "User Info Without Token - Should Return 401",
+          "name": "User Info Without Token - Should Return Anonymous Identity",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('User info returns 401 without token', function() {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "pm.test('User info accessible as anonymous user', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -714,14 +714,14 @@
           }
         },
         {
-          "name": "Malformed Authorization Header - Should Return 401",
+          "name": "Malformed Authorization Header - Should Fall Through to Anonymous",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Malformed auth header returns 401', function() {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "pm.test('Malformed auth header falls through to anonymous', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
                   "});"
                 ],
                 "type": "text/javascript"

@@ -261,15 +261,8 @@ public class JwtAuthConfig {
  
     http
         .httpBasic(AbstractHttpConfigurer::disable)
-        // Public endpoints that don't require authentication
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/info", "/auth/**", "/user/login/**", "/user/oauth/**",
-                             "/.well-known/**").permitAll()
-            .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-            .requestMatchers("/actuator/**").authenticated()
-            .anyRequest().authenticated())
-        // Return 401 JSON for unauthenticated requests
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint))
+            .anyRequest().permitAll())
         // Configure JWT authentication
         .oauth2ResourceServer(oauth -> oauth
             .authenticationEntryPoint(unauthorizedEntryPoint)

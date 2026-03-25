@@ -76,9 +76,6 @@ public class JwtAuthConfig {
   private final SessionService sessionService;
   private final UserRepository userRepository;
 
-  @Value("${security.provider:DisabledSecurity}")
-  private String securityProvider;
-
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
 
@@ -98,9 +95,6 @@ public class JwtAuthConfig {
 
   @PostConstruct
   void validateConfiguration() {
-    if ("DisabledSecurity".equals(securityProvider)) {
-      return; // Skip JWT validation when security is disabled
-    }
     if ("HS256".equalsIgnoreCase(configuredAlgorithm) || configuredAlgorithm == null) {
       if (configuredSecret == null || configuredSecret.isBlank()) {
         throw new IllegalStateException("security.jwt.secret must be set for HS256 algorithm");
@@ -254,8 +248,6 @@ public class JwtAuthConfig {
   public SecurityFilterChain apiChain(HttpSecurity http,
       CorsConfigurationSource corsConfigurationSource) throws Exception {
 
-    boolean securityEnabled = !"DisabledSecurity".equals(securityProvider);
-
     http
         .csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -264,36 +256,29 @@ public class JwtAuthConfig {
         .sessionManagement(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
-        .httpBasic(AbstractHttpConfigurer::disable);
-
-    if (securityEnabled) {
-      // Public endpoints that don't require authentication
-      http.authorizeHttpRequests(auth -> auth
-              .requestMatchers("/info", "/auth/**", "/user/login/**", "/user/oauth/**",
-                               "/.well-known/**", "/actuator/**").permitAll()
-              .anyRequest().authenticated())
-          // Return 401 JSON for unauthenticated requests
-          .exceptionHandling(ex -> ex.authenticationEntryPoint((req, resp, authEx) -> {
-              resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
-              resp.setContentType("application/json");
-              resp.getWriter().write("{\"message\":\"Unauthorized\"}");
-          }))
-          // Configure JWT authentication
-          .oauth2ResourceServer(oauth -> oauth
-              .authenticationEntryPoint((req, resp, authEx) -> {
-                  resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
-                  resp.setContentType("application/json");
-                  resp.getWriter().write("{\"message\":\"Unauthorized\"}");
-              })
-              .jwt(jwt -> jwt.jwtAuthenticationConverter(
-                  new JwtToWebApiAuthenticationConverter(sessionService, userRepository))));
-    } else {
-      // DisabledSecurity: permit all requests, no JWT validation
-      http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-    }
-
-    // Fallback to anonymous if JWT not present
-    http.anonymous(anon -> anon
+        .httpBasic(AbstractHttpConfigurer::disable)
+        // Public endpoints that don't require authentication
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/info", "/auth/**", "/user/login/**", "/user/oauth/**",
+                             "/.well-known/**", "/actuator/**").permitAll()
+            .anyRequest().authenticated())
+        // Return 401 JSON for unauthenticated requests
+        .exceptionHandling(ex -> ex.authenticationEntryPoint((req, resp, authEx) -> {
+            resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+            resp.setContentType("application/json");
+            resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+        }))
+        // Configure JWT authentication
+        .oauth2ResourceServer(oauth -> oauth
+            .authenticationEntryPoint((req, resp, authEx) -> {
+                resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                resp.setContentType("application/json");
+                resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+            })
+            .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
+        // Fallback to anonymous if JWT not present
+        .anonymous(anon -> anon
             .principal(WebApiPrincipal.ANONYMOUS)
             .authorities("ROLE_ANONYMOUS"));
 

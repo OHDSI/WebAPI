@@ -18,7 +18,6 @@ import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * The AuthorizatonService is part of security.authz which orchastrates the permission assignments for users, roles, and permisisons
@@ -32,7 +31,6 @@ public class AuthorizationService {
   private final RoleService roleService;
   private final PermissionService permissionService;
   private final SourceRepository sourceRepository;
-  private final boolean securityDisabled;
 
   public AuthorizationService(
       AuthorizationCacheService authorizationCacheService,
@@ -40,15 +38,13 @@ public class AuthorizationService {
       RoleService roleService,
       PermissionService permissionService,
       JdbcTemplate jdbcTemplate,
-      SourceRepository sourceRepository,
-      @Value("${security.provider:DisabledSecurity}") String securityProvider) {
+      SourceRepository sourceRepository) {
 
     this.authorizationCacheService = authorizationCacheService;
     this.userService = userService;
     this.roleService = roleService;
     this.permissionService = permissionService;
     this.sourceRepository = sourceRepository;
-    this.securityDisabled = "DisabledSecurity".equals(securityProvider);
   }
 
   // -------------------------
@@ -283,9 +279,6 @@ public class AuthorizationService {
    * @return true if the principal created the entity
    */
   public boolean isOwner(Long entityId, EntityType entityType) {
-    if (securityDisabled) {
-      return true;
-    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
@@ -318,9 +311,6 @@ public class AuthorizationService {
    * @return true if the principal has the specified access
    */
   public boolean hasEntityAccess(Long entityId, EntityType entityType, AccessType accessType) {
-    if (securityDisabled) {
-      return true;
-    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
@@ -355,9 +345,6 @@ public class AuthorizationService {
    * @return true if the principal has the specified access
    */
   public boolean hasSourceAccess(String sourceKey, AccessType accessType) {
-    if (securityDisabled) {
-      return true;
-    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;
@@ -377,9 +364,6 @@ public class AuthorizationService {
    * @return true if the principal has the permission
    */
   public boolean isPermitted(String permission) {
-    if (securityDisabled) {
-      return true;
-    }
     WebApiPrincipal principal = getCurrentPrincipal();
     if (principal == null) {
       return false;

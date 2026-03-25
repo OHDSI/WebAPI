@@ -33,6 +33,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -44,6 +45,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.ohdsi.webapi.security.authc.JwtService;
+import org.ohdsi.webapi.security.session.SessionService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {WebApi.class, WebApiIT.DbUnitConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -115,6 +118,12 @@ public abstract class WebApiIT {
             }
 		}
 
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private SessionService sessionService;
+
     @Value("${baseUri}")
     private String baseUri;
 
@@ -127,6 +136,25 @@ public abstract class WebApiIT {
         TomcatURLStreamHandlerFactory.disable();
         ITStarter.before();
         jdbcTemplate = new JdbcTemplate(ITStarter.getDataSource());
+    }
+
+    @Before
+    public void setUpAuthentication() {
+        // Ensure anonymous user has admin role for test permissions
+        jdbcTemplate.execute(
+            "INSERT INTO public.sec_user_role (id, user_id, role_id, origin) " +
+            "SELECT nextval('public.sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+            "WHERE NOT EXISTS (SELECT 1 FROM public.sec_user_role WHERE user_id = -1 AND role_id = 2)");
+
+        // Generate a JWT for the anonymous user so HTTP requests are authenticated
+        java.util.UUID sessionId = sessionService.createSession("anonymous");
+        java.time.Instant expiresAt = java.time.Instant.now().plusSeconds(3600);
+        String jwt = jwtService.generateToken("anonymous", sessionId.toString(), java.util.Date.from(expiresAt));
+        restTemplate.getRestTemplate().getInterceptors().clear();
+        restTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().set("Authorization", "Bearer " + jwt);
+            return execution.execute(request, body);
+        });
     }
 
     @Before

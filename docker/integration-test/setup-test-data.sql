@@ -83,4 +83,13 @@ INSERT INTO webapi.sec_user_role (id, user_id, role_id, origin) VALUES
     (10011, 10002, 10010, 'SYSTEM')
 ON CONFLICT (id) DO NOTHING;
 
+-- Grant source access (sec_source table: role_id, source_id, access_type)
+-- Grant both READ and WRITE access to DEMO_CDM (source_id=1) for test-admin (role_id=10001) and source role (role_id=10010)
+INSERT INTO webapi.sec_source (role_id, source_id, access_type) VALUES
+    (10001, 1, 'READ'),
+    (10001, 1, 'WRITE'),
+    (10010, 1, 'READ'),
+    (10010, 1, 'WRITE')
+ON CONFLICT DO NOTHING;
+
 SELECT 'Test data setup completed' AS status;

@@ -75,6 +75,7 @@ public class JwtAuthConfig {
   public static final MacAlgorithm DEFAULT_HS_ALGORITHM = MacAlgorithm.HS256;
   private final SessionService sessionService;
   private final UserRepository userRepository;
+  private final HttpSecurityShared httpSecurityShared;
 
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
@@ -105,10 +106,10 @@ public class JwtAuthConfig {
     }
   }
 
-  // Constructor now injects both session store and user repository
-  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository) {
+  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository, HttpSecurityShared httpSecurityShared) {
     this.sessionService = sessionService;
     this.userRepository = userRepository;
+    this.httpSecurityShared = httpSecurityShared;
   }
 
   /**
@@ -258,14 +259,9 @@ public class JwtAuthConfig {
       CorsConfigurationSource corsConfigurationSource,
       org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint) throws Exception {
 
+    httpSecurityShared.configureDefaults(http); 
+ 
     http
-        .csrf(AbstractHttpConfigurer::disable)
-        .cors(cors -> cors.configurationSource(corsConfigurationSource))
-        // Disable unneeded filters
-        .requestCache(AbstractHttpConfigurer::disable)
-        .sessionManagement(AbstractHttpConfigurer::disable)
-        .logout(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         // Public endpoints that don't require authentication
         .authorizeHttpRequests(auth -> auth

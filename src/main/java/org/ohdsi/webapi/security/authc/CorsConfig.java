@@ -9,6 +9,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * This configuration class is created as a bean, and Spring will inject it to handle the requests matching the 
+ * value passed in registerCorsConfiguration(). This prevents the need to configure each SecurityFilterChain individually.
+ */
 @Configuration
 public class CorsConfig {
 

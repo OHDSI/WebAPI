@@ -28,6 +28,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @ConditionalOnProperty(prefix = "security.auth.db", name = "enabled", havingValue = "true")
 public class DatabaseAuthConfig {
 
+  private final HttpSecurityShared httpSecurityShared;
+
+  public DatabaseAuthConfig(HttpSecurityShared httpSecurityShared) {
+    this.httpSecurityShared = httpSecurityShared;
+  }
+
   @Bean
   DatabaseUserDetailsService dbUserDetailsService(
       @Qualifier("authDataSource") DataSource dataSource,
@@ -61,24 +67,17 @@ public class DatabaseAuthConfig {
       @Qualifier("dbAuthenticationManager") AuthenticationManager authManager,
       CorsConfigurationSource corsConfigurationSource) throws Exception {
 
+    httpSecurityShared.configureDefaults(http);
+
     http
-      // Only apply this chain to DB login endpoints (GET uses Basic auth, POST is handled by controller)
-      .securityMatcher(request ->
-          "/user/login/db".equals(request.getServletPath()) && "GET".equalsIgnoreCase(request.getMethod()))
-      .csrf(AbstractHttpConfigurer::disable)
-      .cors(cors -> cors.configurationSource(corsConfigurationSource))
-      // Disable all unecessary filters
-      .requestCache(AbstractHttpConfigurer::disable)
-      .sessionManagement(AbstractHttpConfigurer::disable)
-      .logout(AbstractHttpConfigurer::disable)
-      .anonymous(AbstractHttpConfigurer::disable)
-      .formLogin(AbstractHttpConfigurer::disable)
+      // Only apply this chain to DB login endpoints
+      .securityMatcher("/user/login/db")
+      // Let Spring handle Basic auth
+      .httpBasic(Customizer.withDefaults())
       // Attach the AuthenticationManager
       .authorizeHttpRequests(auth -> auth
         .anyRequest().authenticated())
-      .authenticationManager(authManager)
-      // Let Spring handle Basic auth
-      .httpBasic(Customizer.withDefaults());
+      .authenticationManager(authManager);
 
     return http.build();
   }

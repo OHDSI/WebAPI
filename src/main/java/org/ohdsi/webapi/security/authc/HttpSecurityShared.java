@@ -21,7 +21,6 @@ public class HttpSecurityShared {
         .requestCache(AbstractHttpConfigurer::disable)
         .sessionManagement(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
-        .anonymous(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable);
   }
 }

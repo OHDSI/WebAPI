@@ -103,7 +103,7 @@ services:
       - SECURITY_AUTH_DB_DATASOURCE_USERNAME=postgres
       - SECURITY_AUTH_DB_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - SECURITY_AUTH_DB_DATASOURCE_SCHEMA=webapi
-      - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-32chars!
+      - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-min-32chars!
       - SECURITY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:18080
     ports:
       - "18080:8080"

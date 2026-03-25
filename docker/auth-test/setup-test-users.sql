@@ -14,25 +14,26 @@ SELECT setval('webapi.sec_role_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) 
 SELECT setval('webapi.sec_user_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) + 1 FROM webapi.sec_user), nextval('webapi.sec_user_sequence')));
 SELECT setval('webapi.sec_user_role_sequence', GREATEST((SELECT COALESCE(MAX(id), 0) + 1 FROM webapi.sec_user_role), nextval('webapi.sec_user_role_sequence')));
 
--- Test users table for JDBC authentication
-CREATE TABLE IF NOT EXISTS webapi.users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    firstname VARCHAR(100),
-    middlename VARCHAR(100),
-    lastname VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Auth user table for database authentication (matches DatabaseUserDetailsService schema)
+CREATE TABLE IF NOT EXISTS webapi.auth_user (
+    login VARCHAR(255) PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    last_name VARCHAR(100),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    locked_until TIMESTAMP
 );
 
 -- testpass123 (bcrypt)
-INSERT INTO webapi.users (email, password, firstname, lastname)
+INSERT INTO webapi.auth_user (login, password_hash, first_name, last_name)
 VALUES (
     'testuser@example.com',
-    '$2a$10$XBta6lTOBvpIB2Lqa8kCj.da4LOsAgH01YpcQB9l2AU7ip.G1mzsu',
+    '{bcrypt}$2a$10$XBta6lTOBvpIB2Lqa8kCj.da4LOsAgH01YpcQB9l2AU7ip.G1mzsu',
     'Test',
     'User'
-) ON CONFLICT (email) DO NOTHING;
+) ON CONFLICT (login) DO NOTHING;
 
 INSERT INTO webapi.sec_role (id, name, system_role)
 VALUES (10001, 'test-admin', true)
@@ -62,4 +63,4 @@ INSERT INTO webapi.sec_role_permission (id, role_id, permission_id)
 SELECT 10002, 10001, 10002
 WHERE NOT EXISTS (SELECT 1 FROM webapi.sec_role_permission WHERE id = 10002);
 
-SELECT 'Test user created:' AS info, email, firstname FROM webapi.users WHERE email = 'testuser@example.com';
+SELECT 'Test user created:' AS info, login, first_name FROM webapi.auth_user WHERE login = 'testuser@example.com';

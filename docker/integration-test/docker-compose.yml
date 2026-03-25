@@ -80,7 +80,7 @@ services:
       - SPRING_FLYWAY_PLACEHOLDERS_OHDSISCHEMA=webapi
       - SECURITY_PROVIDER=AtlasRegularSecurity
       - SECURITY_AUTH_OPENID_ENABLED=true
-      - SECURITY_AUTH_JDBC_ENABLED=true
+      - SECURITY_AUTH_DB_ENABLED=true
       - SECURITY_AUTH_LDAP_ENABLED=false
       - SECURITY_AUTH_AD_ENABLED=false
       - SECURITY_AUTH_CAS_ENABLED=false
@@ -98,13 +98,13 @@ services:
       - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
       - SECURITY_AUTH_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
       - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query
-      - SECURITY_AUTH_JDBC_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
-      - SECURITY_AUTH_JDBC_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
-      - SECURITY_AUTH_JDBC_DATASOURCE_USERNAME=postgres
-      - SECURITY_AUTH_JDBC_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - SECURITY_AUTH_JDBC_DATASOURCE_SCHEMA=webapi
+      - SECURITY_AUTH_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SECURITY_AUTH_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SECURITY_AUTH_DB_DATASOURCE_USERNAME=postgres
+      - SECURITY_AUTH_DB_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - SECURITY_AUTH_DB_DATASOURCE_SCHEMA=webapi
       - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-32chars!
-      - SECURITY_AUTH_JDBC_DATASOURCE_AUTHENTICATIONQUERY=select password from webapi.users where lower(login) = lower(?)
+      - SECURITY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:18080
     ports:
       - "18080:8080"
     healthcheck:

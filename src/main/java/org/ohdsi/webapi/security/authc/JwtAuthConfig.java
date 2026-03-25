@@ -64,7 +64,6 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfigurationSource;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
@@ -256,7 +255,6 @@ public class JwtAuthConfig {
   @Bean
   @Order(100)
   public SecurityFilterChain apiChain(HttpSecurity http,
-      CorsConfigurationSource corsConfigurationSource,
       org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint) throws Exception {
 
     httpSecurityShared.configureDefaults(http); 

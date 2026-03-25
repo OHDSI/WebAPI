@@ -12,22 +12,23 @@ DELETE FROM webapi.sec_user WHERE id >= 10001 AND id < 20000;
 DELETE FROM webapi.source_daimon WHERE source_id = 1;
 DELETE FROM webapi.source WHERE source_id = 1;
 
--- JDBC authentication table (WebAPI's SEC_USER doesn't store passwords)
--- Uses login field to match SEC_USER for consistency
-CREATE TABLE IF NOT EXISTS webapi.users (
-    id SERIAL PRIMARY KEY,
-    login VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    firstname VARCHAR(100),
-    middlename VARCHAR(100),
-    lastname VARCHAR(100)
+-- Auth user table for database authentication (matches DatabaseUserDetailsService schema)
+CREATE TABLE IF NOT EXISTS webapi.auth_user (
+    login VARCHAR(255) PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    last_name VARCHAR(100),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    locked_until TIMESTAMP
 );
 
 -- Test users (passwords: testpass123, adminpass123)
-INSERT INTO webapi.users (login, password, firstname, lastname) VALUES
-    ('testuser@example.com', '$2a$10$XBta6lTOBvpIB2Lqa8kCj.da4LOsAgH01YpcQB9l2AU7ip.G1mzsu', 'Test', 'User'),
-    ('admin@example.com', '$2a$10$kDpJMpJqX5GDLMJqmWr1/.9v0x.yWVYGaXMOVdXPYMTqXhZpqcFfC', 'Admin', 'User')
-ON CONFLICT (login) DO UPDATE SET password = EXCLUDED.password;
+INSERT INTO webapi.auth_user (login, password_hash, first_name, last_name) VALUES
+    ('testuser@example.com', '{bcrypt}$2a$10$XBta6lTOBvpIB2Lqa8kCj.da4LOsAgH01YpcQB9l2AU7ip.G1mzsu', 'Test', 'User'),
+    ('admin@example.com', '{bcrypt}$2a$10$kDpJMpJqX5GDLMJqmWr1/.9v0x.yWVYGaXMOVdXPYMTqXhZpqcFfC', 'Admin', 'User')
+ON CONFLICT (login) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 -- Security roles (IDs 10001-10010 reserved for test data)
 INSERT INTO webapi.sec_role (id, name, system_role) VALUES

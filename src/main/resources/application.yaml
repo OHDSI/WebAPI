@@ -246,7 +246,7 @@ security:
 
   cors: # Cross origin requests
     enabled: true
-    allowed-origins: htttp://localhost
+    allowed-origins: http://localhost
     
   # If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.
   # If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have read permissions to

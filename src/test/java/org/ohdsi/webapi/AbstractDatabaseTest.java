@@ -7,6 +7,7 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.TestingAuthenticationToken;
@@ -37,6 +38,9 @@ import static org.junit.Assert.fail;
 @TestPropertySource(locations = "/application-test.properties")
 public abstract class AbstractDatabaseTest {
 
+  @Value("${datasource.ohdsi.schema:public}")
+  private String ohdsiSchema;
+
   @org.junit.Before
   public void setUpSecurityContext() {
     // Set up anonymous principal so @PreAuthorize checks can evaluate
@@ -48,9 +52,9 @@ public abstract class AbstractDatabaseTest {
     // Ensure anonymous user has admin role for test permissions
     // (idempotent — ON CONFLICT does nothing if already assigned)
     jdbcTemplate.execute(
-        "INSERT INTO public.sec_user_role (id, user_id, role_id, origin) " +
-        "SELECT nextval('public.sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
-        "WHERE NOT EXISTS (SELECT 1 FROM public.sec_user_role WHERE user_id = -1 AND role_id = 2)");
+        "INSERT INTO " + ohdsiSchema + ".sec_user_role (id, user_id, role_id, origin) " +
+        "SELECT nextval('" + ohdsiSchema + ".sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+        "WHERE NOT EXISTS (SELECT 1 FROM " + ohdsiSchema + ".sec_user_role WHERE user_id = -1 AND role_id = 2)");
   }
 
   @org.junit.After

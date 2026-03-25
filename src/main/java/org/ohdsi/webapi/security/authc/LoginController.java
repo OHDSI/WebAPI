@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -85,7 +86,7 @@ public class LoginController {
       return loginSvc.onSuccess(authentication);
     }
 
-    @PostMapping("/user/login/db")
+    @PostMapping(value = "/user/login/db", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public LoginService.Result loginPost(
         @RequestParam String login,
         @RequestParam String password) {

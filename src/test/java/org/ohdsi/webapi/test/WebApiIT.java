@@ -142,9 +142,9 @@ public abstract class WebApiIT {
     public void setUpAuthentication() {
         // Ensure anonymous user has admin role for test permissions
         jdbcTemplate.execute(
-            "INSERT INTO public.sec_user_role (id, user_id, role_id, origin) " +
-            "SELECT nextval('public.sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
-            "WHERE NOT EXISTS (SELECT 1 FROM public.sec_user_role WHERE user_id = -1 AND role_id = 2)");
+            "INSERT INTO " + ohdsiSchema + ".sec_user_role (id, user_id, role_id, origin) " +
+            "SELECT nextval('" + ohdsiSchema + ".sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+            "WHERE NOT EXISTS (SELECT 1 FROM " + ohdsiSchema + ".sec_user_role WHERE user_id = -1 AND role_id = 2)");
 
         // Generate a JWT for the anonymous user so HTTP requests are authenticated
         java.util.UUID sessionId = sessionService.createSession("anonymous");

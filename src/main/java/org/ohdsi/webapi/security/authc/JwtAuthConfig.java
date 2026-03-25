@@ -100,8 +100,8 @@ public class JwtAuthConfig {
       if (configuredSecret == null || configuredSecret.isBlank()) {
         throw new IllegalStateException("security.jwt.secret must be set for HS256 algorithm");
       }
-      if ("super-secret-key-super-secret-key".equals(configuredSecret)) {
-        log.warn("Using default JWT secret — change security.jwt.secret before deploying to production");
+      if (configuredSecret.length() < 32) {
+        log.warn("security.jwt.secret is shorter than 32 characters — use a stronger secret in production");
       }
     }
   }

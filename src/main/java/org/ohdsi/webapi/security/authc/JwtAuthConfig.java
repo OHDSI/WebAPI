@@ -244,9 +244,19 @@ public class JwtAuthConfig {
   }
 
   @Bean
+  public org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint() {
+    return (req, resp, authEx) -> {
+      resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+      resp.setContentType("application/json");
+      resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+    };
+  }
+
+  @Bean
   @Order(100)
   public SecurityFilterChain apiChain(HttpSecurity http,
-      CorsConfigurationSource corsConfigurationSource) throws Exception {
+      CorsConfigurationSource corsConfigurationSource,
+      org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint) throws Exception {
 
     http
         .csrf(AbstractHttpConfigurer::disable)
@@ -260,21 +270,15 @@ public class JwtAuthConfig {
         // Public endpoints that don't require authentication
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/info", "/auth/**", "/user/login/**", "/user/oauth/**",
-                             "/.well-known/**", "/actuator/**").permitAll()
+                             "/.well-known/**").permitAll()
+            .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+            .requestMatchers("/actuator/**").authenticated()
             .anyRequest().authenticated())
         // Return 401 JSON for unauthenticated requests
-        .exceptionHandling(ex -> ex.authenticationEntryPoint((req, resp, authEx) -> {
-            resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
-            resp.setContentType("application/json");
-            resp.getWriter().write("{\"message\":\"Unauthorized\"}");
-        }))
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint))
         // Configure JWT authentication
         .oauth2ResourceServer(oauth -> oauth
-            .authenticationEntryPoint((req, resp, authEx) -> {
-                resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
-                resp.setContentType("application/json");
-                resp.getWriter().write("{\"message\":\"Unauthorized\"}");
-            })
+            .authenticationEntryPoint(unauthorizedEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(
                 new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
         // Fallback to anonymous if JWT not present

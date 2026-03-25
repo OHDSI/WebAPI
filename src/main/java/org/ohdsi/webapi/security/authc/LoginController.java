@@ -72,9 +72,12 @@ public class LoginController {
   @ConditionalOnProperty(prefix = "security.auth.db", name = "enabled", havingValue = "true")
   public static class Database {
     private final LoginService loginSvc;
+    private final AuthenticationManager dbAuthenticationManager;
 
-    public Database(LoginService loginSvc) {
+    public Database(LoginService loginSvc,
+        @Qualifier("dbAuthenticationManager") AuthenticationManager dbAuthenticationManager) {
       this.loginSvc = loginSvc;
+      this.dbAuthenticationManager = dbAuthenticationManager;
     }
 
     @GetMapping("/user/login/db")
@@ -85,9 +88,8 @@ public class LoginController {
     @PostMapping("/user/login/db")
     public LoginService.Result loginPost(
         @RequestParam String login,
-        @RequestParam String password,
-        @Qualifier("dbAuthenticationManager") AuthenticationManager authManager) {
-      Authentication auth = authManager.authenticate(
+        @RequestParam String password) {
+      Authentication auth = dbAuthenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(login, password));
       return loginSvc.onSuccess(auth);
     }

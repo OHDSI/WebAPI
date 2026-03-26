@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.ohdsi.webapi.security.authz.access.AccessType;
-import org.ohdsi.webapi.security.authz.access.EntityAccessService;
 import org.ohdsi.webapi.security.authz.access.EntityGrant;
 import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;

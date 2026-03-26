@@ -612,7 +612,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(value = "/{id}/generate/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and hasSourceAccess(#sourceKey, WRITE)
+		and (isPermitted('read:write') or hasSourceAccess(#sourceKey, WRITE)
 	""")
 	public JobExecutionResource generateCohort(@PathVariable("id") final int id,
 			@PathVariable("sourceKey") final String sourceKey,
@@ -667,8 +667,8 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(value = "/{id}/cancel/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and hasSourceAccess(#sourceKey, WRITE)
-	""")
+		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)
+	""")	
 	public ResponseEntity cancelGenerateCohort(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
 
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
@@ -886,7 +886,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and hasSourceAccess(#sourceKey, READ)
+		and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, anyOf(READ, WRITE)))
 	""")
 	public InclusionRuleReport getInclusionRuleReport(
 					@PathVariable("id") final int id,

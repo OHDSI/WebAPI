@@ -83,7 +83,7 @@ public class WebApiSecurityExpressionRoot
     if (accessTypes == null || accessTypes.isEmpty())
       return false;
     for (AccessType at : accessTypes) {
-      if (authorizationService.hasEntityAccess(entityId, entityType, at)) {
+      if (this.hasEntityAccess(entityId, entityType, at)) {
         return true;
       }
     }
@@ -100,6 +100,24 @@ public class WebApiSecurityExpressionRoot
   public boolean hasSourceAccess(String sourceKey, AccessType accessType) {
     return authorizationService.hasSourceAccess(sourceKey, accessType);
   }
+
+  /**
+   * Check if the current user has specific access to a source
+   * 
+   * @param sourceKey  The source key
+   * @param accessTypes A collection of AccessType.
+   * @return true if the user has the specified access
+   */
+  public boolean hasSourceAccess(String sourceKey, Collection<AccessType> accessTypes) {
+    if (accessTypes == null || accessTypes.isEmpty())
+      return false;
+    for (AccessType at : accessTypes) {
+      if (this.hasSourceAccess(sourceKey, at)) {
+        return true;
+      }
+    }
+    return false;
+  }  
 
   /**
    * Helper for SpEL to create a collection of AccessType values: anyOf(READ,
@@ -119,6 +137,32 @@ public class WebApiSecurityExpressionRoot
    */
   public boolean isPermitted(String permission) {
     return authorizationService.isPermitted(permission);
+  }
+
+  /**
+   * Check if the current user has a wildcard permission (global entitlement)
+   * 
+   * @param permission The permission string (e.g., "read:cohort", "write", "*")
+   * @return true if the user has the permission
+   */
+  public boolean isPermitted(Collection<String> permissions) {
+    if (permissions == null || permissions.isEmpty())
+      return false;
+    for (String p : permissions) {
+      if (this.isPermitted(p)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Helper for SpEL to create a collection of String values: anyOf('perm1', 'perm2')
+   */
+  public Collection<String> anyOf(String... permissions) {
+    if (permissions == null)
+      return java.util.Collections.emptyList();
+    return Arrays.asList(permissions);
   }
 
   /*

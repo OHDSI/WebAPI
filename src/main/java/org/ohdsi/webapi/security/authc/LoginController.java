@@ -4,9 +4,16 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -69,14 +76,35 @@ public class LoginController {
   @ConditionalOnProperty(prefix = "security.auth.db", name = "enabled", havingValue = "true")
   public static class Database {
     private final LoginService loginSvc;
+    private final AuthenticationManager dbAuthenticationManager;
 
-    public Database(LoginService loginSvc) {
+    public Database(LoginService loginSvc,
+        @Qualifier("dbAuthenticationManager") AuthenticationManager dbAuthenticationManager) {
       this.loginSvc = loginSvc;
+      this.dbAuthenticationManager = dbAuthenticationManager;
     }
 
     @GetMapping("/user/login/db")
     public LoginService.Result login(Authentication authentication) {
       return loginSvc.onSuccess(authentication);
+    }
+
+    @PostMapping(value = "/user/login/db", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> loginPost(
+        @RequestParam(required = false) String login,
+        @RequestParam(required = false) String password) {
+      if (login == null || password == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new LoginService.Result(null, null, null, "Missing credentials"));
+      }
+      try {
+        Authentication auth = dbAuthenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(login, password));
+        return ResponseEntity.ok(loginSvc.onSuccess(auth));
+      } catch (AuthenticationException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new LoginService.Result(null, null, null, "Invalid credentials"));
+      }
     }
   }
 

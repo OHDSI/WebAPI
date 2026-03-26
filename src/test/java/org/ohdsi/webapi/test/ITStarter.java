@@ -35,10 +35,10 @@ public class ITStarter extends AbstractSpringSecurity {
                 String jdbcUrl = pg.getPostgresDatabase().getConnection().getMetaData().getURL();
                 System.setProperty("datasource.url", jdbcUrl);
                 System.setProperty("spring.flyway.url", jdbcUrl);
-                System.setProperty("security.auth.jdbc.datasource.url", jdbcUrl);
-                System.setProperty("security.auth.jdbc.datasource.username", "postgres");
-                System.setProperty("security.auth.jdbc.datasource.password", "postgres");
-                System.setProperty("security.auth.jdbc.datasource.schema", "public");
+                System.setProperty("security.auth.db.datasource.url", jdbcUrl);
+                System.setProperty("security.auth.db.datasource.username", "postgres");
+                System.setProperty("security.auth.db.datasource.password", "postgres");
+                System.setProperty("security.auth.db.datasource.schema", "public");
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

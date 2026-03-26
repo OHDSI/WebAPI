@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.security.authc;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Locale;
+
+import jakarta.annotation.PostConstruct;
 
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
@@ -76,7 +79,7 @@ public class JwtAuthConfig {
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
 
-  @Value("${security.jwt.secret:super-secret-key-super-secret-key}")
+  @Value("${security.jwt.secret:}")
   private String configuredSecret;
 
   @Value("${security.jwt.rsa.private-key-path:}")
@@ -87,6 +90,20 @@ public class JwtAuthConfig {
 
   @Value("${security.jwt.kid:}")
   private String configuredKid;
+
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthConfig.class);
+
+  @PostConstruct
+  void validateConfiguration() {
+    if ("HS256".equalsIgnoreCase(configuredAlgorithm) || configuredAlgorithm == null) {
+      if (configuredSecret == null || configuredSecret.isBlank()) {
+        throw new IllegalStateException("security.jwt.secret must be set for HS256 algorithm");
+      }
+      if (configuredSecret.length() < 32) {
+        log.warn("security.jwt.secret is shorter than 32 characters — use a stronger secret in production");
+      }
+    }
+  }
 
   public JwtAuthConfig(SessionService sessionService, UserRepository userRepository, HttpSecurityShared httpSecurityShared) {
     this.sessionService = sessionService;
@@ -102,7 +119,7 @@ public class JwtAuthConfig {
   @ConditionalOnProperty(prefix = "security.jwt", name = "algorithm", havingValue = "HS256", matchIfMissing = true)
   public SecretKey jwtSecretKey() {
     return new SecretKeySpec(
-        configuredSecret.getBytes(),
+        configuredSecret.getBytes(StandardCharsets.UTF_8),
         DEFAULT_HS_ALGORITHM.getName() // maps to HmacSHA256
     );
   }
@@ -227,17 +244,28 @@ public class JwtAuthConfig {
   }
 
   @Bean
+  public org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint() {
+    return (req, resp, authEx) -> {
+      resp.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+      resp.setContentType("application/json");
+      resp.getWriter().write("{\"message\":\"Unauthorized\"}");
+    };
+  }
+
+  @Bean
   @Order(100)
-  public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain apiChain(HttpSecurity http,
+      org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint) throws Exception {
 
     httpSecurityShared.configureDefaults(http); 
  
     http
         .httpBasic(AbstractHttpConfigurer::disable)
-        // Allow all requests at the filter level; authorization handled downstream
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().permitAll())
         // Configure JWT authentication
         .oauth2ResourceServer(oauth -> oauth
+            .authenticationEntryPoint(unauthorizedEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(
                 new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
         // Fallback to anonymous if JWT not present

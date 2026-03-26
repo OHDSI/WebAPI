@@ -32,7 +32,7 @@ import java.util.List;
 @RequestMapping("/auth")
 public class AuthProviderService {
 
-    @Value("${security.auth.jdbc.enabled}")
+    @Value("${security.auth.db.enabled}")
     private boolean jdbcAuthEnabled;
 
     @Value("${security.auth.windows.enabled}")

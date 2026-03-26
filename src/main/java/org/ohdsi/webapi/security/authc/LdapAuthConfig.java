@@ -19,7 +19,6 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @ConditionalOnProperty(prefix = "security.auth.ldap", name = "enabled", havingValue = "true")
@@ -62,8 +61,7 @@ public class LdapAuthConfig {
 
   @Bean
   @Order(1)
-  SecurityFilterChain ldapSecurityFilterChain(HttpSecurity http,
-			CorsConfigurationSource corsConfigurationSource) throws Exception {
+  SecurityFilterChain ldapSecurityFilterChain(HttpSecurity http) throws Exception {
 
     // --- Context ---
     DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(ldapUrl + "/" + baseDn);

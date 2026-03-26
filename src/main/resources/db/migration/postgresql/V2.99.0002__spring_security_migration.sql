@@ -13,12 +13,12 @@ VALUES (nextval('${ohdsiSchema}.sec_user_role_sequence'), -1, -1, 'SYSTEM');
 
 -- migrate all null created_by to be associated to the anonymous user
 
-UPDATE ${ohdsiSchema}.cohort_definition set created_by = -1 where created_by_id is null;
-UPDATE ${ohdsiSchema}.concept_set set created_by = -1 where created_by_id is null;
-UPDATE ${ohdsiSchema}.fe_analysis set created_by = -1 where created_by_id is null and type <> 'PRESET';
-UPDATE ${ohdsiSchema}.ir_analysis set created_by = -1 where created_by_id is null;
-UPDATE ${ohdsiSchema}.pathway_analysis set created_by = -1 where created_by_id is null;
-UPDATE ${ohdsiSchema}.reusable set created_by = -1 where created_by_id is null;
+UPDATE ${ohdsiSchema}.cohort_definition set created_by_id = -1 where created_by_id is null;
+UPDATE ${ohdsiSchema}.concept_set set created_by_id = -1 where created_by_id is null;
+UPDATE ${ohdsiSchema}.fe_analysis set created_by_id = -1 where created_by_id is null and type <> 'PRESET';
+UPDATE ${ohdsiSchema}.ir_analysis set created_by_id = -1 where created_by_id is null;
+UPDATE ${ohdsiSchema}.pathway_analysis set created_by_id = -1 where created_by_id is null;
+UPDATE ${ohdsiSchema}.reusable set created_by_id = -1 where created_by_id is null;
 
 -- Introduce session table
 
@@ -170,6 +170,8 @@ RENAME TO sec_permission_legacy;
 ALTER TABLE ${ohdsiSchema}.sec_role_permission
 RENAME TO sec_role_permission_legacy;
 
+-- NOTE: sec_permission_legacy and sec_role_permission_legacy are intentionally retained
+-- for rollback verification. Drop manually after confirming migration success.
 
 -- populate sec_{entity} tables based on permission assignments
 
@@ -489,8 +491,6 @@ WHERE role_id <> created_by_id;
 
 WITH write_permission_templates(template) AS (
   VALUES
-    ('ir:%s:get'),
-    ('ir:%s:export:get'),
     ('ir:%s:put'),
     ('ir:%s:delete')
 ),

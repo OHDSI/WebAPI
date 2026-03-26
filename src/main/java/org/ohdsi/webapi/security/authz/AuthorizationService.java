@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -198,13 +199,6 @@ public class AuthorizationService {
       roleService.addUserToRole(userEntity, publicRole, UserOrigin.SYSTEM);
     }
 
-    // Assign default roles
-    if (defaultRoles != null) {
-      for (String role : defaultRoles) {
-        roleService.addUserToRole(login, role, origin);
-      }
-    }
-
     return User.fromEntity(userEntity);
   }
 
@@ -263,9 +257,15 @@ public class AuthorizationService {
    * @return
    */
   public WebApiPrincipal getAuthenticatedPrincipal() {
-    return (WebApiPrincipal) SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getPrincipal();
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || auth.getPrincipal() == null) {
+      return WebApiPrincipal.ANONYMOUS;
+    }
+    Object principal = auth.getPrincipal();
+    if (principal instanceof WebApiPrincipal wap) {
+      return wap;
+    }
+    return WebApiPrincipal.ANONYMOUS;
   }  
 
   // -------------------------
@@ -349,7 +349,11 @@ public class AuthorizationService {
     if (principal == null) {
       return false;
     }
-    Long sourceId = sourceRepository.findBySourceKey(sourceKey).getId().longValue();
+    Source source = sourceRepository.findBySourceKey(sourceKey);
+    if (source == null) {
+      return false;
+    }
+    Long sourceId = source.getId().longValue();
     return hasEntityAccess(sourceId, EntityType.SOURCE, accessType);
   }
 

@@ -15,8 +15,8 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.source.Source;
@@ -122,7 +122,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
     public void generateCohort() {
 
         AtomicBoolean isSqlExecuted = new AtomicBoolean();
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
+        CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
         Source source = sourceRepository.findBySourceKey(SOURCE_KEY);
 
         // Run first-time generation
@@ -177,7 +177,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
     public void checkCachingWithEmptyResultSet() {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
+        CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
         Source source = sourceRepository.findBySourceKey(SOURCE_KEY);
 
         generationCacheHelper.computeCacheIfAbsent(
@@ -194,7 +194,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
     @Test
     public void checkHashEquivalence() {
 
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
+        CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
         
         Integer originalHash = generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
 
@@ -243,12 +243,12 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
                 && counts.get("cohort_censor_stats_count") == 0;
     }
 
-    private CohortDefinition getCohortDefinition() {
+    private CohortDefinitionEntity getCohortDefinition() {
 
-        CohortDefinitionDetails cohortDefinitionDetails = new CohortDefinitionDetails();
+        CohortDefinitionDetailsEntity cohortDefinitionDetails = new CohortDefinitionDetailsEntity();
         cohortDefinitionDetails.setExpression(COHORT_JSON);
 
-        CohortDefinition cohortDefinition = new CohortDefinition();
+        CohortDefinitionEntity cohortDefinition = new CohortDefinitionEntity();
         cohortDefinition.setName("Unit test");
         cohortDefinition.setDetails(cohortDefinitionDetails);
 

@@ -12,29 +12,28 @@ import org.ohdsi.webapi.arachne.logging.event.DeleteDataSourceEvent;
 import org.ohdsi.webapi.common.DBMSType;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.exception.SourceDuplicateKeyException;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 import jakarta.persistence.PersistenceException;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -48,6 +47,9 @@ import java.util.stream.Collectors;
 
 import org.ohdsi.webapi.util.CacheHelper;
 
+/**
+ * TODO: Need to add permission annotations to these methods
+ */
 @RestController
 @RequestMapping("/source")
 @Transactional
@@ -78,33 +80,31 @@ public class SourceService extends AbstractDaoService {
     @Value("${datasource.ohdsi.schema}")
     private String schema;
 
-    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
-    private boolean securityEnabled;
-
     private Map<Source, Boolean> connectionAvailability = Collections.synchronizedMap(new PassiveExpiringMap<>(5000));
 
     private final SourceRepository sourceRepository;
     private final SourceDaimonRepository sourceDaimonRepository;
+    private final AuthorizationService authorizationService;
     private final JdbcTemplate jdbcTemplate;
     private final PBEStringEncryptor defaultStringEncryptor;
-    private final SourceAccessor sourceAccessor;
+    
     private final GenericConversionService conversionService;
     private final VocabularyService vocabularyService;
     private final ApplicationEventPublisher publisher;
 
     public SourceService(SourceRepository sourceRepository,
                          SourceDaimonRepository sourceDaimonRepository,
+                         AuthorizationService authorizationService,
                          JdbcTemplate jdbcTemplate,
                          PBEStringEncryptor defaultStringEncryptor,
-                         SourceAccessor sourceAccessor,
                          GenericConversionService conversionService,
                          @Lazy VocabularyService vocabularyService,
                          ApplicationEventPublisher publisher) {
         this.sourceRepository = sourceRepository;
         this.sourceDaimonRepository = sourceDaimonRepository;
+        this.authorizationService = authorizationService;
         this.jdbcTemplate = jdbcTemplate;
         this.defaultStringEncryptor = defaultStringEncryptor;
-        this.sourceAccessor = sourceAccessor;
         this.conversionService = conversionService;
         this.vocabularyService = vocabularyService;
         this.publisher = publisher;
@@ -154,6 +154,7 @@ public class SourceService extends AbstractDaoService {
     public ResponseEntity<Collection<SourceInfo>> getSourcesEndpoint() {
         return ResponseEntity.ok(getSources().stream().map(SourceInfo::new).collect(Collectors.toList()));
     }
+
 
     /**
      * Refresh cached CDM database metadata
@@ -205,9 +206,6 @@ public class SourceService extends AbstractDaoService {
      */
     @GetMapping(value = "/details/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SourceDetails> getSourceDetails(@PathVariable("sourceId") Integer sourceId) {
-        if (!securityEnabled) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, SECURE_MODE_ERROR);
-        }
         Source source = sourceRepository.findBySourceId(sourceId);
         return ResponseEntity.ok(new SourceDetails(source));
     }
@@ -226,9 +224,6 @@ public class SourceService extends AbstractDaoService {
     public ResponseEntity<SourceInfo> createSource(
             @RequestPart(value = "keyfile", required = false) MultipartFile keyfile,
             @RequestPart("source") SourceRequest source) throws Exception {
-        if (!securityEnabled) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, SECURE_MODE_ERROR);
-        }
         Source sourceByKey = sourceRepository.findBySourceKey(source.getKey());
         if (Objects.nonNull(sourceByKey)) {
             throw new SourceDuplicateKeyException("The source key has been already used.");
@@ -289,9 +284,6 @@ public class SourceService extends AbstractDaoService {
             @PathVariable("sourceId") Integer sourceId,
             @RequestPart(value = "keyfile", required = false) MultipartFile keyfile,
             @RequestPart("source") SourceRequest source) throws IOException {
-        if (!securityEnabled) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, SECURE_MODE_ERROR);
-        }
         Source updated = conversionService.convert(source, Source.class);
         Source existingSource = sourceRepository.findBySourceId(sourceId);
         if (existingSource != null) {
@@ -341,9 +333,7 @@ public class SourceService extends AbstractDaoService {
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
     public ResponseEntity<Void> delete(@PathVariable("sourceId") Integer sourceId) throws Exception {
-        if (!securityEnabled) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+
         Source source = sourceRepository.findBySourceId(sourceId);
         if (source != null) {
             sourceRepository.delete(source);
@@ -402,9 +392,7 @@ public class SourceService extends AbstractDaoService {
     public ResponseEntity<Void> updateSourcePriority(
             @PathVariable("sourceKey") final String sourceKey,
             @PathVariable("daimonType") final String daimonTypeName) {
-        if (!securityEnabled) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+
         SourceDaimon.DaimonType daimonType = SourceDaimon.DaimonType.valueOf(daimonTypeName);
         List<SourceDaimon> daimonList = sourceDaimonRepository.findByDaimonType(daimonType);
         daimonList.forEach(daimon -> {
@@ -456,7 +444,7 @@ public class SourceService extends AbstractDaoService {
         List<Source> sourcesByDaimonPriority = sourceRepository.findAllSortedByDiamonPrioirty(daimonType);
 
         for (Source source : sourcesByDaimonPriority) {
-            if (!(sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, this::checkConnectionSafe))) {
+            if (!(true && connectionAvailability.computeIfAbsent(source, this::checkConnectionSafe))) {
                 continue;
             }
             return source;
@@ -471,7 +459,7 @@ public class SourceService extends AbstractDaoService {
 
             private boolean isSourceAvaialble(Source source) {
                 return checkedSources.computeIfAbsent(source.getSourceId(),
-                        v -> sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, SourceService.this::checkConnectionSafe));
+                        v -> true && connectionAvailability.computeIfAbsent(source, SourceService.this::checkConnectionSafe));
             }
         }
 
@@ -505,7 +493,7 @@ public class SourceService extends AbstractDaoService {
     // ==================== Private Helper Methods ====================
 
     protected UserEntity getCurrentUserEntity() {
-        return userRepository.findByLogin(security.getSubject());
+        return userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
     }
 
     private void reuseDeletedDaimons(Source updated, Source source) {

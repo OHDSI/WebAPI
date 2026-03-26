@@ -63,7 +63,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		this.sourceTemplate = sourceTemplate;
 	}
 
-	private CohortGenerationInfo findBySourceId(CohortDefinition df, Integer sourceId) {
+	private CohortGenerationInfo findBySourceId(CohortDefinitionEntity df, Integer sourceId) {
 		return df.getGenerationInfoList().stream()
 						.filter(info -> info.getId().getSourceId().equals(sourceId))
 						.findFirst()
@@ -84,7 +84,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 
 		try {
 			Source source = sourceService.findBySourceId(sourceId);
-			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).orElse(null);
+			CohortDefinitionEntity df = this.cohortDefinitionRepository.findById(defId).orElse(null);
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			setExecutionDurationIfPossible(je, info);
 			info.setStatus(GenerationStatus.COMPLETE);
@@ -144,7 +144,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
 		try {
-			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).orElse(null);
+			CohortDefinitionEntity df = this.cohortDefinitionRepository.findById(defId).orElse(null);
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			info.setIsValid(false);
 			info.setStartTime(startTime);

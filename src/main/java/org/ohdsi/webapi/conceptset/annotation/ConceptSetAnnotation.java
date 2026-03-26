@@ -3,7 +3,7 @@ package org.ohdsi.webapi.conceptset.annotation;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

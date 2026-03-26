@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.job;
 
-import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
@@ -15,14 +14,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
 
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_START_TIME;
 import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 import static org.ohdsi.webapi.Constants.WARM_CACHE;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 
 /**
  * Spring Batch 5.x template - JobBuilderFactory and StepBuilderFactory removed
@@ -33,13 +32,13 @@ public class JobTemplate {
 
     private final JobLauncher jobLauncher;
     private final JobRepository jobRepository;
-    private final Security security;
+    private final AuthorizationService authorizationService;
     private final PlatformTransactionManager transactionManager;
 
-    public JobTemplate(final JobLauncher jobLauncher, final JobRepository jobRepository, final Security security, final PlatformTransactionManager transactionManager) {
+    public JobTemplate(final JobLauncher jobLauncher, final JobRepository jobRepository, final AuthorizationService authorizationService, final PlatformTransactionManager transactionManager) {
         this.jobLauncher = jobLauncher;
         this.jobRepository = jobRepository;
-        this.security = security;
+        this.authorizationService = authorizationService;
         this.transactionManager = transactionManager;
     }
 
@@ -49,7 +48,7 @@ public class JobTemplate {
             JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
             builder.addLong(JOB_START_TIME, System.currentTimeMillis());
             if (jobParameters.getString(JOB_AUTHOR) == null) {
-                builder.addString(JOB_AUTHOR, security.getSubject());
+                builder.addString(JOB_AUTHOR, authorizationService.getAuthenticatedPrincipal().getName());
             }
             jobParameters = builder.toJobParameters();
             exec = this.jobLauncher.run(job, jobParameters);
@@ -95,6 +94,6 @@ public class JobTemplate {
     }
 
     private String getAuthorForTasklet(final String jobName) {
-        return WARM_CACHE.equals(jobName) ? SYSTEM_USER : security.getSubject();
+        return WARM_CACHE.equals(jobName) ? SYSTEM_USER : authorizationService.getAuthenticatedPrincipal().getName();
     }
 }

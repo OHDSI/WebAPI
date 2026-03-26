@@ -23,7 +23,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -76,7 +76,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
       String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
-      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
+      CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
       Source source = sourceService.findBySourceId(sourceId);
 
       CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(sessionId,

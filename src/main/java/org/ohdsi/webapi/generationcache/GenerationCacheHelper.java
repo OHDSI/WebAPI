@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.generationcache;
 
 import org.ohdsi.sql.SqlRender;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequest;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
@@ -40,7 +40,7 @@ public class GenerationCacheHelper {
     public Integer computeHash(String expression) {
         return generationCacheService.getDesignHash(CacheableGenerationType.COHORT, expression);
     }
-    public CacheResult computeCacheIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
+    public CacheResult computeCacheIfAbsent(CohortDefinitionEntity cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         Integer designHash = computeHash(cohortDefinition.getDetails().getExpression());

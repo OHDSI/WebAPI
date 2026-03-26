@@ -7,8 +7,12 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -33,6 +37,30 @@ import static org.junit.Assert.fail;
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "/application-test.properties")
 public abstract class AbstractDatabaseTest {
+
+  @Value("${datasource.ohdsi.schema:public}")
+  private String ohdsiSchema;
+
+  @org.junit.Before
+  public void setUpSecurityContext() {
+    // Set up anonymous principal so @PreAuthorize checks can evaluate
+    TestingAuthenticationToken auth = new TestingAuthenticationToken(
+        WebApiPrincipal.ANONYMOUS, null, "ROLE_ANONYMOUS");
+    auth.setAuthenticated(true);
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    // Ensure anonymous user has admin role for test permissions
+    // (idempotent — ON CONFLICT does nothing if already assigned)
+    jdbcTemplate.execute(
+        "INSERT INTO " + ohdsiSchema + ".sec_user_role (id, user_id, role_id, origin) " +
+        "SELECT nextval('" + ohdsiSchema + ".sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+        "WHERE NOT EXISTS (SELECT 1 FROM " + ohdsiSchema + ".sec_user_role WHERE user_id = -1 AND role_id = 2)");
+  }
+
+  @org.junit.After
+  public void clearSecurityContext() {
+    SecurityContextHolder.clearContext();
+  }
 
   static class JdbcTemplateTestWrapper extends ExternalResource {
 

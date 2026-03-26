@@ -2,12 +2,13 @@ package org.ohdsi.webapi.job;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
+import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,15 +52,12 @@ public class NotificationServiceImpl implements NotificationService {
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
 
     private final SearchableJobExecutionDao jobExecutionDao;
-    private final PermissionManager permissionManager;
+    private final AuthorizationService permissionManager;
     private final UserRepository userRepository;
     private final GenericConversionService conversionService;
 
-    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
-    private boolean securityEnabled;
-
     public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList,
-                                   PermissionManager permissionManager, UserRepository userRepository,
+                                   AuthorizationService permissionManager, UserRepository userRepository,
                                    @Qualifier("conversionService") GenericConversionService conversionService) {
         this.jobExecutionDao = jobExecutionDao;
         this.permissionManager = permissionManager;
@@ -203,13 +201,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Date getLastViewedTime() throws Exception {
-        final UserEntity user = securityEnabled ? permissionManager.getCurrentUser() : null;
+        WebApiPrincipal principal = permissionManager.getAuthenticatedPrincipal();
+        final UserEntity user = userRepository.findById(principal.getUserId()).orElse(null);
         return user != null ? user.getLastViewedNotificationsTime() : null;
     }
 
     @Override
     public void setLastViewedTime(Date stamp) throws Exception {
-        final UserEntity user = securityEnabled ? permissionManager.getCurrentUser() : null;
+        WebApiPrincipal principal = permissionManager.getAuthenticatedPrincipal();
+        final UserEntity user = userRepository.findById(principal.getUserId()).orElse(null);
         if(user != null) {
             user.setLastViewedNotificationsTime(stamp);
             userRepository.save(user);
@@ -227,7 +227,9 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     private boolean isMine(JobExecution jobExec) {
-        final String login = securityEnabled ? permissionManager.getSubjectName() : null;
+        WebApiPrincipal principal = permissionManager.getAuthenticatedPrincipal();
+
+        final String login = principal.getName();
         final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
         return Objects.equals(login, jobAuthor);
     }

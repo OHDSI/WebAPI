@@ -5,9 +5,9 @@ import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
-import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -50,23 +50,24 @@ import java.util.Optional;
 @RequestMapping("/reusable")
 @Transactional
 public class ReusableService extends AbstractDaoService implements HasTags<Integer> {
+
+    private final AuthorizationService authorizationService;
     private final ReusableRepository reusableRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
-    private final PermissionService permissionService;
     private final VersionService<ReusableVersion> versionService;
 
     @Autowired
     public ReusableService(
+            AuthorizationService authorizationService,
             ReusableRepository reusableRepository,
             EntityManager entityManager,
             @Qualifier("conversionService") ConversionService conversionService,
-            PermissionService permissionService,
             VersionService<ReusableVersion> versionService) {
+        this.authorizationService = authorizationService;
         this.reusableRepository = reusableRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
-        this.permissionService = permissionService;
         this.versionService = versionService;
     }
 
@@ -109,7 +110,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findAll(pageable)
                 .map(reusable -> {
                     final ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
-                    permissionService.fillWriteAccess(reusable, dto);
+                    // permissionService.fillWriteAccess(reusable, dto);
                     return dto;
                 });
     }
@@ -121,7 +122,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         saveVersion(id);
 
         Reusable existing = reusableRepository.findById(id).orElse(null);
-        UserEntity modifier = userRepository.findByLogin(security.getSubject());
+        UserEntity modifier = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
 
         existing.setName(entity.getName())
                 .setDescription(entity.getDescription())
@@ -170,9 +171,6 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void delete(@PathVariable("id") Integer id) {
         Reusable existing = reusableRepository.findById(id).orElse(null);
-
-        checkOwnerOrAdminOrModerator(existing.getCreatedBy());
-
         reusableRepository.deleteById(id);
     }
 
@@ -186,7 +184,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
     @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ReusableVersionFullDTO getVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
-        checkVersion(id, version, false);
+        checkVersion(id, version);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
 
         return conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
@@ -210,7 +208,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
     public ReusableDTO copyAssetFromVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
-        checkVersion(id, version, false);
+        checkVersion(id, version);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ReusableVersionFullDTO fullDTO = conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
         ReusableDTO dto = conversionService.convert(fullDTO.getEntityDTO(), ReusableDTO.class);
@@ -234,18 +232,9 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     private void checkVersion(int id, int version) {
-        checkVersion(id, version, true);
-    }
-
-    private void checkVersion(int id, int version, boolean checkOwnerShip) {
         Version reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(reusableVersion,
                 String.format("There is no reusable version with id = %d.", version));
-
-        Reusable entity = this.reusableRepository.findById(id).orElse(null);
-        if (checkOwnerShip) {
-            checkOwnerOrAdminOrGranted(entity);
-        }
     }
 
     public ReusableVersion saveVersion(int id) {

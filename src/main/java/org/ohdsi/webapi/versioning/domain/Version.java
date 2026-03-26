@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.versioning.domain;
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.FetchType;
@@ -10,6 +8,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import java.util.Date;
 import java.util.Objects;
+
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 @MappedSuperclass
 public abstract class Version {

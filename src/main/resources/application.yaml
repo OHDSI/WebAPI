@@ -144,6 +144,25 @@ security:
       loginUrl: ""
       serverUrl: ""
 
+    db:
+      enabled: false
+      lockout-policy:
+        max-failed-attempts: 5
+        lockout-duration: 30m
+      datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5436/SECURITY_DB
+        username: ""
+        password: ""
+        schema: ""
+        connection-test-query: SELECT 1
+        connection-test-query-timeout: 2000
+        maximum-pool-size: 5
+        minimum-idle: 1
+        connection-timeout: 5000
+        register-mbeans: true
+        pool-name: authDataSource
+
     google: # TODO: Need documentation on authentication via google token.
       accessToken:
         enabled: false
@@ -153,16 +172,6 @@ security:
       backendServiceId: ""
       cloudProjectId: ""
     
-    jdbc: # Java Database Connectivity (JDBC) Authentication
-      enabled: false
-      datasource:
-        authenticationQuery: select password from ${security.auth.jdbc.datasource.schema}.your_schema.users where lower(email) = lower(?)
-        driverClassName: org.postgresql.Driver
-        password: app1dbsecurity_pass
-        schema: your_schema
-        url: jdbc:postgresql://localhost:5436/SECURITY_DB
-        username: dbsecurity_user
-
     kerberos: # Kerberos
       enabled: false
       keytabPath: ""
@@ -211,6 +220,7 @@ security:
       apiSecret: ""
       clientId: ""
       customParams: "{:}"
+      externalUrl: ""
       extraScopes: ""
       logoutUrl: ""
       redirectUrl: http://localhost/index.html#/welcome/
@@ -232,27 +242,42 @@ security:
       sloUrl: ""
     
     windows:
-      enabled: true
+      enabled: false
 
   cors: # Cross origin requests
     enabled: true
-
+    allowed-origins: http://localhost
+    
   # If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.
   # If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have read permissions to
   defaultGlobalReadPermissions: true
 
+  defaultRoles: ""
+
   duration:
     increment: 10
     initial: 10
+  
+  jwt:
+    # Algorithm: HS256 (symmetric) or RS256 (asymmetric). Default: HS256
+    algorithm: HS256
+    # HS256 secret (for development only). In production, inject via env or secrets manager.
+    secret: super-secret-key-super-secret-key
+    # RS256 key paths (PEM files). Leave empty when using HS256.
+    rsa:
+      private-key-path: ""
+      public-key-path: ""
+    # Optional JWK Set URI for fetching public keys (production)
+    jwk-set-uri: ""
+    # Optional key id to include in JWT header when using RS256
+    kid: ""
 
   maxLoginAttempts: 3
-  origin: http://localhost
-  provider: DisabledSecurity
 
-  ssl:
-    enabled: false
-  token:
-    expiration: 360000
+  sessions:
+    single-login: false
+    expiration: 30m
+    cleanup-interval: 1h
 
 # Sensitive Info settings
 sensitiveinfo:
@@ -270,19 +295,23 @@ server:
   servlet:
     context-path: /WebAPI
   port: 8080
+  # Trust X-Forwarded-* headers from reverse proxies (nginx, Apache, load balancers)
+  # Required for SSL redirect to detect original protocol when behind a proxy
+  forward-headers-strategy: NATIVE
   ssl:
     enabled: false
     key-password: ""
     key-store: ""
     key-store-password: ""
+
 solr:
   endpoint: ${solr.endpoint}
   query:
     prefix: ${solr.query.prefix}
-source:
-  name: CDM_NAME
+
 sparql:
   endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=
+
 spring:
   main:
     lazy-initialization: true
@@ -306,15 +335,10 @@ spring:
     jcache:
       config: classpath:appCache.xml
     type: jcache
+  data:
+    ldap:
+      repositories.enabled: false    
   datasource:
-    hikari:
-      connection-test-query: SELECT 1
-      connection-test-query-timeout: 2000
-      connection-timeout: 5000
-      maximum-pool-size: 5
-      mbean-name: authDataSource
-      minimum-idle: 1
-      register-mbeans: true
     initialize: false
   flyway:
     baseline-on-migrate: true

@@ -6,7 +6,7 @@ import org.ohdsi.webapi.job.JobInstanceResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;

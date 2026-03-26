@@ -3,8 +3,6 @@ package org.ohdsi.webapi.arachne.scheduler.api.v1.converter;
 import org.ohdsi.webapi.arachne.commons.converter.BaseConvertionServiceAwareConverter;
 import org.ohdsi.webapi.arachne.scheduler.api.v1.dto.ArachneJobDTO;
 import org.ohdsi.webapi.arachne.scheduler.model.ArachneJob;
-import java.sql.Date;
-import java.time.ZoneOffset;
 
 public abstract class BaseArachneJobToArachneJobDTOConverter<S extends ArachneJob, T extends ArachneJobDTO> extends BaseConvertionServiceAwareConverter<S, T> {
 

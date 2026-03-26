@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
@@ -20,20 +20,19 @@ public class CohortVersionToCohortVersionFullDTOConverter
 
     @Override
     public CohortVersionFullDTO convert(CohortVersion source) {
-        CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId().intValue());
+        CohortDefinitionEntity def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no cohort definition with id = %d.", source.getAssetId()));
 
-        CohortDefinitionDetails details = new CohortDefinitionDetails();
+        CohortDefinitionDetailsEntity details = new CohortDefinitionDetailsEntity();
         details.setExpression(source.getAssetJson());
 
-        CohortDefinition entity = new CohortDefinition();
+        CohortDefinitionEntity entity = new CohortDefinitionEntity();
         entity.setId(def.getId());
         entity.setTags(def.getTags());
         entity.setName(def.getName());
         entity.setExpressionType(def.getExpressionType());
         entity.setDetails(details);
-        entity.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
         entity.setGenerationInfoList(def.getGenerationInfoList());
         entity.setCreatedBy(def.getCreatedBy());
         entity.setCreatedDate(def.getCreatedDate());

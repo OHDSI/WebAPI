@@ -29,4 +29,5 @@ public interface SourceRepository extends EntityGraphJpaRepository<Source, Integ
   Source findBySourceId(int sourceId);
   @Query("SELECT s FROM Source s JOIN s.daimons sd WHERE sd.daimonType = ?1 ORDER BY sd.priority DESC")
   List<Source> findAllSortedByDiamonPrioirty(SourceDaimon.DaimonType daimonType);
+
 }

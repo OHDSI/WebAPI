@@ -257,6 +257,20 @@ security:
   duration:
     increment: 10
     initial: 10
+  
+  jwt:
+    # Algorithm: HS256 (symmetric) or RS256 (asymmetric). Default: HS256
+    algorithm: HS256
+    # HS256 secret (for development only). In production, inject via env or secrets manager.
+    secret: super-secret-key-super-secret-key
+    # RS256 key paths (PEM files). Leave empty when using HS256.
+    rsa:
+      private-key-path: ""
+      public-key-path: ""
+    # Optional JWK Set URI for fetching public keys (production)
+    jwk-set-uri: ""
+    # Optional key id to include in JWT header when using RS256
+    kid: ""
 
   maxLoginAttempts: 3
 

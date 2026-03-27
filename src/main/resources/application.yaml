@@ -224,6 +224,7 @@ security:
       extraScopes: ""
       logoutUrl: ""
       redirectUrl: http://localhost/index.html#/welcome/
+      rolesClaim: ""
       url: ""
 
     saml: # SAML (Security Assertion Markup Language)

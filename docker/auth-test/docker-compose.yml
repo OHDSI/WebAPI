@@ -19,7 +19,7 @@ services:
     container_name: mock-oauth2
     environment:
       - SERVER_PORT=9090
-      - JSON_CONFIG={"interactiveLogin":true,"httpServer":"NettyWrapper","tokenCallbacks":[{"issuerId":"default","tokenExpiry":3600,"requestMappings":[{"requestParam":"grant_type","match":"*","claims":{"sub":"testuser","email":"testuser@example.com","name":"Test User"}}]}]}
+      - JSON_CONFIG={"interactiveLogin":true,"httpServer":"NettyWrapper","tokenCallbacks":[{"issuerId":"default","tokenExpiry":3600,"requestMappings":[{"requestParam":"grant_type","match":"*","claims":{"sub":"testuser","email":"testuser@example.com","name":"Test User","roles":["Atlas users"]}}]}]}
     ports:
       - "9090:9090"
     networks:
@@ -68,6 +68,8 @@ services:
       - SECURITY_AUTH_OPENID_EXTERNALURL=http://localhost:9090/default
       - SECURITY_AUTH_OPENID_LOGOUTURL=http://localhost:9090/default/endsession
       - SECURITY_AUTH_OPENID_EXTRASCOPES=profile email
+      - SECURITY_AUTH_OPENID_ROLESCLAIM=roles
+      - SECURITY_DEFAULTROLES=Atlas users
       - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
       - SECURITY_AUTH_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
       - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query

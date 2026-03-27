@@ -978,7 +978,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         (
             isPermitted('write:conceptset') 
             or isOwner(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET)
-            or hasEntityAccess(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET, WRITE))"
+            or hasEntityAccess(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET, WRITE)
         )
     """)
     public void copyAnnotations(@RequestBody CopyAnnotationsRequest copyAnnotationsRequest) {

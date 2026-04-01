@@ -14,7 +14,6 @@ import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.listener.JobExecutionListenerSupport;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 
@@ -26,13 +25,11 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
   private final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
   
   private final JdbcTemplate jdbcTemplate;
-  private final TransactionTemplate transactionTemplate;
   private final SourceService sourceService;
   private final SourceAwareSqlRender sourceAwareSqlRender;
 
-  public DropCohortTableListener(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, SourceService sourceService, SourceAwareSqlRender sourceAwareSqlRender) {
+  public DropCohortTableListener(JdbcTemplate jdbcTemplate, SourceService sourceService, SourceAwareSqlRender sourceAwareSqlRender) {
     this.jdbcTemplate = jdbcTemplate;
-    this.transactionTemplate = transactionTemplate;
     this.sourceService = sourceService;
     this.sourceAwareSqlRender = sourceAwareSqlRender;
   }
@@ -40,7 +37,7 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
   private Object doTask(JobParameters parameters) {
 
     final Map<String, JobParameter<?>> jobParameters = parameters.getParameters();
-    final Integer sourceId = Integer.valueOf(jobParameters.get(SOURCE_ID).toString());
+    final Integer sourceId = Integer.valueOf(jobParameters.get(SOURCE_ID).getValue().toString());
     final String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
     final String sql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable );
 
@@ -59,7 +56,8 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
 
   @Override
   public void afterJob(JobExecution jobExecution) {
-
-    transactionTemplate.execute(transactionStatus -> doTask(jobExecution.getJobParameters()));
+    // No transaction wrapper needed - sourceService.findBySourceId() has @Transactional
+    // and DROP TABLE is DDL that auto-commits
+    doTask(jobExecution.getJobParameters());
   }
 }

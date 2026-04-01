@@ -140,6 +140,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -586,6 +587,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public JobExecutionResource generateCc(final Long id, final String sourceKey) {
 
         CcService ccService = this;
@@ -611,7 +613,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 },
                 new GenerateCohortCharacterizationTasklet(
                         jdbcTemplate,
-                        getTransactionTemplate(),
+                        getBatchTransactionTemplate(),
                         ccService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,

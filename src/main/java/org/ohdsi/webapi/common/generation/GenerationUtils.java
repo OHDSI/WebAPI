@@ -44,6 +44,7 @@ public class GenerationUtils extends AbstractDaoService {
     private JobRepository jobRepository;
     private PlatformTransactionManager transactionManager;
     private TransactionTemplate transactionTemplate;
+    private TransactionTemplate batchTransactionTemplate;
     private CohortGenerationService cohortGenerationService;
     private SourceService sourceService;
     private JobService jobService;
@@ -57,6 +58,7 @@ public class GenerationUtils extends AbstractDaoService {
     public GenerationUtils(JobRepository jobRepository,
                            PlatformTransactionManager transactionManager,
                            @Qualifier("transactionTemplate") TransactionTemplate transactionTemplate,
+                           @Qualifier("batchTransactionTemplate") TransactionTemplate batchTransactionTemplate,
                            CohortGenerationService cohortGenerationService,
                            SourceService sourceService,
                            SourceAwareSqlRender sourceAwareSqlRender,
@@ -67,6 +69,7 @@ public class GenerationUtils extends AbstractDaoService {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
         this.transactionTemplate = transactionTemplate;
+        this.batchTransactionTemplate = batchTransactionTemplate;
         this.cohortGenerationService = cohortGenerationService;
         this.sourceService = sourceService;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
@@ -94,7 +97,7 @@ public class GenerationUtils extends AbstractDaoService {
 
         TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
                 getSourceJdbcTemplate(source),
-                transactionTemplate,
+                batchTransactionTemplate,
                 source.getSourceDialect(),
                 sessionId,
                 SourceUtils.getTempQualifier(source)
@@ -102,13 +105,13 @@ public class GenerationUtils extends AbstractDaoService {
 
         GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);
 
-        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, batchTransactionTemplate, sourceService, sourceAwareSqlRender);
         Step createCohortTableStep = new StepBuilder(analysisTypeName + ".createCohortTable", jobRepository)
                 .tasklet(createCohortTableTasklet, transactionManager)
                 .build();
 
         GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
-                transactionTemplate,
+                batchTransactionTemplate,
                 getSourceJdbcTemplate(source),
                 cohortGenerationService,
                 sourceService,
@@ -125,7 +128,7 @@ public class GenerationUtils extends AbstractDaoService {
                 .exceptionHandler(exceptionHandler)
                 .build();
 
-        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, sourceService, sourceAwareSqlRender);
 
         SimpleJobBuilder generateJobBuilder =  new JobBuilder(analysisTypeName, jobRepository)
                 .start(createCohortTableStep)

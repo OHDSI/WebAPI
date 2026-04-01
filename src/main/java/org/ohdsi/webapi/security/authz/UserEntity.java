@@ -18,17 +18,28 @@ public class UserEntity implements Serializable{
 
   private static final long serialVersionUID = -2697485161468660016L;
 
-  private Long id;
-  private String login;
-  private String name;
-  private UserOrigin origin = UserOrigin.SYSTEM;
-  private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
-  private Date lastViewedNotificationsTime;
-
   @Id
   @Column(name = "ID")
   @SequenceGenerator(name = "sec_user_seq", sequenceName = "sec_user_sequence", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sec_user_seq")
+  private Long id;
+
+  @Column(name = "LOGIN")
+  private String login;
+
+  @Column(name = "NAME")
+  private String name;
+
+  @Column(name = "origin", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserOrigin origin = UserOrigin.SYSTEM;
+
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
+
+  @Column(name = "last_viewed_notifications_time")
+  private Date lastViewedNotificationsTime;
+
   public Long getId() {
       return id;
   }
@@ -37,7 +48,6 @@ public class UserEntity implements Serializable{
       this.id = id;
   }
 
-  @Column(name = "LOGIN")
   public String getLogin() {
       return login;
   }
@@ -46,7 +56,6 @@ public class UserEntity implements Serializable{
       this.login = login;
   }
 
-  @Column(name = "NAME")
   public String getName() {
       return name;
   }
@@ -55,7 +64,6 @@ public class UserEntity implements Serializable{
       this.name = name;
   }
 
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   public Set<UserRoleEntity> getUserRoles() {
     return userRoles;
   }
@@ -64,7 +72,6 @@ public class UserEntity implements Serializable{
     this.userRoles = userRoles;
   }
 
-  @Column(name = "last_viewed_notifications_time")
   public Date getLastViewedNotificationsTime() {
     return lastViewedNotificationsTime;
   }
@@ -73,8 +80,6 @@ public class UserEntity implements Serializable{
     this.lastViewedNotificationsTime = lastViewedNotificationsTime;
   }
 
-  @Column(name = "origin", nullable = false)
-  @Enumerated(EnumType.STRING)
   public UserOrigin getOrigin() {
     return origin;
   }

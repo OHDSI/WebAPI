@@ -25,16 +25,15 @@
     <postgresql.version>42.7.4</postgresql.version>
     <bouncycastle.version>1.83</bouncycastle.version>
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
-    <circe.version>1.12.1</circe.version>
+    <circe.version>1.13.0</circe.version>
+    <featureExtraction.version>3.8.0</featureExtraction.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>6.0.5</pac4j.version>
     <jackson.version>2.18.2</jackson.version>
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.release>21</maven.compiler.release>
-    <arachne.version>1.17.4</arachne.version>
 
     <!-- Build info -->
     <buildinfo.webapi.milestone.id>49</buildinfo.webapi.milestone.id>
@@ -479,6 +478,11 @@
       <version>${SqlRender.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>featureExtraction</artifactId>
+      <version>${featureExtraction.version}</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.14.0</version>
@@ -523,16 +527,7 @@
       <artifactId>flyway-database-postgresql</artifactId>
       <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
     </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-sqlserver</artifactId>
-      <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-database-oracle</artifactId>
-      <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
-    </dependency>
+    <!-- removed non-supported versions of flyway RDBMS (SqlServer and Oracle)-->
     <dependency>
       <groupId>com.cronutils</groupId>
       <artifactId>cron-utils</artifactId>
@@ -650,6 +645,29 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>SkeletonCohortCharacterization</artifactId>
+      <version>2.0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>featureExtraction</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>    
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>

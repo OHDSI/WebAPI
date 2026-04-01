@@ -24,15 +24,24 @@ public class UserRoleEntity implements Serializable {
 
   private static final long serialVersionUID = 6257846375334314942L;
 
-  private Long id;
-  private UserEntity user;
-  private RoleEntity role;
-  private UserOrigin origin = UserOrigin.SYSTEM;
-
   @Id
   @Column(name = "ID")
   @SequenceGenerator(name = "sec_user_role_seq", sequenceName = "sec_user_role_sequence", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sec_user_role_seq")
+  private Long id;
+
+  @ManyToOne
+  @JoinColumn(name="USER_ID", nullable=false)
+  private UserEntity user;
+
+  @ManyToOne
+  @JoinColumn(name="ROLE_ID", nullable=false)
+  private RoleEntity role;
+
+  @Column(name = "origin", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserOrigin origin = UserOrigin.SYSTEM;
+
   public Long getId() {
     return id;
   }
@@ -41,8 +50,6 @@ public class UserRoleEntity implements Serializable {
     this.id = id;
   }
 
-  @ManyToOne
-  @JoinColumn(name="USER_ID", nullable=false)
   public UserEntity getUser() {
     return user;
   }
@@ -51,8 +58,6 @@ public class UserRoleEntity implements Serializable {
     this.user = user;
   }
 
-  @ManyToOne
-  @JoinColumn(name="ROLE_ID", nullable=false)
   public RoleEntity getRole() {
     return role;
   }
@@ -61,8 +66,6 @@ public class UserRoleEntity implements Serializable {
     this.role = role;
   }
 
-  @Column(name = "origin", nullable = false)
-  @Enumerated(EnumType.STRING)
   public UserOrigin getOrigin() {
     return origin;
   }

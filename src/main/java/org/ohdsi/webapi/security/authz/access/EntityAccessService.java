@@ -27,15 +27,18 @@ public class EntityAccessService {
 
   private final CohortDefinitionAccessRepository cohortDefAccessRepo;
   private final ConceptSetAccessRepository conceptSetAccessRepo;
+  private final CohortCharacterizationAccessRepository cohortCharAccessRepo;
   private final SourceAccessRepository sourceAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
       ConceptSetAccessRepository conceptSetAccessRepo,
+      CohortCharacterizationAccessRepository cohortCharAccessRepo,
       SourceAccessRepository sourceAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
+    this.cohortCharAccessRepo = cohortCharAccessRepo;
     this.sourceAccessRepo = sourceAccessRepo;
     this.permissionRepository = permissionRepository;
   }
@@ -65,14 +68,16 @@ public class EntityAccessService {
     // Per-entity access maps built from sec_* tables + ownership
     authz.cohortDefinitionAccess = buildCohortDefinitionAccess(userId);
     authz.conceptSetAccess = buildConceptSetAccess(userId);
+    authz.cohortCharacterizationAccess = buildCohortCharacterizationAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, sources={})",
+    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, sources={})",
         userId, elapsedMs,
         authz.permissions.size(),
         authz.cohortDefinitionAccess.size(),
         authz.conceptSetAccess.size(),
+        authz.cohortCharacterizationAccess.size(),
         authz.sourceAccess.size());
 
     return authz;
@@ -162,6 +167,45 @@ public class EntityAccessService {
   }
 
   /**
+   * Build the cohort characterization access map for a user.
+   * Queries the sec_cohort_characterization table via roles assigned to the user,
+   * then merges owned cohort characterizations as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of cohortCharacterizationId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildCohortCharacterizationAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : cohortCharAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Long ownedId : cohortCharAccessRepo.findOwnedCohortCharacterizationIds(userId)) {
+      ownedIds.add(ownedId);
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
    * Build the source access map for a user.
    * Queries the sec_source table via roles assigned to the user.
    * Note: Source ownership does NOT imply write access; only explicit
@@ -181,18 +225,4 @@ public class EntityAccessService {
     return access;
   }
 
-  /**
-   * Get the owner (created_by_id) of an entity
-   * 
-   * @param entityId   The entity ID
-   * @param entityType The type of entity
-   * @return The user ID of the owner, or null if not found
-   */
-  public Long getOwnerId(Long entityId, EntityType entityType) {
-    return switch (entityType) {
-      case COHORT_DEFINITION -> cohortDefAccessRepo.getCreatedById(entityId);
-      case CONCEPT_SET -> conceptSetAccessRepo.getCreatedById(entityId);
-      case SOURCE -> null; // no one owns a source
-    };
-  }
 }

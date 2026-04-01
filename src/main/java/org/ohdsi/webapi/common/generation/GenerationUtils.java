@@ -1,6 +1,15 @@
 package org.ohdsi.webapi.common.generation;
 
+import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+
+import java.util.Collection;
+import java.util.function.Function;
+
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
+import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
+import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationService;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
@@ -28,12 +37,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.persistence.EntityManager;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-
-import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 @Component
 public class GenerationUtils extends AbstractDaoService {
@@ -77,6 +80,63 @@ public class GenerationUtils extends AbstractDaoService {
         return Constants.TEMP_COHORT_TABLE_PREFIX + sessionId;
     }
 
+    public SimpleJobBuilder buildJobForCohortBasedAnalysisTasklet(
+            String analysisTypeName,
+            Source source,
+            JobParametersBuilder builder,
+            JdbcTemplate jdbcTemplate,
+            Function<ChunkContext, Collection<CohortDefinitionEntity>> cohortGetter,
+            CancelableTasklet analysisTasklet
+    ) {
+
+        final String sessionId = SessionUtils.sessionId();
+        addSessionParams(builder, sessionId);
+
+        TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
+                getSourceJdbcTemplate(source),
+                transactionTemplate,
+                source.getSourceDialect(),
+                sessionId,
+                SourceUtils.getTempQualifier(source)
+        );
+
+        GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);
+
+        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+        Step createCohortTableStep = new StepBuilder(analysisTypeName + ".createCohortTable", jobRepository)
+                .tasklet(createCohortTableTasklet, transactionManager)
+                .build();
+
+        GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
+                transactionTemplate,
+                getSourceJdbcTemplate(source),
+                cohortGenerationService,
+                sourceService,
+                cohortGetter,
+                generationCacheHelper,
+                useAsyncCohortGeneration
+        );
+        Step generateLocalCohortStep = new StepBuilder(analysisTypeName + ".generateCohort", jobRepository)
+                .tasklet(generateLocalCohortTasklet, transactionManager)
+                .build();
+
+        Step generateAnalysisStep = new StepBuilder(analysisTypeName + ".generate", jobRepository)
+                .tasklet(analysisTasklet, transactionManager)
+                .exceptionHandler(exceptionHandler)
+                .build();
+
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+
+        SimpleJobBuilder generateJobBuilder =  new JobBuilder(analysisTypeName, jobRepository)
+                .start(createCohortTableStep)
+                .next(generateLocalCohortStep)
+                .next(generateAnalysisStep)
+                .listener(dropCohortTableListener)
+                .listener(new AutoremoveJobListener(jobService));
+
+        return generateJobBuilder;
+    }
+        
     protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
         builder.addString(SESSION_ID, sessionId);
         builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));

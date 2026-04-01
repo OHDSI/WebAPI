@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.security.authz.access;
 
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -8,8 +9,8 @@ import org.ohdsi.webapi.source.Source;
 public enum EntityType {
     COHORT_DEFINITION(CohortDefinitionEntity.class),
     CONCEPT_SET(ConceptSet.class),
-    SOURCE(Source.class);
-    // COHORT_CHARACTERIZATION(CohortCharacterizationEntity.class),
+    SOURCE(Source.class),
+    COHORT_CHARACTERIZATION(CohortCharacterizationEntity.class);
     // PATHWAY_ANALYSIS(PathwayAnalysisEntity.class),
     // FE_ANALYSIS(FeAnalysisEntity.class),
     // INCIDENCE_RATE(IncidenceRateAnalysis.class),

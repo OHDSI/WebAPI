@@ -14,27 +14,6 @@ import org.springframework.stereotype.Repository;
 public interface CohortDefinitionAccessRepository extends JpaRepository<CohortDefinitionAccessEntity, CohortDefinitionAccessEntity.CohortDefinitionAccessId> {
 
     /**
-     * Check if a user has specific access to a cohort definition
-     */
-    @Query("""
-        SELECT CASE WHEN COUNT(ca) > 0 THEN true ELSE false END
-        FROM CohortDefinitionAccess ca
-        JOIN UserRole ur ON ur.role.id = ca.roleId
-        WHERE ur.user.id = :userId
-        AND ca.cohortDefinitionId = :cohortDefinitionId
-        AND ca.accessType = :accessType        
-    """)
-    boolean hasAccess(@Param("userId") Long userId, 
-                      @Param("cohortDefinitionId") Long cohortDefinitionId,
-                      @Param("accessType") AccessType accessType);
-
-    /**
-     * Get the owner (created_by_id) of a cohort definition
-     */
-    @Query("SELECT cd.createdBy.id FROM CohortDefinition cd WHERE cd.id = :cohortDefinitionId")
-    Long getCreatedById(@Param("cohortDefinitionId") Long cohortDefinitionId);
-
-    /**
      * Find all cohort definition access grants for a user via their roles.
      * Joins through UserRole to resolve role membership from a userId.
      * Returns (entityId, accessType) projections.

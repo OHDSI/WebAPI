@@ -297,6 +297,10 @@ public class AuthorizationService {
         EntityGrant grant = authz.cohortCharacterizationAccess.get(entityId);
         yield grant != null && grant.isOwner();
       }
+      case FE_ANALYSIS -> {
+        EntityGrant grant = authz.feAnalysisAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
       case SOURCE -> false;
     };
   }
@@ -331,6 +335,10 @@ public class AuthorizationService {
       }
       case COHORT_CHARACTERIZATION -> {
         EntityGrant grant = authz.cohortCharacterizationAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+      case FE_ANALYSIS -> {
+        EntityGrant grant = authz.feAnalysisAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
       // infrastructure types that don't have ownership (ie: sources, tools, etc)

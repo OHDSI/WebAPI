@@ -10,6 +10,9 @@ import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.ohdsi.webapi.security.authz.access.EntityType;
+import org.ohdsi.webapi.security.authz.access.AccessType;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -92,6 +95,7 @@ public class FeAnalysisController {
      * @return
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('create:feature-analysis')")
     public FeAnalysisDTO createAnalysis(@RequestBody final FeAnalysisDTO dto) {
         final FeAnalysisEntity createdEntity = service.createAnalysis(conversionService.convert(dto, FeAnalysisEntity.class));
         return convertFeAnalysisToDto(createdEntity);
@@ -104,6 +108,7 @@ public class FeAnalysisController {
      * @return
      */
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, WRITE)")
     public FeAnalysisDTO updateAnalysis(@PathVariable("id") final Integer feAnalysisId, @RequestBody final FeAnalysisDTO dto) {
         final FeAnalysisEntity updatedEntity = service.updateAnalysis(feAnalysisId, conversionService.convert(dto, FeAnalysisEntity.class));
         return convertFeAnalysisToDto(updatedEntity);
@@ -114,6 +119,7 @@ public class FeAnalysisController {
      * @param feAnalysisId ID of feature analysis to delete
      */
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, WRITE)")
     public void deleteAnalysis(@PathVariable("id") final Integer feAnalysisId) {
         final FeAnalysisEntity entity = service.findById(feAnalysisId).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(entity, String.format("There is no feature analysis with id = %d.", feAnalysisId));
@@ -127,6 +133,7 @@ public class FeAnalysisController {
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('read:feature-analysis') or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)")
     public FeAnalysisDTO getFeAnalysis(@PathVariable("id") final Integer feAnalysisId) {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));
@@ -134,6 +141,7 @@ public class FeAnalysisController {
     }
 
     @GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('read:feature-analysis') or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)")
     public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportConceptSets(@PathVariable("id") final Integer feAnalysisId) {
 
       final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
@@ -155,6 +163,7 @@ public class FeAnalysisController {
      */
     @GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("(isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)) and isPermitted('create:feature-analysis')")
     public FeAnalysisDTO copy(@PathVariable("id") final Integer feAnalysisId) {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));

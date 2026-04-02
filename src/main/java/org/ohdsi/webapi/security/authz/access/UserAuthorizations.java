@@ -10,6 +10,7 @@ public class UserAuthorizations {
   public Map<Long, EntityGrant> cohortDefinitionAccess = Map.of();
   public Map<Long, EntityGrant> conceptSetAccess = Map.of();
   public Map<Long, EntityGrant> cohortCharacterizationAccess = Map.of();
+  public Map<Long, EntityGrant> feAnalysisAccess = Map.of();
 
   /** Infrastructure entities: access grants only (no ownership semantics) */
   public Map<Long, Set<AccessType>> sourceAccess = Map.of();

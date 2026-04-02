@@ -1191,7 +1191,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition')")
 	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
 		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
 			return Collections.emptyList();

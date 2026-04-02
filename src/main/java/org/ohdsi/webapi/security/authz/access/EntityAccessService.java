@@ -28,17 +28,20 @@ public class EntityAccessService {
   private final CohortDefinitionAccessRepository cohortDefAccessRepo;
   private final ConceptSetAccessRepository conceptSetAccessRepo;
   private final CohortCharacterizationAccessRepository cohortCharAccessRepo;
+  private final FeAnalysisAccessRepository feAnalysisAccessRepo;
   private final SourceAccessRepository sourceAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
       ConceptSetAccessRepository conceptSetAccessRepo,
       CohortCharacterizationAccessRepository cohortCharAccessRepo,
+      FeAnalysisAccessRepository feAnalysisAccessRepo,
       SourceAccessRepository sourceAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
     this.cohortCharAccessRepo = cohortCharAccessRepo;
+    this.feAnalysisAccessRepo = feAnalysisAccessRepo;
     this.sourceAccessRepo = sourceAccessRepo;
     this.permissionRepository = permissionRepository;
   }
@@ -69,6 +72,7 @@ public class EntityAccessService {
     authz.cohortDefinitionAccess = buildCohortDefinitionAccess(userId);
     authz.conceptSetAccess = buildConceptSetAccess(userId);
     authz.cohortCharacterizationAccess = buildCohortCharacterizationAccess(userId);
+    authz.feAnalysisAccess = buildFeAnalysisAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
@@ -186,6 +190,45 @@ public class EntityAccessService {
     Set<Long> ownedIds = new java.util.HashSet<>();
     for (Long ownedId : cohortCharAccessRepo.findOwnedCohortCharacterizationIds(userId)) {
       ownedIds.add(ownedId);
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the feature analysis access map for a user.
+   * Queries the sec_fe_analysis table via roles assigned to the user,
+   * then merges owned feature analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of feAnalysisId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildFeAnalysisAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : feAnalysisAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : feAnalysisAccessRepo.findOwnedFeAnalysisIds(userId)) {
+      ownedIds.add(ownedId.longValue());
     }
 
     // Merge into EntityGrant map

@@ -47,6 +47,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityType;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -101,6 +106,7 @@ public class CcController {
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO create(@RequestBody final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
@@ -113,6 +119,7 @@ public class CcController {
      * @return The cohort characterization definition of the newly created copy
      */
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO copy(@PathVariable("id") final Long id) {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
@@ -160,6 +167,7 @@ public class CcController {
      * @return name, createdDate, tags, etc for a single cohort characterization.
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CcShortDTO get(@PathVariable("id") final Long id) {
         return convertCcToShortDto(service.findById(id));
     }
@@ -171,6 +179,7 @@ public class CcController {
      * @return JSON containing the cohort characterization specification
      */
     @GetMapping(value = "/{id}/design", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CohortCharacterizationDTO getDesign(@PathVariable("id") final Long id) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
@@ -197,6 +206,7 @@ public class CcController {
      * @param id The id for a characterization that currently exists in WebAPI
      */
     @DeleteMapping(value = "/{id}")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void deleteCc(@PathVariable("id") final Long id) {
         service.deleteCc(id);
     }
@@ -210,6 +220,7 @@ public class CcController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public CohortCharacterizationDTO update(@PathVariable("id") final Long id, @RequestBody final CohortCharacterizationDTO dto) {
         service.saveVersion(dto.getId());
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
@@ -227,6 +238,7 @@ public class CcController {
      * @return The same cohort characterization definition that was passed as input
      */
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO doImport(@RequestBody final CcExportDTO dto) {
         dto.setName(service.getNameWithSuffix(dto.getName()));
         dto.setTags(null);
@@ -241,6 +253,7 @@ public class CcController {
      * @return JSON containing the cohort characterization definition
      */
     @GetMapping(value = "/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public String export(@PathVariable("id") final Long id) {
         return service.serializeCc(id);
     }
@@ -251,6 +264,7 @@ public class CcController {
      * @return A zip file containing three csv files (mappedConcepts, includedConcepts, conceptSetExpression)
      */
     @GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public ResponseEntity<StreamingResponseBody> exportConceptSets(@PathVariable("id") final Long id) {
 
         CohortCharacterizationEntity cc = service.findById(id);
@@ -278,6 +292,7 @@ public class CcController {
      * @return A json object with information about the generation job included the status and execution id.
      */
     @PostMapping(value = "/{id}/generation/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
     public JobExecutionResource generate(@PathVariable("id") final Long id, @PathVariable("sourceKey") final String sourceKey) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
@@ -295,6 +310,7 @@ public class CcController {
      * @return Status code
      */
     @DeleteMapping(value = "/{id}/generation/{sourceKey}")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
     public ResponseEntity<Void> cancelGeneration(@PathVariable("id") final Long id, @PathVariable("sourceKey") final String sourceKey) {
         service.cancelGeneration(id, sourceKey);
         return ResponseEntity.ok().build();
@@ -306,6 +322,7 @@ public class CcController {
      * @return An array of all generations that includes the generation id, sourceKey, start and end times
      */
     @GetMapping(value = "/{id}/generation", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<CommonGenerationDTO> getGenerationList(@PathVariable("id") final Long id) {
 
         Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
@@ -320,6 +337,7 @@ public class CcController {
      */
     @GetMapping(value = "/generation/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonGenerationDTO getGeneration(@PathVariable("generationId") final Long generationId) {
+        checkGenerationReadAccess(generationId);
 
         CcGenerationEntity generationEntity = service.findGenerationById(generationId);
         return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
@@ -332,6 +350,7 @@ public class CcController {
      */
     @DeleteMapping(value = "/generation/{generationId}")
     public void deleteGeneration(@PathVariable("generationId") final Long generationId) {
+        checkGenerationWriteAccess(generationId);
         service.deleteCcGeneration(generationId);
     }
 
@@ -343,6 +362,7 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/design", produces = MediaType.APPLICATION_JSON_VALUE)
     public CcExportDTO getGenerationDesign(
             @PathVariable("generationId") final Long generationId) {
+        checkGenerationReadAccess(generationId);
         return conversionService.convert(service.findDesignByGenerationId(generationId), CcExportDTO.class);
     }
 
@@ -354,6 +374,7 @@ public class CcController {
      */
     @GetMapping(value = "/generation/{generationId}/result/count", produces = MediaType.APPLICATION_JSON_VALUE)
     public Long getGenerationsResultsCount( @PathVariable("generationId") final Long generationId) {
+        checkGenerationReadAccess(generationId);
         return service.getCCResultsTotalCount(generationId);
     }
 
@@ -367,23 +388,27 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CcResult> getGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestParam(value = "thresholdLevel", defaultValue = "0.01") final float thresholdLevel) {
+        checkGenerationReadAccess(generationId);
         return service.findResultAsList(generationId, thresholdLevel);
     }
 
     @GetMapping(value = "/generation/{generationId}/temporalresult", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CcTemporalResult> getGenerationTemporalResults(@PathVariable("generationId") final Long generationId) {
+        checkGenerationReadAccess(generationId);
         return service.findTemporalResultAsList(generationId);
     }
 
     @PostMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
     public GenerationResults getGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
+        checkGenerationReadAccess(generationId);
         return service.findData(generationId, params);
     }
 
     @PostMapping(value = "/generation/{generationId}/result/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
+        checkGenerationReadAccess(generationId);
         GenerationResults res = service.exportExecutionResult(generationId, params);
         return prepareExecutionResultResponse(res.getReports());
     }
@@ -438,6 +463,7 @@ public class CcController {
                                                     @PathVariable("analysisId") Long analysisId,
                                                     @PathVariable("cohortId") Long cohortId,
                                                     @PathVariable("covariateId") Long covariateId) {
+        checkGenerationReadAccess(generationId);
 
         Integer presetId = convertPresetAnalysisIdToSystem(Math.toIntExact(analysisId));
         List<CcPrevalenceStat> stats = service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
@@ -453,6 +479,7 @@ public class CcController {
      */
     @PostMapping(value = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
         service.assignTag(id, tagId);
     }
@@ -465,6 +492,7 @@ public class CcController {
      */
     @DeleteMapping(value = "/{id}/tag/{tagId}")
     @Transactional
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void unassignTag(@PathVariable("id") final long id, @PathVariable("tagId") final int tagId) {
         service.unassignTag(id, tagId);
     }
@@ -477,6 +505,7 @@ public class CcController {
      */
     @PostMapping(value = "/{id}/protectedtag/")
     @Transactional
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignPermissionProtectedTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
         service.assignTag(id, tagId);
     }
@@ -489,6 +518,7 @@ public class CcController {
      */
     @DeleteMapping(value = "/{id}/protectedtag/{tagId}")
     @Transactional
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void unassignPermissionProtectedTag(@PathVariable("id") final long id, @PathVariable("tagId") final int tagId) {
         service.unassignTag(id, tagId);
     }
@@ -500,6 +530,7 @@ public class CcController {
      * @return
      */
     @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
         return service.getVersions(id);
     }
@@ -512,6 +543,7 @@ public class CcController {
      * @return
      */
     @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CcVersionFullDTO getVersion(@PathVariable("id") final long id, @PathVariable("version") final int version) {
         return service.getVersion(id, version);
     }
@@ -525,6 +557,7 @@ public class CcController {
      * @return
      */
     @PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public VersionDTO updateVersion(@PathVariable("id") final long id, @PathVariable("version") final int version,
                                     @RequestBody VersionUpdateDTO updateDTO) {
         return service.updateVersion(id, version, updateDTO);
@@ -537,6 +570,7 @@ public class CcController {
      * @param version
      */
     @DeleteMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void deleteVersion(@PathVariable("id") final long id, @PathVariable("version") final int version) {
         service.deleteVersion(id, version);
     }
@@ -549,6 +583,7 @@ public class CcController {
      * @return
      */
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public CohortCharacterizationDTO copyAssetFromVersion(@PathVariable("id") final long id,
                                                           @PathVariable("version") final int version) {
         return service.copyAssetFromVersion(id, version);
@@ -566,6 +601,52 @@ public class CcController {
             return Collections.emptyList();
         }
         return service.listByTags(requestDTO);
+    }
+
+    // --- generation-level authorization helpers (generationId-only endpoints)
+    private void checkGenerationReadAccess(Long generationId) {
+        CcGenerationEntity generationEntity = service.findGenerationById(generationId);
+        ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format("There is no generation with id = %d.", generationId));
+        CohortCharacterizationEntity cc = generationEntity.getCohortCharacterization();
+        if (cc == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated cohort characterization not found");
+        }
+        String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
+
+        boolean ccAllowed = authorizationService.isOwner(cc.getId(), EntityType.COHORT_CHARACTERIZATION)
+                || authorizationService.isPermitted("read:cohort-characterization")
+                || authorizationService.isPermitted("write:cohort-characterization")
+                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.READ);
+
+        boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("read:source")
+                || authorizationService.isPermitted("write:source")
+                || authorizationService.hasSourceAccess(sourceKey, AccessType.READ));
+
+        if (!ccAllowed || !sourceAllowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+    }
+
+    private void checkGenerationWriteAccess(Long generationId) {
+        CcGenerationEntity generationEntity = service.findGenerationById(generationId);
+        ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format("There is no generation with id = %d.", generationId));
+        CohortCharacterizationEntity cc = generationEntity.getCohortCharacterization();
+        if (cc == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated cohort characterization not found");
+        }
+        String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
+
+        boolean ccAllowed = authorizationService.isOwner(cc.getId(), EntityType.COHORT_CHARACTERIZATION)
+                || authorizationService.isPermitted("read:cohort-characterization")
+                || authorizationService.isPermitted("write:cohort-characterization")
+                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.READ);
+
+        boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("write:source")
+                || authorizationService.hasSourceAccess(sourceKey, AccessType.WRITE));
+
+        if (!ccAllowed || !sourceAllowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

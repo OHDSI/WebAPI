@@ -35,6 +35,8 @@ public class WebApiSecurityExpressionRoot
   public final EntityType COHORT_DEFINITION = EntityType.COHORT_DEFINITION;
   public final EntityType CONCEPT_SET = EntityType.CONCEPT_SET;
   public final EntityType SOURCE = EntityType.SOURCE;
+  public final EntityType COHORT_CHARACTERIZATION = EntityType.COHORT_CHARACTERIZATION;
+  public final EntityType FE_ANALYSIS = EntityType.FE_ANALYSIS;
 
   public WebApiSecurityExpressionRoot(
       Authentication authentication,
@@ -79,7 +81,7 @@ public class WebApiSecurityExpressionRoot
    * Accepts a Collection for easier SpEL usage when grouping values via
    * `anyOf(...)`.
    */
-  public boolean hasEntityAccess(Long entityId, EntityType entityType, Collection<AccessType> accessTypes) {
+  public boolean hasAnyEntityAccess(Long entityId, EntityType entityType, Collection<AccessType> accessTypes) {
     if (accessTypes == null || accessTypes.isEmpty())
       return false;
     for (AccessType at : accessTypes) {

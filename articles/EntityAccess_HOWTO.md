@@ -32,7 +32,7 @@ public final AccessType READ = AccessType.READ;
 public final AccessType WRITE = AccessType.WRITE;
 ```
 
-- This enables expressions like `hasEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))` to resolve within `@PreAuthorize`.
+  - This enables expressions like `hasAnyEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))` to resolve within `@PreAuthorize`.
 
 **Adding a new EntityType (summary steps)**
 
@@ -53,14 +53,14 @@ public final AccessType WRITE = AccessType.WRITE;
 - Example annotation (place on controller or — preferably — the `CohortDefinitionService` method):
 
 ```java
-@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted(anyOf('read:cohort','write:cohort') or hasEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))")
+@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted(anyOf('read:cohort','write:cohort') or hasAnyEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))")
 public CohortDTO getCohortDefinition(final int id) { ... }
 ```
 
 - Explanation of the expression:
   - `isOwner(#id, COHORT_DEFINITION)` — short-circuits grant if caller created/owns the entity.
   - `isPermitted(anyOf('read:cohort','write:cohort'))` — reading a definition is allowed granted global read/write.
-  - `hasEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))` — delegate to `EntityAccessService` to check explicit grants for this entity id.
+  - `hasAnyEntityAccess(#id, COHORT_DEFINITION, anyOf(READ, WRITE))` — delegate to `EntityAccessService` to check explicit grants for this entity id.
 
 **Implementation checklist**
 

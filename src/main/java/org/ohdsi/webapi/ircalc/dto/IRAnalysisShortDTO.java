@@ -1,6 +1,6 @@
-package org.ohdsi.webapi.service.dto;
+package org.ohdsi.webapi.ircalc.dto;
 
-import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
 public class IRAnalysisShortDTO extends CommonEntityExtDTO {
 

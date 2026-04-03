@@ -18,11 +18,9 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.google.common.collect.ImmutableList;
 import org.ohdsi.webapi.arachne.commons.types.DBMSType;
 import org.ohdsi.cohortcharacterization.CCQueryBuilder;
-import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
@@ -36,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 

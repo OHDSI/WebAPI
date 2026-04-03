@@ -15,6 +15,7 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ConceptSetVersionRepository;
+import org.ohdsi.webapi.versioning.repository.IrVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ReusableVersionRepository;
 import org.ohdsi.webapi.versioning.repository.VersionRepository;
 import org.slf4j.Logger;
@@ -51,7 +52,8 @@ public class VersionService<T extends Version> extends AbstractDaoService {
             ConceptSetVersionRepository conceptSetVersionRepository,
             CohortVersionRepository cohortRepository,
             ReusableVersionRepository reusableRepository,
-            CharacterizationVersionRepository characterizationRepository ) {
+            CharacterizationVersionRepository characterizationRepository,
+            IrVersionRepository irVersionRepository) {
         this.entityManager = entityManager;
 
         this.repositoryMap = new HashMap<>();
@@ -59,6 +61,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         this.repositoryMap.put(VersionType.COHORT, (VersionRepository<T>) cohortRepository);
         this.repositoryMap.put(VersionType.REUSABLE, (VersionRepository<T>) reusableRepository);
         this.repositoryMap.put(VersionType.CHARACTERIZATION, (VersionRepository<T>) characterizationRepository);
+        this.repositoryMap.put(VersionType.INCIDENCE_RATE, (VersionRepository<T>) irVersionRepository);
     }
 
     private VersionRepository<T> getRepository(VersionType type) {

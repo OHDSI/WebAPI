@@ -4,7 +4,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.source.Source;
 
 public enum EntityType {
@@ -12,10 +12,10 @@ public enum EntityType {
     CONCEPT_SET(ConceptSet.class),
     SOURCE(Source.class),
     COHORT_CHARACTERIZATION(CohortCharacterizationEntity.class),
-    FE_ANALYSIS(FeAnalysisEntity.class);
+    FE_ANALYSIS(FeAnalysisEntity.class),
+    INCIDENCE_RATE(IncidenceRateAnalysis.class);
     // PATHWAY_ANALYSIS(PathwayAnalysisEntity.class),
     // FE_ANALYSIS(FeAnalysisEntity.class),
-    // INCIDENCE_RATE(IncidenceRateAnalysis.class),
     // COHORT_SAMPLE(CohortSample.class),
     // TAG(Tag.class),
     // TOOL(Tool.class),

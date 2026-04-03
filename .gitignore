@@ -20,6 +20,7 @@ specs/
 docs
 .claude
 *.bak
+logs
 
 ### Developer's personal properties ###
 **/resources/config/application*-dev-*.properties

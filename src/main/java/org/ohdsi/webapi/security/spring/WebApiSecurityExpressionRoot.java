@@ -37,6 +37,7 @@ public class WebApiSecurityExpressionRoot
   public final EntityType SOURCE = EntityType.SOURCE;
   public final EntityType COHORT_CHARACTERIZATION = EntityType.COHORT_CHARACTERIZATION;
   public final EntityType FE_ANALYSIS = EntityType.FE_ANALYSIS;
+  public final EntityType INCIDENCE_RATE = EntityType.INCIDENCE_RATE;
 
   public WebApiSecurityExpressionRoot(
       Authentication authentication,

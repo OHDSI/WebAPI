@@ -30,6 +30,7 @@ public class EntityAccessService {
   private final CohortCharacterizationAccessRepository cohortCharAccessRepo;
   private final FeAnalysisAccessRepository feAnalysisAccessRepo;
   private final SourceAccessRepository sourceAccessRepo;
+  private final IncidenceRateAccessRepository incidenceRateAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
@@ -37,12 +38,14 @@ public class EntityAccessService {
       CohortCharacterizationAccessRepository cohortCharAccessRepo,
       FeAnalysisAccessRepository feAnalysisAccessRepo,
       SourceAccessRepository sourceAccessRepo,
+      IncidenceRateAccessRepository incidenceRateAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
     this.cohortCharAccessRepo = cohortCharAccessRepo;
     this.feAnalysisAccessRepo = feAnalysisAccessRepo;
     this.sourceAccessRepo = sourceAccessRepo;
+    this.incidenceRateAccessRepo = incidenceRateAccessRepo;
     this.permissionRepository = permissionRepository;
   }
 
@@ -73,15 +76,17 @@ public class EntityAccessService {
     authz.conceptSetAccess = buildConceptSetAccess(userId);
     authz.cohortCharacterizationAccess = buildCohortCharacterizationAccess(userId);
     authz.feAnalysisAccess = buildFeAnalysisAccess(userId);
+    authz.incidenceRateAccess = buildIncidenceRateAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, sources={})",
+    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, , incidenceAnalysis={}, sources={})",
         userId, elapsedMs,
         authz.permissions.size(),
         authz.cohortDefinitionAccess.size(),
         authz.conceptSetAccess.size(),
         authz.cohortCharacterizationAccess.size(),
+        authz.incidenceRateAccess.size(),
         authz.sourceAccess.size());
 
     return authz;
@@ -228,6 +233,44 @@ public class EntityAccessService {
     // Collect owned entity IDs
     Set<Long> ownedIds = new java.util.HashSet<>();
     for (Integer ownedId : feAnalysisAccessRepo.findOwnedFeAnalysisIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the incidence rate access map for a user.
+   * Queries the sec_ir_analysis table via roles assigned to the user,
+   * then merges owned incidence rate analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of irId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildIncidenceRateAccess(Long userId) {
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : incidenceRateAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : incidenceRateAccessRepo.findOwnedIncidenceRateIds(userId)) {
       ownedIds.add(ownedId.longValue());
     }
 

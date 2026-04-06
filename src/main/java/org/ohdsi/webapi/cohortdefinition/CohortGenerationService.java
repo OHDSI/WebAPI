@@ -132,14 +132,14 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(
       getSourceJdbcTemplate(source),
-      getTransactionTemplate(),
+      getBatchTransactionTemplate(),
       generationCacheHelper,
       cohortDefinitionRepository,
       sourceService
     );
 
     ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
-            getTransactionTemplate(),
+            getBatchTransactionTemplate(),
             source.getSourceDialect(),
             jobParameters.getString(SESSION_ID),
             SourceUtils.getTempQualifierOrNull(source)
@@ -152,6 +152,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     SimpleJobBuilder generateJobBuilder = new JobBuilder(GENERATE_COHORT, jobRepository).start(generateCohortStep);
 
+    // Listener runs outside step context, needs JpaTransactionManager for entity operations
     generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
             this.getSourceJdbcTemplate(source)));
 

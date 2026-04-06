@@ -6,8 +6,9 @@ import org.springframework.batch.core.ExitStatus;
 public interface Constants {
   String DEFAULT_DIALECT = "sql server";
   String GENERATE_COHORT = "generateCohort";
-  String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
-  String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
+  String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
+  String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
+  String GENERATE_IR_ANALYSIS = "irAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
   String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
@@ -48,9 +49,8 @@ public interface Constants {
 
     String VOCABULARY_DATABASE_SCHEMA = "vocabulary_database_schema";
     String COHORT_DEFINITION_ID = "cohort_definition_id";
-    String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
-    String PREDICTION_SKELETON_VERSION = "v0.0.1";
-    String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
+    String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
+    String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
     String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
     String SOURCE_KEY = "source_key";

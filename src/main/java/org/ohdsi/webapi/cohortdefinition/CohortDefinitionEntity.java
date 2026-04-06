@@ -22,8 +22,6 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
 
-import jakarta.persistence.Access;
-import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -62,7 +60,6 @@ public class CohortDefinitionEntity extends CommonEntityExt<Integer> implements 
   @Id
   @SequenceGenerator(name = "cohort_definition_generator", sequenceName = "cohort_definition_sequence", allocationSize = 1)
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_definition_generator")
-  @Access(AccessType.PROPERTY)
   private Integer id;
   
   private String name;
@@ -74,7 +71,6 @@ public class CohortDefinitionEntity extends CommonEntityExt<Integer> implements 
   private ExpressionType expressionType;
   
   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false, orphanRemoval = true, mappedBy="definition")
-  @JoinColumn(name="id")
   private CohortDefinitionDetailsEntity details;
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")

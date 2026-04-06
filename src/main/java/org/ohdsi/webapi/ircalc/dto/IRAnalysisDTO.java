@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service.dto;
+package org.ohdsi.webapi.ircalc.dto;
 
 public class IRAnalysisDTO extends IRAnalysisShortDTO {
     

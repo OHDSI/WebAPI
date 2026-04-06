@@ -23,8 +23,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Objects;
@@ -207,11 +205,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Log exception with full stack trace
+     * Log exception with stack trace (formatted by Logback)
      */
     private void logException(Throwable ex) {
-        StringWriter errorStackTrace = new StringWriter();
-        ex.printStackTrace(new PrintWriter(errorStackTrace));
-        LOGGER.error(errorStackTrace.toString());
+        LOGGER.error(ex.toString(), ex);
     }
 }

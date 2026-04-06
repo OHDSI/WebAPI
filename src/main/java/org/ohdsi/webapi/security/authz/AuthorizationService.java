@@ -15,8 +15,7 @@ import org.ohdsi.webapi.security.authz.access.AccessType;
 import org.ohdsi.webapi.security.authz.access.EntityGrant;
 import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The AuthorizatonService is part of security.authz which orchastrates the permission assignments for users, roles, and permisisons
@@ -294,6 +293,18 @@ public class AuthorizationService {
         EntityGrant grant = authz.conceptSetAccess.get(entityId);
         yield grant != null && grant.isOwner();
       }
+      case COHORT_CHARACTERIZATION -> {
+        EntityGrant grant = authz.cohortCharacterizationAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
+      case FE_ANALYSIS -> {
+        EntityGrant grant = authz.feAnalysisAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
+      case INCIDENCE_RATE -> {
+        EntityGrant grant = authz.incidenceRateAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
       case SOURCE -> false;
     };
   }
@@ -324,6 +335,18 @@ public class AuthorizationService {
       }
       case CONCEPT_SET -> {
         EntityGrant grant = authz.conceptSetAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+      case COHORT_CHARACTERIZATION -> {
+        EntityGrant grant = authz.cohortCharacterizationAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+      case FE_ANALYSIS -> {
+        EntityGrant grant = authz.feAnalysisAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+      case INCIDENCE_RATE -> {
+        EntityGrant grant = authz.incidenceRateAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
       // infrastructure types that don't have ownership (ie: sources, tools, etc)

@@ -611,7 +611,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@GetMapping(value = "/{id}/generate/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("""
-		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		(isOwner(#id, COHORT_DEFINITION) or isPermitted(anyOf('write:cohort-definition','read:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
 		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
 	""")
 	public JobExecutionResource generateCohort(@PathVariable("id") final int id,
@@ -668,7 +668,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
 		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
-	""")
+	""")	
 	public ResponseEntity cancelGenerateCohort(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
 
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
@@ -851,7 +851,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
-	public ResponseEntity exportConceptSets(@PathVariable("id") final int id) {
+	public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportConceptSets(@PathVariable("id") final int id) {
 
 		Source source = sourceService.getPriorityVocabularySource();
 		if (Objects.isNull(source)) {
@@ -886,7 +886,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, anyOf(READ, WRITE)))
+		and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))
 	""")
 	public InclusionRuleReport getInclusionRuleReport(
 					@PathVariable("id") final int id,
@@ -1191,7 +1191,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition')")
 	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
 		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
 			return Collections.emptyList();

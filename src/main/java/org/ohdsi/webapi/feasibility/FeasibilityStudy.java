@@ -21,8 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.persistence.Access;
-import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -79,7 +77,6 @@ public class FeasibilityStudy {
   )
   @GeneratedValue(generator = "feasibility_study_generator")
   @Column(name="id")
-  @Access(AccessType.PROPERTY)
   private Integer id; 
   
   @Column(name="name")

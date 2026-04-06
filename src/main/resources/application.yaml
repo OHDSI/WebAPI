@@ -89,6 +89,8 @@ kerberos:
   kinitPath: ""
   timeout: 60
 logging:
+  stacktrace:
+    filter-packages: org.springframework,org.apache,jakarta.servlet,org.hibernate,java.lang.reflect,jdk.internal,sun.reflect,com.sun.proxy
   level:
     org:
       hibernate: info

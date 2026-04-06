@@ -47,6 +47,7 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
@@ -122,6 +123,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Autowired
   private TransactionTemplate transactionTemplateNoTransaction;
+
+  @Autowired(required = false)
+  @Qualifier("batchTransactionTemplate")
+  private TransactionTemplate batchTransactionTemplate;
+
+  @Autowired(required = false)
+  @Qualifier("batchTransactionTemplateRequiresNew")
+  private TransactionTemplate batchTransactionTemplateRequiresNew;
 
   @Autowired
   private KerberosService kerberosService;
@@ -289,7 +298,20 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   public TransactionTemplate getTransactionTemplateNoTransaction() {
     return transactionTemplateNoTransaction;
   }
-	
+
+  /**
+   * @return the batchTransactionTemplate for batch job tasklets
+   */
+  public TransactionTemplate getBatchTransactionTemplate() {
+    return batchTransactionTemplate;
+  }
+
+  /**
+   * @return the batchTransactionTemplateRequiresNew for batch job tasklets with REQUIRES_NEW
+   */
+  public TransactionTemplate getBatchTransactionTemplateRequiresNew() {
+    return batchTransactionTemplateRequiresNew;
+  }
   
   /**
    * @return the ohdsiSchema

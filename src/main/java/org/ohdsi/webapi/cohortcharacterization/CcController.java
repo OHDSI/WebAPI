@@ -137,12 +137,7 @@ public class CcController {
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-      return service.getPage(pageable).map(entity -> {
-          CcShortDTO dto = convertCcToShortDto(entity);
-          //authorizationService.fillWriteAccess(entity, dto);
-          //authorizationService.fillReadAccess(entity, dto);
-          return dto;
-      });
+            return service.getPage(pageable);
     }
 
     /**

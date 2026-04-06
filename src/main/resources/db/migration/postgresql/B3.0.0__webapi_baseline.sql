@@ -137,6 +137,13 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterization
     CONSTRAINT uq_cc_name UNIQUE (name)
 );
 
+CREATE TABLE ${ohdsiSchema}.cohort_characterization_tag
+(
+    asset_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    CONSTRAINT pk_cc_tags_id PRIMARY KEY (asset_id, tag_id)
+);
+
 CREATE SEQUENCE ${ohdsiSchema}.cc_analysis_seq
     START WITH 1
     INCREMENT BY 1
@@ -1783,6 +1790,12 @@ ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization
     ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization_tag
+    ADD CONSTRAINT cc_tags_fk_ccs FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.ir_tag
+    ADD CONSTRAINT cc_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tag (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_definition
     ADD CONSTRAINT cohort_definition_created_by_id_fkey FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);

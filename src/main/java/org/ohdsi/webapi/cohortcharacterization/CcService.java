@@ -55,7 +55,7 @@ public interface CcService extends HasTags<Long> {
     
     Page<CohortCharacterizationEntity> getPageWithLinkedEntities(Pageable pageable);
 
-    Page<CohortCharacterizationEntity> getPage(Pageable pageable);
+    org.springframework.data.domain.Page<org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO> getPage(org.springframework.data.domain.Pageable pageable);
 
     JobExecutionResource generateCc(Long id, final String sourceKey);
 

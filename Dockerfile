@@ -46,6 +46,9 @@ RUN mkdir -p /tmp/trexsql && \
     mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null && \
     rm -f /tmp/trexsql-ext-*.jar || true)
 
+# Create logs directory for logback before switching to non-root user
+RUN mkdir -p logs && chown 101:101 logs
+
 EXPOSE 8080
 
 USER 101

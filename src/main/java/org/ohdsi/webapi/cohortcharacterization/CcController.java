@@ -119,7 +119,7 @@ public class CcController {
      * @return The cohort characterization definition of the newly created copy
      */
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO copy(@PathVariable("id") final Long id) {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
@@ -632,9 +632,8 @@ public class CcController {
         String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
 
         boolean ccAllowed = authorizationService.isOwner(cc.getId(), EntityType.COHORT_CHARACTERIZATION)
-                || authorizationService.isPermitted("read:cohort-characterization")
                 || authorizationService.isPermitted("write:cohort-characterization")
-                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.READ);
+                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.WRITE);
 
         boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("write:source")
                 || authorizationService.hasSourceAccess(sourceKey, AccessType.WRITE));
@@ -661,6 +660,10 @@ public class CcController {
         FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
         if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
             FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+            if (prespecAnalysis == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("Preset analysis with name '%s' not found in FeatureExtraction registry", ((FeAnalysisWithStringEntity) fe).getDesign()));
+            }
             return prespecAnalysis.analysisId;
         }
         return analysisId;

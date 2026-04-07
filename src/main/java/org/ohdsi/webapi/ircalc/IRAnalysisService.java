@@ -82,6 +82,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
@@ -465,6 +466,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @PreAuthorize("(isOwner(#analysisId, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#analysisId, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   @Override
   public JobExecutionResource performAnalysis(final int analysisId, final String sourceKey) {
     IRAnalysisDTO irAnalysisDTO = getAnalysis(analysisId);

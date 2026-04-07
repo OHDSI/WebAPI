@@ -41,10 +41,10 @@ COPY --from=builder /code/opentelemetry-javaagent.jar .
 COPY --from=builder /code/target/WebAPI.jar .
 
 RUN mkdir -p /tmp/trexsql && \
-    unzip -j WebAPI.jar 'BOOT-INF/lib/trexsql-ext-*.jar' -d /tmp && \
-    unzip -j /tmp/trexsql-ext-*.jar 'libtrexsql_java.so_linux_amd64' -d /tmp/trexsql 2>/dev/null || true && \
-    mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null || true && \
-    rm -f /tmp/trexsql-ext-*.jar
+    (unzip -j WebAPI.jar 'BOOT-INF/lib/trexsql-ext-*.jar' -d /tmp 2>/dev/null && \
+    unzip -j /tmp/trexsql-ext-*.jar 'libtrexsql_java.so_linux_amd64' -d /tmp/trexsql 2>/dev/null && \
+    mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null && \
+    rm -f /tmp/trexsql-ext-*.jar || true)
 
 EXPOSE 8080
 

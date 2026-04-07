@@ -2155,5 +2155,70 @@ from (
     where value in ('create')
 ) p;
 
+-- Views
+
+CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generation as (
+  SELECT
+    job.job_execution_id                     id,
+    job.create_time                          start_time,
+    job.end_time                             end_time,
+    job.status                               status,
+    job.exit_message                         exit_message,
+    CAST(cc_id_param.parameter_value AS INTEGER)  cc_id,
+    CAST(source_param.parameter_value AS INTEGER) source_id,
+    gen_info.hash_code                       hash_code,
+    gen_info.created_by_id                   created_by_id
+  FROM ${ohdsiSchema}.batch_job_execution job
+    JOIN ${ohdsiSchema}.batch_job_execution_params cc_id_param ON job.job_execution_id = cc_id_param.job_execution_id
+      AND cc_id_param.parameter_name = 'cohort_characterization_id'
+    JOIN ${ohdsiSchema}.batch_job_execution_params source_param ON job.job_execution_id = source_param.job_execution_id
+      AND source_param.parameter_name = 'source_id'
+    JOIN ${ohdsiSchema}.source s on s.source_id = CAST(source_param.parameter_value AS INTEGER)
+    LEFT JOIN ${ohdsiSchema}.analysis_generation_info gen_info ON job.job_execution_id = gen_info.job_execution_id
+  ORDER BY start_time DESC
+);
+
+CREATE OR REPLACE VIEW ${ohdsiSchema}.pathway_analysis_generation as (
+  SELECT
+    job.job_execution_id                     id,
+    job.create_time                          start_time,
+    job.end_time                             end_time,
+    job.status                               status,
+    job.exit_message                         exit_message,
+    CAST(pa_id_param.parameter_value AS INTEGER)  pathway_analysis_id,
+    CAST(source_param.parameter_value AS INTEGER) source_id,
+    gen_info.hash_code                       hash_code,
+    gen_info.created_by_id                   created_by_id
+  FROM ${ohdsiSchema}.batch_job_execution job
+    JOIN ${ohdsiSchema}.batch_job_execution_params pa_id_param ON job.job_execution_id = pa_id_param.job_execution_id
+      AND pa_id_param.parameter_name = 'pathway_analysis_id'
+    JOIN ${ohdsiSchema}.batch_job_execution_params source_param ON job.job_execution_id = source_param.job_execution_id
+      AND source_param.parameter_name = 'source_id'
+    JOIN ${ohdsiSchema}.source s on s.source_id = CAST(source_param.parameter_value AS INTEGER)
+    LEFT JOIN ${ohdsiSchema}.analysis_generation_info gen_info ON job.job_execution_id = gen_info.job_execution_id
+  ORDER BY start_time DESC
+);
+
+CREATE OR REPLACE VIEW ${ohdsiSchema}.user_import_job_history as (
+  SELECT
+    job.job_execution_id as id,
+    job.start_time as start_time,
+    job.end_time as end_time,
+    job.status as status,
+    job.exit_code as exit_code,
+    job.exit_message as exit_message,
+    name_param.parameter_value as job_name,
+    author_param.parameter_value as author,
+    CAST(user_import_param.parameter_value AS INTEGER) user_import_id
+  FROM ${ohdsiSchema}.batch_job_execution job
+    JOIN ${ohdsiSchema}.batch_job_instance instance ON instance.job_instance_id = job.job_instance_id
+    JOIN ${ohdsiSchema}.batch_job_execution_params name_param
+      ON job.job_execution_id = name_param.job_execution_id AND name_param.parameter_name = 'jobName'
+    JOIN ${ohdsiSchema}.batch_job_execution_params user_import_param
+      ON job.job_execution_id = user_import_param.job_execution_id AND user_import_param.parameter_name = 'user_import_id'
+    JOIN ${ohdsiSchema}.batch_job_execution_params author_param
+      ON job.job_execution_id = author_param.job_execution_id AND author_param.parameter_name = 'jobAuthor'
+  WHERE instance.job_name = 'usersImport'
+);
 
 

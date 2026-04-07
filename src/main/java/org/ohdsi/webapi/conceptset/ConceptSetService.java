@@ -673,7 +673,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id    The concept set ID
      * @param tagId The tag ID
      */
-    @PostMapping(value = "/{id}/tag/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/tag", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     @Override
@@ -713,7 +713,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id    The concept set ID
      * @param tagId The tag ID
      */
-    @PostMapping(value = "/{id}/protectedtag/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/protectedtag", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
     public void assignPermissionProtectedTag(
@@ -764,7 +764,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id The concept set ID
      * @return A list of version information
      */
-    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final int id) {

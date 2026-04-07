@@ -170,7 +170,6 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
    * Create a user import job
    */
   @PostMapping(
-      value = "/",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE
   )
@@ -210,7 +209,6 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
    * Get the user import job list
    */
   @GetMapping(
-      value = "/",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
   @Transactional

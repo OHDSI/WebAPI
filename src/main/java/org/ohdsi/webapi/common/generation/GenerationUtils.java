@@ -145,4 +145,8 @@ public class GenerationUtils extends AbstractDaoService {
         builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
     }
 
+    public PlatformTransactionManager getPlatformTransactionManager() {
+        return this.transactionManager;
+    }
+
 }

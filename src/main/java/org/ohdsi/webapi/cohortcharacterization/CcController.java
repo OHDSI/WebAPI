@@ -137,7 +137,7 @@ public class CcController {
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-            return service.getPage(pageable);
+      return service.getPage(pageable);
     }
 
     /**
@@ -472,7 +472,7 @@ public class CcController {
      * @param id
      * @param tagId
      */
-    @PostMapping(value = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
@@ -498,7 +498,7 @@ public class CcController {
      * @param id
      * @param tagId
      */
-    @PostMapping(value = "/{id}/protectedtag/")
+    @PostMapping(value = "/{id}/protectedtag")
     @Transactional
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignPermissionProtectedTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
@@ -524,7 +524,7 @@ public class CcController {
      * @param id
      * @return
      */
-    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
         return service.getVersions(id);

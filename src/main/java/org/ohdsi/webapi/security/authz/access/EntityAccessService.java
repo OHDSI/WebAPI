@@ -31,6 +31,7 @@ public class EntityAccessService {
   private final FeAnalysisAccessRepository feAnalysisAccessRepo;
   private final SourceAccessRepository sourceAccessRepo;
   private final IncidenceRateAccessRepository incidenceRateAccessRepo;
+  private final PathwayAccessRepository pathwayAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
@@ -39,6 +40,7 @@ public class EntityAccessService {
       FeAnalysisAccessRepository feAnalysisAccessRepo,
       SourceAccessRepository sourceAccessRepo,
       IncidenceRateAccessRepository incidenceRateAccessRepo,
+      PathwayAccessRepository pathwayAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
@@ -46,6 +48,7 @@ public class EntityAccessService {
     this.feAnalysisAccessRepo = feAnalysisAccessRepo;
     this.sourceAccessRepo = sourceAccessRepo;
     this.incidenceRateAccessRepo = incidenceRateAccessRepo;
+    this.pathwayAccessRepo = pathwayAccessRepo;
     this.permissionRepository = permissionRepository;
   }
 
@@ -76,18 +79,21 @@ public class EntityAccessService {
     authz.conceptSetAccess = buildConceptSetAccess(userId);
     authz.cohortCharacterizationAccess = buildCohortCharacterizationAccess(userId);
     authz.feAnalysisAccess = buildFeAnalysisAccess(userId);
+    authz.pathwayAccess = buildPathwayAccess(userId);
     authz.incidenceRateAccess = buildIncidenceRateAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, , incidenceAnalysis={}, sources={})",
-        userId, elapsedMs,
-        authz.permissions.size(),
-        authz.cohortDefinitionAccess.size(),
-        authz.conceptSetAccess.size(),
-        authz.cohortCharacterizationAccess.size(),
-        authz.incidenceRateAccess.size(),
-        authz.sourceAccess.size());
+    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, feAnalysis={}, pathwayAnalysis={}, incidenceAnalysis={}, sources={})",
+      userId, elapsedMs,
+      authz.permissions.size(),
+      authz.cohortDefinitionAccess.size(),
+      authz.conceptSetAccess.size(),
+      authz.cohortCharacterizationAccess.size(),
+      authz.feAnalysisAccess.size(),
+      authz.pathwayAccess.size(),
+      authz.incidenceRateAccess.size(),
+      authz.sourceAccess.size());
 
     return authz;
   }
@@ -271,6 +277,44 @@ public class EntityAccessService {
     // Collect owned entity IDs
     Set<Long> ownedIds = new java.util.HashSet<>();
     for (Integer ownedId : incidenceRateAccessRepo.findOwnedIncidenceRateIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the pathway analysis access map for a user.
+   * Queries the sec_pathway_analysis table via roles assigned to the user,
+   * then merges owned pathway analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of pathwayAnalysisId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildPathwayAccess(Long userId) {
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : pathwayAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : pathwayAccessRepo.findOwnedPathwayAnalysisIds(userId)) {
       ownedIds.add(ownedId.longValue());
     }
 

@@ -355,7 +355,7 @@ public class AuthorizationService {
       }
 
       case PATHWAY_ANALYSIS -> {
-        EntityGrant grant = authz.incidenceRateAccess.get(entityId);
+        EntityGrant grant = authz.pathwayAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
 

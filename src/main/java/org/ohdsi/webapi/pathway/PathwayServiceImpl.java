@@ -44,6 +44,9 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.source.Source;
@@ -97,6 +100,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
@@ -240,34 +244,47 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public Page<PathwayAnalysisDTO> getPage(final Pageable pageable) {
-		boolean globalRead = authorizationService.isPermitted("read:pathway-analysis");
-		boolean globalWrite = authorizationService.isPermitted("write:pathway-analysis");
-
-		List<PathwayAnalysisEntity> pathwayList = new ArrayList<>();
-		pathwayAnalysisRepository.findAll(listEntityGraph).forEach(pathwayList::add);
-
+		UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+		boolean globalRead = authorizationService.isPermitted("read:pathway");
+		boolean globalWrite = authorizationService.isPermitted("write:pathway");
+		boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
 		Map<Integer, List<TagDTO>> tagMap = pathwayAnalysisRepository.getPathwayAnalysisTagMap();
 
-		List<PathwayAnalysisDTO> dtos = pathwayList.stream()
-			.map(pa -> {
-				PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
+		Function<PathwayAnalysisEntity, PathwayAnalysisDTO> toDto = pa -> {
+				PathwayAnalysisDTO dto = new PathwayAnalysisDTO();
+				dto.setId(pa.getId());
+				dto.setName(pa.getName());
+				dto.setDescription(pa.getDescription());
 				dto.setCreatedBy(User.fromEntity(pa.getCreatedBy()));
 				dto.setModifiedBy(User.fromEntity(pa.getModifiedBy()));
 				dto.setCreatedDate(pa.getCreatedDate());
-				dto.setModifiedDate(pa.getModifiedDate());
+				dto.setModifiedDate(pa.getModifiedDate());				
 				List<TagDTO> tags = tagMap.getOrDefault(pa.getId(), Collections.emptyList());
 				if (!tags.isEmpty()) dto.setTags(new HashSet<>(tags));
-				dto.setReadAccess(globalRead);
-				dto.setWriteAccess(globalWrite);
+				EntityGrant grant = authz.cohortCharacterizationAccess.getOrDefault(pa.getId(), EntityGrant.NONE);
+				dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+				dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));	
 				return dto;
-			})
-			.filter(!defaultGlobalReadPermissions ? d -> d.isReadAccess() : d -> true)
-			.collect(Collectors.toList());
+		};
 
+		if (!needsFiltering) {
+				// When no authorization filtering is needed, paginate at the database level
+				return pathwayAnalysisRepository.findAll(pageable, listEntityGraph).map(toDto);
+		}		
+
+		// When authorization filtering is required, load all and filter in memory
+		
+		List<PathwayAnalysisEntity> pathwayList = new ArrayList<>();
+		pathwayAnalysisRepository.findAll(listEntityGraph).forEach(pathwayList::add);
+		List<PathwayAnalysisDTO> dtos = pathwayList.stream()
+			.map(toDto)
+			.filter(PathwayAnalysisDTO::isReadAccess)
+			.collect(Collectors.toList());
 		return getPageFromResults(pageable, dtos);
 	}
 
 	private <T> Page<T> getPageFromResults(Pageable pageable, List<T> results) {
+
 		int startIndex = pageable.getPageNumber() * pageable.getPageSize();
 		int endIndex = Math.min(startIndex + pageable.getPageSize(), results.size());
 
@@ -285,10 +302,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	public PathwayAnalysisEntity getById(Integer id) {
 
 		PathwayAnalysisEntity entity = pathwayAnalysisRepository.findById(id, defaultEntityGraph).orElseThrow();
-		if (Objects.nonNull(entity)) {
-			entity.getTargetCohorts().forEach(tc -> Hibernate.initialize(tc.getCohortDefinition().getDetails()));
-			entity.getEventCohorts().forEach(ec -> Hibernate.initialize(ec.getCohortDefinition().getDetails()));
-		}
+		entity.getTargetCohorts().forEach(tc -> Hibernate.initialize(tc.getCohortDefinition().getDetails()));
+		entity.getEventCohorts().forEach(ec -> Hibernate.initialize(ec.getCohortDefinition().getDetails()));
 		return entity;
 	}
 
@@ -300,11 +315,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public String getNameForCopy(String dtoName) {
+
 		return NameUtils.getNameForCopy(dtoName, this::getNamesLike, pathwayAnalysisRepository.findByName(dtoName));
 	}
 
 	@Override
 	public String getNameWithSuffix(String dtoName) {
+
 		return NameUtils.getNameWithSuffix(dtoName, this::getNamesLike);
 	}
 

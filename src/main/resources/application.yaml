@@ -307,9 +307,9 @@ server:
     key-store-password: ""
 
 solr:
-  endpoint: ${solr.endpoint}
+  endpoint: ""
   query:
-    prefix: ${solr.query.prefix}
+    prefix: ""
 
 sparql:
   endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=

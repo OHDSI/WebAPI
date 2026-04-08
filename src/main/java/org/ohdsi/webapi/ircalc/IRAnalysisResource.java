@@ -37,7 +37,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
      * @param analysis The analysis to create.
      * @return The new FeasibilityStudy
      */
-    @PostMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     IRAnalysisDTO createAnalysis(@RequestBody IRAnalysisDTO analysis);
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,7 +114,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
      * @param id
      * @param tagId
      */
-    @PostMapping(path = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
     void assignTag(@PathVariable("id") final Integer id, @RequestParam("tagId") final int tagId);
 
     /**
@@ -132,7 +132,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
      * @param id
      * @param tagId
      */
-    @PostMapping(path = "/{id}/protectedtag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
     void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestParam("tagId") final int tagId);
 
     /**
@@ -150,7 +150,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
      * @param id
      * @return
      */
-    @GetMapping(path = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     List<VersionDTO> getVersions(@PathVariable("id") final long id);
 
     /**

@@ -366,7 +366,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @param domain The domain
      * @return ArrayNode
      */
-    @GetMapping(value = "/{sourceKey}/{domain}/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{sourceKey}/{domain}", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(TREEMAP)
     public ArrayNode getTreemap(
             @PathVariable("sourceKey") final String sourceKey,

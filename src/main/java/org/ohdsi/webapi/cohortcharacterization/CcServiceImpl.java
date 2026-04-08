@@ -618,31 +618,40 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
         boolean globalRead = authorizationService.isPermitted("read:cohort-characterization");
         boolean globalWrite = authorizationService.isPermitted("write:cohort-characterization");
-
-        List<CohortCharacterizationEntity> ccList = new ArrayList<>();
-        repository.findAll(listEntityGraph).forEach(ccList::add);
+        boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
 
         Map<Long, List<TagDTO>> tagMap = repository.getCohortCharacterizationTagMap();
 
+        java.util.function.Function<CohortCharacterizationEntity, CcShortDTO> toDto = cc -> {
+            CcShortDTO dto = new CcShortDTO();
+            dto.setId(cc.getId());
+            dto.setName(cc.getName());
+            dto.setDescription(cc.getDescription());
+            dto.setCreatedBy(User.fromEntity(cc.getCreatedBy()));
+            dto.setModifiedBy(User.fromEntity(cc.getModifiedBy()));
+            dto.setCreatedDate(cc.getCreatedDate());
+            dto.setModifiedDate(cc.getModifiedDate());
+            List<TagDTO> tags = tagMap.getOrDefault(cc.getId(), Collections.emptyList());
+            if (!tags.isEmpty())
+                dto.setTags(new java.util.HashSet<>(tags));
+            EntityGrant grant = authz.cohortCharacterizationAccess.getOrDefault(cc.getId(), EntityGrant.NONE);
+            dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+            dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
+            return dto;
+        };
+
+        if (!needsFiltering) {
+            // When no authorization filtering is needed, paginate at the database level
+            return repository.findAll(pageable, listEntityGraph).map(toDto);
+        }
+
+        // When authorization filtering is required, load all and filter in memory
+        List<CohortCharacterizationEntity> ccList = new ArrayList<>();
+        repository.findAll(listEntityGraph).forEach(ccList::add);
+
         List<CcShortDTO> dtos = ccList.stream()
-                .map(cc -> {
-                    CcShortDTO dto = new CcShortDTO();
-                    dto.setId(cc.getId());
-                    dto.setName(cc.getName());
-                    dto.setDescription(cc.getDescription());
-                    dto.setCreatedBy(User.fromEntity(cc.getCreatedBy()));
-                    dto.setModifiedBy(User.fromEntity(cc.getModifiedBy()));
-                    dto.setCreatedDate(cc.getCreatedDate());
-                    dto.setModifiedDate(cc.getModifiedDate());
-                    List<TagDTO> tags = tagMap.getOrDefault(cc.getId(), Collections.emptyList());
-                    if (!tags.isEmpty())
-                        dto.setTags(new java.util.HashSet<>(tags));
-                    EntityGrant grant = authz.cohortCharacterizationAccess.getOrDefault(cc.getId(), EntityGrant.NONE);
-                    dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
-                    dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
-                    return dto;
-                })
-                .filter(!defaultGlobalReadPermissions ? c -> c.isReadAccess() : entity -> true)
+                .map(toDto)
+                .filter(CcShortDTO::isReadAccess)
                 .collect(Collectors.toList());
 
         return getPageFromResults(pageable, dtos);
@@ -1002,7 +1011,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             Supplier<T> constructor,
             BiConsumer<T, T> initializer) {
         T result = constructor.get();
-        String analysisName = prespecAnalysisIdMap.get(source.getAnalysisId()).analysisName;
+        FeatureExtraction.PrespecAnalysis prespecAnalysis = prespecAnalysisIdMap.get(source.getAnalysisId());
+        if (prespecAnalysis == null) {
+            throw new IllegalArgumentException(
+                    String.format("Preset analysis with id [%d] is not found in prespec map", source.getAnalysisId()));
+        }
+        String analysisName = prespecAnalysis.analysisName;
         Integer analysisId = featureAnalyses.stream().filter(fa -> Objects.equals(fa.getRawDesign(), analysisName))
                 .findFirst()
                 .map(FeAnalysisEntity::getId)
@@ -1172,7 +1186,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .orElseThrow(
                         () -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS, PARAMETERS_RESULTS,
+        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS,
+                new String[] { "cohort_characterization_generation_id" },
                 new String[] { String.valueOf(generationId) });
         final String tempSchema = SourceUtils.getTempQualifier(source);
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),

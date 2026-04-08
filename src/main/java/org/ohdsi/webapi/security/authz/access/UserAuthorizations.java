@@ -11,6 +11,7 @@ public class UserAuthorizations {
   public Map<Long, EntityGrant> conceptSetAccess = Map.of();
   public Map<Long, EntityGrant> cohortCharacterizationAccess = Map.of();
   public Map<Long, EntityGrant> feAnalysisAccess = Map.of();
+  public Map<Long, EntityGrant> pathwayAccess = Map.of();
   public Map<Long, EntityGrant> incidenceRateAccess = Map.of();
 
   /** Infrastructure entities: access grants only (no ownership semantics) */

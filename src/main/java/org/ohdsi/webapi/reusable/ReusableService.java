@@ -144,7 +144,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return createInternal(def);
     }
 
-    @PostMapping(value = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
     public void assignTag(@PathVariable("id") Integer id, @RequestBody int tagId) {
         Reusable entity = getById(id);
         assignTag(entity, tagId);
@@ -156,7 +156,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         unassignTag(entity, tagId);
     }
 
-    @PostMapping(value = "/{id}/protectedtag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
     public void assignPermissionProtectedTag(@PathVariable("id") int id, @RequestBody int tagId) {
         Reusable entity = getById(id);
         assignTag(entity, tagId);
@@ -174,7 +174,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         reusableRepository.deleteById(id);
     }
 
-    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VersionDTO> getVersions(@PathVariable("id") long id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.REUSABLE, id);
         return versions.stream()

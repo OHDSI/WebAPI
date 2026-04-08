@@ -305,6 +305,10 @@ public class AuthorizationService {
         EntityGrant grant = authz.incidenceRateAccess.get(entityId);
         yield grant != null && grant.isOwner();
       }
+      case PATHWAY_ANALYSIS -> {
+        EntityGrant grant = authz.pathwayAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
       case SOURCE -> false;
     };
   }
@@ -349,6 +353,12 @@ public class AuthorizationService {
         EntityGrant grant = authz.incidenceRateAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
+
+      case PATHWAY_ANALYSIS -> {
+        EntityGrant grant = authz.pathwayAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+
       // infrastructure types that don't have ownership (ie: sources, tools, etc)
       case SOURCE -> {
         Set<AccessType> granted = authz.sourceAccess.get(entityId);

@@ -119,7 +119,7 @@ public class CcController {
      * @return The cohort characterization definition of the newly created copy
      */
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO copy(@PathVariable("id") final Long id) {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
@@ -137,7 +137,7 @@ public class CcController {
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-            return service.getPage(pageable);
+      return service.getPage(pageable);
     }
 
     /**
@@ -472,7 +472,7 @@ public class CcController {
      * @param id
      * @param tagId
      */
-    @PostMapping(value = "/{id}/tag/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
@@ -498,7 +498,7 @@ public class CcController {
      * @param id
      * @param tagId
      */
-    @PostMapping(value = "/{id}/protectedtag/")
+    @PostMapping(value = "/{id}/protectedtag")
     @Transactional
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public void assignPermissionProtectedTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
@@ -524,7 +524,7 @@ public class CcController {
      * @param id
      * @return
      */
-    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
         return service.getVersions(id);
@@ -632,9 +632,8 @@ public class CcController {
         String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
 
         boolean ccAllowed = authorizationService.isOwner(cc.getId(), EntityType.COHORT_CHARACTERIZATION)
-                || authorizationService.isPermitted("read:cohort-characterization")
                 || authorizationService.isPermitted("write:cohort-characterization")
-                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.READ);
+                || authorizationService.hasEntityAccess(cc.getId(), EntityType.COHORT_CHARACTERIZATION, AccessType.WRITE);
 
         boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("write:source")
                 || authorizationService.hasSourceAccess(sourceKey, AccessType.WRITE));
@@ -661,6 +660,10 @@ public class CcController {
         FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
         if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
             FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+            if (prespecAnalysis == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("Preset analysis with name '%s' not found in FeatureExtraction registry", ((FeAnalysisWithStringEntity) fe).getDesign()));
+            }
             return prespecAnalysis.analysisId;
         }
         return analysisId;

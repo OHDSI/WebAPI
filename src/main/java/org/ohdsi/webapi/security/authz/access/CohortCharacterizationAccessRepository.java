@@ -32,4 +32,21 @@ public interface CohortCharacterizationAccessRepository extends JpaRepository<Co
      */
     @Query("SELECT cc.id FROM CohortCharacterizationEntity cc WHERE cc.createdBy.id = :userId")
     List<Long> findOwnedCohortCharacterizationIds(@Param("userId") Long userId);
+
+    /**
+     * Find all role IDs that have a specific access type to a cohort characterization.
+     */
+    @Query("SELECT ca.roleId FROM CohortCharacterizationAccess ca WHERE ca.cohortCharacterizationId = :entityId AND ca.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to a cohort characterization.
+     */
+    @Query("SELECT DISTINCT ca.roleId FROM CohortCharacterizationAccess ca WHERE ca.cohortCharacterizationId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndCohortCharacterizationIdAndAccessType(Long roleId, Long cohortCharacterizationId, AccessType accessType);
 }

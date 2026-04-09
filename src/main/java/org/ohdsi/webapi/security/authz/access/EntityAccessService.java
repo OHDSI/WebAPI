@@ -355,4 +355,133 @@ public class EntityAccessService {
     return access;
   }
 
+  // -------------------------
+  // Entity Access Management (grant / revoke / query by entity)
+  // -------------------------
+
+  /**
+   * Find all role IDs that have a specific access type to an entity.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param accessType The access type to filter by
+   * @return List of role IDs with the specified access
+   */
+  public List<Long> getRoleIdsForEntity(EntityType entityType, Long entityId, AccessType accessType) {
+    return switch (entityType) {
+      case COHORT_DEFINITION -> cohortDefAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case CONCEPT_SET -> conceptSetAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case SOURCE -> sourceAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+    };
+  }
+
+  /**
+   * Find all role IDs that have any access to an entity.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @return List of distinct role IDs with any access
+   */
+  public List<Long> getRoleIdsForEntity(EntityType entityType, Long entityId) {
+    return switch (entityType) {
+      case COHORT_DEFINITION -> cohortDefAccessRepo.findRoleIdsByEntityId(entityId);
+      case CONCEPT_SET -> conceptSetAccessRepo.findRoleIdsByEntityId(entityId);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.findRoleIdsByEntityId(entityId);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityId(entityId);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityId(entityId);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityId(entityId);
+      case SOURCE -> sourceAccessRepo.findRoleIdsByEntityId(entityId);
+    };
+  }
+
+  /**
+   * Grant access to an entity for a specific role.
+   * Inserts a row in the appropriate sec_{entity} table.
+   * If the grant already exists, this is a no-op (JPA save on existing composite key).
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to grant access to
+   * @param accessType The access type to grant (READ or WRITE)
+   */
+  public void grantAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    switch (entityType) {
+      case COHORT_DEFINITION -> {
+        var entity = new CohortDefinitionAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setCohortDefinitionId(entityId);
+        entity.setAccessType(accessType);
+        cohortDefAccessRepo.save(entity);
+      }
+      case CONCEPT_SET -> {
+        var entity = new ConceptSetAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setConceptSetId(entityId);
+        entity.setAccessType(accessType);
+        conceptSetAccessRepo.save(entity);
+      }
+      case COHORT_CHARACTERIZATION -> {
+        var entity = new CohortCharacterizationAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setCohortCharacterizationId(entityId);
+        entity.setAccessType(accessType);
+        cohortCharAccessRepo.save(entity);
+      }
+      case FE_ANALYSIS -> {
+        var entity = new FeAnalysisAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setFeAnalysisId(entityId);
+        entity.setAccessType(accessType);
+        feAnalysisAccessRepo.save(entity);
+      }
+      case INCIDENCE_RATE -> {
+        var entity = new IncidenceRateAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setIrId(entityId);
+        entity.setAccessType(accessType);
+        incidenceRateAccessRepo.save(entity);
+      }
+      case PATHWAY_ANALYSIS -> {
+        var entity = new PathwayAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setPathwayAnalysisId(entityId);
+        entity.setAccessType(accessType);
+        pathwayAccessRepo.save(entity);
+      }
+      case SOURCE -> {
+        var entity = new SourceAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setSourceId(entityId);
+        entity.setAccessType(accessType);
+        sourceAccessRepo.save(entity);
+      }
+    }
+  }
+
+  /**
+   * Revoke a specific access type from a role for an entity.
+   * Deletes the row in the appropriate sec_{entity} table.
+   * If the grant does not exist, this is a no-op.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to revoke access from
+   * @param accessType The access type to revoke (READ or WRITE)
+   */
+  public void revokeAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    switch (entityType) {
+      case COHORT_DEFINITION -> cohortDefAccessRepo.deleteByRoleIdAndCohortDefinitionIdAndAccessType(roleId, entityId, accessType);
+      case CONCEPT_SET -> conceptSetAccessRepo.deleteByRoleIdAndConceptSetIdAndAccessType(roleId, entityId, accessType);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.deleteByRoleIdAndCohortCharacterizationIdAndAccessType(roleId, entityId, accessType);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.deleteByRoleIdAndFeAnalysisIdAndAccessType(roleId, entityId, accessType);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.deleteByRoleIdAndIrIdAndAccessType(roleId, entityId, accessType);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.deleteByRoleIdAndPathwayAnalysisIdAndAccessType(roleId, entityId, accessType);
+      case SOURCE -> sourceAccessRepo.deleteByRoleIdAndSourceIdAndAccessType(roleId, entityId, accessType);
+    }
+  }
+
 }

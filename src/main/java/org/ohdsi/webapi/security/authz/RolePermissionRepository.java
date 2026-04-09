@@ -13,6 +13,4 @@ public interface RolePermissionRepository extends CrudRepository<RolePermissionE
   RolePermissionEntity findByRoleAndPermission(RoleEntity role, PermissionEntity permission);
 
   RolePermissionEntity findByRoleIdAndPermissionId(Long roleId, Long permissionId);
-
-  List<RolePermissionEntity> findByStatusIgnoreCase(String status);
 }

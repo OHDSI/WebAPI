@@ -2,7 +2,6 @@ package org.ohdsi.webapi.security.authz;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
@@ -12,10 +11,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityAccessService;
 import org.ohdsi.webapi.security.authz.access.EntityGrant;
 import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * The AuthorizatonService is part of security.authz which orchastrates the permission assignments for users, roles, and permisisons
@@ -28,6 +31,7 @@ public class AuthorizationService {
   private final UserService userService;
   private final RoleService roleService;
   private final PermissionService permissionService;
+  private final EntityAccessService entityAccessService;
   private final SourceRepository sourceRepository;
 
   public AuthorizationService(
@@ -35,6 +39,7 @@ public class AuthorizationService {
       UserService userService,
       RoleService roleService,
       PermissionService permissionService,
+      EntityAccessService entityAccessService,
       JdbcTemplate jdbcTemplate,
       SourceRepository sourceRepository) {
 
@@ -42,8 +47,12 @@ public class AuthorizationService {
     this.userService = userService;
     this.roleService = roleService;
     this.permissionService = permissionService;
+    this.entityAccessService = entityAccessService;
     this.sourceRepository = sourceRepository;
   }
+
+  @Value("${security.auth.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  private List<String> defaultRoles;
 
   // -------------------------
   // Compatibility / Facade Wrappers
@@ -66,26 +75,41 @@ public class AuthorizationService {
     return User.fromEntity(ue);
   }
 
-  public Set<PermissionEntity> getUserPermissions(Long userId) {
+  @Transactional(readOnly = true)
+  public List<Permission> getUserPermissions(Long userId) {
     Set<RoleEntity> roles = this.roleService.getUserRoles(userId);
     Set<PermissionEntity> perms = new HashSet<>();
     for (RoleEntity r : roles) {
       perms.addAll(this.roleService.getRolePermissions(r.getId()));
     }
-    return perms;
+    return perms.stream().map(Permission::fromEntity).collect(Collectors.toList());
   }
 
   public Set<String> queryUserPermissions(Long userId) {
     return this.authorizationCacheService.getUserAuthorizations(userId).permissions;
   }
 
-  public Set<RoleEntity> getUserRoles(Long userId) throws Exception {
-    return this.roleService.getUserRoles(userId);
+  @Transactional(readOnly = true)
+  public List<Role> getUserRoles(Long userId) throws Exception {
+    Set<RoleEntity> roleEntities = this.roleService.getUserRoles(userId);
+    ArrayList<Role> roles = new ArrayList<>();
+    for (RoleEntity roleEntity : roleEntities) {
+      Role role = Role.fromEntity(roleEntity, defaultRoles.contains(roleEntity.getName()));
+      roles.add(role);
+    }
+    return roles;
   }
 
-  public Set<RoleEntity> getUserRoles(String login) throws Exception {
+  @Transactional(readOnly = true)
+  public List<Role> getUserRoles(String login) throws Exception {
     UserEntity user = this.userService.getUserByLogin(login).orElseThrow();
-    return this.roleService.getUserRoles(user);
+    Set<RoleEntity> roleEntities = this.roleService.getUserRoles(user);
+    ArrayList<Role> roles = new ArrayList<>();
+    for (RoleEntity roleEntity : roleEntities) {
+      Role role = Role.fromEntity(roleEntity, defaultRoles.contains(roleEntity.getName()));
+      roles.add(role);
+    }
+    return roles;
   }
 
   public RoleEntity addRole(String roleName, boolean isSystem) {
@@ -97,16 +121,6 @@ public class AuthorizationService {
     return this.roleService.getRoleByName(principal.getName(), false).orElseThrow();
   }
 
-  public void addPermissionsFromTemplate(RoleEntity role, Map<String, String> template, String roleIdStr) {
-    Long targetRoleId = Long.parseLong(roleIdStr);
-    for (Map.Entry<String, String> e : template.entrySet()) {
-      String permission = String.format(e.getKey(), roleIdStr);
-      String description = String.format(e.getValue(), roleIdStr);
-      PermissionEntity p = this.permissionService.getOrAddPermission(permission, description);
-      this.roleService.addPermission(targetRoleId, p.getId());
-    }
-  }
-
   public RoleEntity getRole(Long id) {
     return this.roleService.getRole(id);
   }
@@ -115,28 +129,38 @@ public class AuthorizationService {
     return this.roleService.updateRole(roleEntity);
   }
 
-  public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
-    return this.roleService.getRoles(includePersonalRoles);
+  public List<Role> getRoles(boolean includePersonalRoles) {
+    Iterable<RoleEntity> roleEntities = this.roleService.getRoles(includePersonalRoles);
+    ArrayList<Role> roles = new ArrayList<>();
+    for (RoleEntity roleEntity : roleEntities) {
+      Role role = Role.fromEntity(roleEntity, defaultRoles.contains(roleEntity.getName()));
+      roles.add(role);
+    }
+    return roles;
   }
 
   public void removeRole(Long roleId) {
     this.roleService.removeRole(roleId);
   }
 
-  public Set<PermissionEntity> getRolePermissions(Long roleId) {
-    return this.roleService.getRolePermissions(roleId);
+  @Transactional(readOnly = true)
+  public List<Permission> getRolePermissions(Long roleId) {
+    Set<PermissionEntity> permissionEntities = this.roleService.getRolePermissions(roleId);
+    return permissionEntities.stream().map(Permission::fromEntity).collect(Collectors.toList());
   }
 
   public void addPermission(Long roleId, Long permissionId) {
     this.roleService.addPermission(roleId, permissionId);
   }
 
-  public void removePermission(Long permissionId, Long roleId) {
-    this.roleService.removePermission(permissionId, roleId);
+  public void removePermission(Long roleId, Long permissionId) {
+    this.roleService.removePermission(roleId, permissionId);
   }
 
-  public Set<UserEntity> getRoleUsers(Long roleId) {
-    return this.roleService.getRoleUsers(roleId);
+  @Transactional(readOnly = true)
+  public List<User> getRoleUsers(Long roleId) {
+    Set<UserEntity> userEntities = this.roleService.getRoleUsers(roleId);
+    return userEntities.stream().map(User::fromEntity).collect(Collectors.toList());
   }
 
   public void addUser(Long userId, Long roleId) {
@@ -153,6 +177,85 @@ public class AuthorizationService {
 
   public void addUserToRole(String roleName, String login, UserOrigin origin) {
     this.roleService.addUserToRole(login, roleName, origin);
+  }
+
+  // -------------------------
+  // Permission & Entity Access Facade
+  // -------------------------
+
+  /**
+   * Get all global permissions defined in the system.
+   *
+   * @return List of Permission domain objects
+   */
+  @Transactional(readOnly = true)
+  public List<Permission> getPermissions() {
+    Iterable<PermissionEntity> entities = this.permissionService.getPermissions();
+    ArrayList<Permission> permissions = new ArrayList<>();
+    for (PermissionEntity e : entities) {
+      permissions.add(Permission.fromEntity(e));
+    }
+    return permissions;
+  }
+
+  /**
+   * Search for system roles by partial name match (case-insensitive).
+   * Returns all system roles if roleSearch is null or empty.
+   *
+   * @param roleSearch The partial role name to search for
+   * @return List of matching Role domain objects
+   */
+  @Transactional(readOnly = true)
+  public List<Role> searchRoles(String roleSearch) {
+    List<RoleEntity> roleEntities = this.roleService.searchRoles(roleSearch);
+    return roleEntities.stream()
+        .map(re -> Role.fromEntity(re, defaultRoles.contains(re.getName())))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Find all roles that have a specific access type to an entity.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param accessType The access type to filter by (READ or WRITE)
+   * @return List of Role domain objects with the specified access
+   */
+  @Transactional(readOnly = true)
+  public List<Role> getRolesForEntity(EntityType entityType, Long entityId, AccessType accessType) {
+    List<Long> roleIds = this.entityAccessService.getRoleIdsForEntity(entityType, entityId, accessType);
+    return roleIds.stream()
+        .map(id -> this.roleService.getRole(id))
+        .map(re -> Role.fromEntity(re, defaultRoles.contains(re.getName())))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Grant access to an entity for a specific role.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to grant access to
+   * @param accessType The access type to grant (READ or WRITE)
+   */
+  @Transactional
+  public void grantEntityAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    this.entityAccessService.grantAccess(entityType, entityId, roleId, accessType);
+    this.authorizationCacheService.evictUsersWithRole(roleId);
+  }
+
+  /**
+   * Revoke a specific access type from a role for an entity.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to revoke access from
+   * @param accessType The access type to revoke (READ or WRITE)
+   */
+  @Transactional
+  public void revokeEntityAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    this.entityAccessService.revokeAccess(entityType, entityId, roleId, accessType);
+    this.authorizationCacheService.evictUsersWithRole(roleId);
   }
 
   // -------------------------

@@ -20,4 +20,21 @@ public interface IncidenceRateAccessRepository extends JpaRepository<IncidenceRa
 
     @Query("SELECT ira.id FROM IncidenceRateAnalysis ira WHERE ira.createdBy.id = :userId")
     List<Integer> findOwnedIncidenceRateIds(@Param("userId") Long userId);
+
+    /**
+     * Find all role IDs that have a specific access type to an incidence rate analysis.
+     */
+    @Query("SELECT ia.roleId FROM IncidenceRateAccess ia WHERE ia.irId = :entityId AND ia.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to an incidence rate analysis.
+     */
+    @Query("SELECT DISTINCT ia.roleId FROM IncidenceRateAccess ia WHERE ia.irId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndIrIdAndAccessType(Long roleId, Long irId, AccessType accessType);
 }

@@ -32,4 +32,21 @@ public interface FeAnalysisAccessRepository extends JpaRepository<FeAnalysisAcce
      */
     @Query("SELECT fa.id FROM FeAnalysisEntity fa WHERE fa.createdBy.id = :userId")
     List<Integer> findOwnedFeAnalysisIds(@Param("userId") Long userId);
+
+    /**
+     * Find all role IDs that have a specific access type to a feature analysis.
+     */
+    @Query("SELECT fa.roleId FROM FeAnalysisAccess fa WHERE fa.feAnalysisId = :entityId AND fa.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to a feature analysis.
+     */
+    @Query("SELECT DISTINCT fa.roleId FROM FeAnalysisAccess fa WHERE fa.feAnalysisId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndFeAnalysisIdAndAccessType(Long roleId, Long feAnalysisId, AccessType accessType);
 }

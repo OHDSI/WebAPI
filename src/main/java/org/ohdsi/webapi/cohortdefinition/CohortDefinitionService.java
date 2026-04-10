@@ -103,6 +103,7 @@ import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.UseEtag;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -437,6 +438,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@UseEtag
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
 		boolean globalRead = authorizationService.isPermitted("read:cohort-definition");

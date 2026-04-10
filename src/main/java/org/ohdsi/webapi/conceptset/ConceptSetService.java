@@ -56,6 +56,7 @@ import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.util.UseEtag;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
@@ -173,6 +174,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @Transactional(readOnly = true)
+    @UseEtag
     public Collection<ConceptSetDTO> getConceptSets() {
         UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
         boolean globalRead = authorizationService.isPermitted("read:conceptset");

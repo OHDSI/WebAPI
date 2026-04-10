@@ -20,4 +20,21 @@ public interface PathwayAccessRepository extends JpaRepository<PathwayAccessEnti
 
     @Query("SELECT pa.id FROM PathwayAnalysis pa WHERE pa.createdBy.id = :userId")
     List<Integer> findOwnedPathwayAnalysisIds(@Param("userId") Long userId);
+
+    /**
+     * Find all role IDs that have a specific access type to a pathway analysis.
+     */
+    @Query("SELECT pa.roleId FROM PathwayAccess pa WHERE pa.pathwayAnalysisId = :entityId AND pa.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to a pathway analysis.
+     */
+    @Query("SELECT DISTINCT pa.roleId FROM PathwayAccess pa WHERE pa.pathwayAnalysisId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndPathwayAnalysisIdAndAccessType(Long roleId, Long pathwayAnalysisId, AccessType accessType);
 }

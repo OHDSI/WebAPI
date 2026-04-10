@@ -21,7 +21,6 @@ import org.ohdsi.webapi.arachne.scheduler.model.JobExecutingType;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.security.authz.Role;
-import org.ohdsi.webapi.security.authz.RoleEntity;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.security.provisioning.JobAlreadyExistException;
@@ -304,20 +303,20 @@ public class UserImportServiceImpl implements UserImportService {
           userEntity.setName(user.getDisplayName());
           userEntity.setOrigin(userOrigin);
           if (LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
-            Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
+            java.util.List<Role> userRoles = userManager.getUserRoles(userEntity.getId());
             if (!preserveRoles) {
               //Overrides assigned roles
-              userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+              userRoles.stream().filter(role -> !role.name().equalsIgnoreCase(login)).forEach(r -> {
                 try {
-                  userManager.removeUserFromRole(r.getName(), userEntity.getLogin(), null);
+                  userManager.removeUserFromRole(r.name(), userEntity.getLogin(), null);
                 } catch (Exception e) {
-                  logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+                  logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.name(), e);
                 }
               });
             } else {
               //Filter roles that is already assigned
               roles = roles.stream()
-                      .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
+                      .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.name(), role)))
                       .collect(Collectors.toSet());
             }
             roles.forEach(r -> {

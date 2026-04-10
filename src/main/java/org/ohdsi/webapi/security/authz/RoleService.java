@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.security.authz;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -98,6 +99,22 @@ class RoleService {
     return this.roleRepository.existsByName(roleName);
   }
 
+  /**
+   * Search for system roles whose name contains the search string (case-insensitive).
+   * Returns all system roles if roleSearch is null or empty.
+   *
+   * @param roleSearch The partial role name to search for, or null/empty for all
+   * @return List of matching RoleEntity instances
+   */
+  public List<RoleEntity> searchRoles(String roleSearch) {
+    if (roleSearch == null || roleSearch.isBlank()) {
+      List<RoleEntity> roles = new java.util.ArrayList<>();
+      this.roleRepository.findAllBySystemRoleTrue().forEach(roles::add);
+      return roles;
+    }
+    return this.roleRepository.findByNameIgnoreCaseContaining(roleSearch);
+  }
+
   // -------------------------
   // Role Permissions
   // -------------------------
@@ -127,7 +144,7 @@ class RoleService {
     return relation;
   }
 
-  public void removePermission(Long permissionId, Long roleId) {
+  public void removePermission(Long roleId, Long permissionId) {
     RolePermissionEntity rolePermission = this.rolePermissionRepository.findByRoleIdAndPermissionId(roleId,
         permissionId);
     if (rolePermission != null)

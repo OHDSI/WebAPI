@@ -32,4 +32,21 @@ public interface CohortDefinitionAccessRepository extends JpaRepository<CohortDe
      */
     @Query("SELECT cd.id FROM CohortDefinition cd WHERE cd.createdBy.id = :userId")
     List<Integer> findOwnedCohortDefinitionIds(@Param("userId") Long userId);
+
+    /**
+     * Find all role IDs that have a specific access type to a cohort definition.
+     */
+    @Query("SELECT ca.roleId FROM CohortDefinitionAccess ca WHERE ca.cohortDefinitionId = :entityId AND ca.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to a cohort definition.
+     */
+    @Query("SELECT DISTINCT ca.roleId FROM CohortDefinitionAccess ca WHERE ca.cohortDefinitionId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndCohortDefinitionIdAndAccessType(Long roleId, Long cohortDefinitionId, AccessType accessType);
 }

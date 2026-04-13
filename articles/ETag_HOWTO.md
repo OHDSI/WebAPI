@@ -24,12 +24,12 @@ That's it. No changes to return types or service layer required.
 
 1. **First Request**: Client requests `/cohortdefinition/123`
    - Server generates response JSON
-   - Filter computes SHA-256 hash of response body
-   - Response includes `ETag: "a1b2c3..."` header
+   - Filter computes MD5 hash of response body
+   - Response includes weak ETag header: `ETag: W/"0a1b2c3..."` 
    - Client receives full response (200 OK)
 
 2. **Subsequent Requests**: Client requests same URL
-   - Browser automatically sends `If-None-Match: "a1b2c3..."` header
+   - Browser automatically sends `If-None-Match: W/"0a1b2c3..."` header
    - Filter computes ETag of current response
    - If ETags match → returns `304 Not Modified` (no body)
    - If ETags differ → returns full response with new ETag (200 OK)
@@ -49,29 +49,18 @@ public @interface UseEtag {
 }
 ```
 
-### `EtagUtil` Utility Class
-
-Location: `org.ohdsi.webapi.util.EtagUtil`
-
-Provides ETag generation and comparison:
-
-- `generateEtag(byte[] content)` - Computes SHA-256 hash, returns quoted string per RFC 7232 (e.g., `"a1b2c3..."`)
-- `matches(String ifNoneMatch, String etag)` - Compares `If-None-Match` header to generated ETag, handles multiple values and `*` wildcard
-
 ### `EtagFilter` Servlet Filter
 
 Location: `org.ohdsi.webapi.util.EtagFilter`
 
-A servlet `Filter` that:
+Extends Spring's `ShallowEtagHeaderFilter` to add selective ETag processing based on the `@UseEtag` annotation:
 
-1. Looks up the handler method via `RequestMappingHandlerMapping`
-2. Checks for `@UseEtag` annotation
-3. Wraps response with `ContentCachingResponseWrapper` to capture the body
-4. After response is written, computes ETag from cached bytes
-5. Compares with `If-None-Match` header
-6. Returns 304 or full response with appropriate headers
+1. Overrides `shouldNotFilter()` to skip requests without `@UseEtag` annotation
+2. Sets Cache-Control and CORS headers before delegating to parent
+3. Leverages Spring's built-in ETag generation (MD5) and 304 handling
+4. Configured to generate weak ETags (`W/"..."`) per RFC 7232
 
-**Key Design Decision**: Uses a Filter (not `ResponseBodyAdvice`) to avoid double-serialization. `ResponseBodyAdvice` receives the Java object before JSON serialization, so computing an ETag there would require serializing to JSON twice. The Filter intercepts after Spring has already serialized the response.
+**Key Design Decision**: Extends `ShallowEtagHeaderFilter` rather than implementing from scratch. This leverages Spring's tested implementation for response caching, ETag generation, async dispatch handling, and `If-None-Match` comparison.
 
 ## HTTP Headers
 
@@ -79,7 +68,7 @@ For `@UseEtag` endpoints, the filter sets these response headers:
 
 | Header | Value | Purpose |
 |--------|-------|---------|
-| `ETag` | `"<sha256-hash>"` | Unique identifier for response content |
+| `ETag` | `W/"0<md5-hash>"` | Weak ETag - unique identifier for response content |
 | `Cache-Control` | `private, max-age=0, must-revalidate` | Allows browser caching but forces revalidation |
 | `Access-Control-Expose-Headers` | `ETag` | Exposes ETag to JavaScript in CORS contexts |
 
@@ -184,7 +173,8 @@ Invoke-WebRequest: ParameterBindingException
 
 ## Security Considerations
 
-- ETags use SHA-256 hashing, which is cryptographically strong
+- ETags use MD5 hashing (sufficient for cache validation; collision resistance is not required)
+- Weak ETags (`W/"..."`) indicate semantic equivalence rather than byte-for-byte identity
 - `Cache-Control: private` ensures responses are not stored in shared caches (proxies)
 - The `Vary: Origin` header (set by Spring CORS) ensures CORS responses are cached per-origin
 
@@ -193,4 +183,4 @@ Invoke-WebRequest: ParameterBindingException
 - [RFC 7232 - HTTP Conditional Requests](https://tools.ietf.org/html/rfc7232)
 - [MDN - ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag)
 - [MDN - If-None-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match)
-- [Spring ContentCachingResponseWrapper](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/util/ContentCachingResponseWrapper.html)
+- [Spring ShallowEtagHeaderFilter](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/filter/ShallowEtagHeaderFilter.html)

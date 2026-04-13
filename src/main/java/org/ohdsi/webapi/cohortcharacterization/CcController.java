@@ -119,7 +119,7 @@ public class CcController {
      * @return The cohort characterization definition of the newly created copy
      */
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO copy(@PathVariable("id") final Long id) {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
@@ -162,7 +162,7 @@ public class CcController {
      * @return name, createdDate, tags, etc for a single cohort characterization.
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CcShortDTO get(@PathVariable("id") final Long id) {
         return convertCcToShortDto(service.findById(id));
     }
@@ -174,7 +174,7 @@ public class CcController {
      * @return JSON containing the cohort characterization specification
      */
     @GetMapping(value = "/{id}/design", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CohortCharacterizationDTO getDesign(@PathVariable("id") final Long id) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
@@ -248,7 +248,7 @@ public class CcController {
      * @return JSON containing the cohort characterization definition
      */
     @GetMapping(value = "/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public String export(@PathVariable("id") final Long id) {
         return service.serializeCc(id);
     }
@@ -259,7 +259,7 @@ public class CcController {
      * @return A zip file containing three csv files (mappedConcepts, includedConcepts, conceptSetExpression)
      */
     @GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('read:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted('read:cohort-characterization','write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public ResponseEntity<StreamingResponseBody> exportConceptSets(@PathVariable("id") final Long id) {
 
         CohortCharacterizationEntity cc = service.findById(id);
@@ -287,7 +287,7 @@ public class CcController {
      * @return A json object with information about the generation job included the status and execution id.
      */
     @PostMapping(value = "/{id}/generation/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
     public JobExecutionResource generate(@PathVariable("id") final Long id, @PathVariable("sourceKey") final String sourceKey) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
@@ -305,7 +305,7 @@ public class CcController {
      * @return Status code
      */
     @DeleteMapping(value = "/{id}/generation/{sourceKey}")
-    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+    @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('write:cohort-characterization','read:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
     public ResponseEntity<Void> cancelGeneration(@PathVariable("id") final Long id, @PathVariable("sourceKey") final String sourceKey) {
         service.cancelGeneration(id, sourceKey);
         return ResponseEntity.ok().build();
@@ -317,7 +317,7 @@ public class CcController {
      * @return An array of all generations that includes the generation id, sourceKey, start and end times
      */
     @GetMapping(value = "/{id}/generation", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<CommonGenerationDTO> getGenerationList(@PathVariable("id") final Long id) {
 
         Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
@@ -525,7 +525,7 @@ public class CcController {
      * @return
      */
     @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
         return service.getVersions(id);
     }
@@ -538,7 +538,7 @@ public class CcController {
      * @return
      */
     @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
+    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)")
     public CcVersionFullDTO getVersion(@PathVariable("id") final long id, @PathVariable("version") final int version) {
         return service.getVersion(id, version);
     }

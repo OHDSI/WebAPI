@@ -101,7 +101,7 @@ public class PathwayController {
 	 * @return The copied pathway analysis.
 	 */
 	@PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)) and isPermitted('create:pathway')")
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)) and isPermitted('create:pathway')")
 	public PathwayAnalysisDTO copy(@PathVariable("id") final Integer id) {
 
 		PathwayAnalysisDTO dto = get(id);
@@ -277,7 +277,7 @@ public class PathwayController {
 	 */
 	@PostMapping(value = "/{id}/generation/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
 	public JobExecutionResource generatePathways(
 					@PathVariable("id") final Integer pathwayAnalysisId,
 					@PathVariable("sourceKey") final String sourceKey
@@ -306,7 +306,7 @@ public class PathwayController {
 	 * @param sourceKey the key of the source
 	 */
 	@DeleteMapping(value = "/{id}/generation/{sourceKey}")
-	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
 	public void cancelPathwaysGeneration(
 					@PathVariable("id") final Integer pathwayAnalysisId,
 					@PathVariable("sourceKey") final String sourceKey
@@ -330,7 +330,7 @@ public class PathwayController {
 	 */
 	@GetMapping(value = "/{id}/generation", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)")
+	@PreAuthorize("isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)")
 	public List<CommonGenerationDTO> getPathwayGenerations(
 				@PathVariable("id") final Integer pathwayAnalysisId
 	) {
@@ -526,7 +526,7 @@ public class PathwayController {
 	 * @return
 	 */
 	@GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
 	public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
 		return pathwayService.getVersions(id);
 	}
@@ -540,7 +540,7 @@ public class PathwayController {
 	 * @return
 	 */
 	@GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
 	public PathwayVersionFullDTO getVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		return pathwayService.getVersion(id, version);
 	}

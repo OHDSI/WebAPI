@@ -82,6 +82,11 @@ public class AuthorizationCacheService {
     cache.removeAll(usersToEvict);
   }
 
+  public void evictUser(Long userId) {
+    Cache<Long, UserAuthorizations> cache = authInfoCache();
+    cache.remove(userId);
+  }
+
   @CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void clearCache() {
     // no-op, clears cache

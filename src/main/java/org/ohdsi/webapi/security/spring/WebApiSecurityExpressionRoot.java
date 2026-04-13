@@ -149,7 +149,7 @@ public class WebApiSecurityExpressionRoot
    * @param permission The permission string (e.g., "read:cohort", "write", "*")
    * @return true if the user has the permission
    */
-  public boolean isPermitted(Collection<String> permissions) {
+  public boolean isAnyPermitted(Collection<String> permissions) {
     if (permissions == null || permissions.isEmpty())
       return false;
     for (String p : permissions) {

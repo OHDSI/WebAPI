@@ -111,7 +111,8 @@ public class LoginService {
    */
   public Result logout(Authentication authentication) {
     if (!(authentication instanceof WebApiAuthenticationToken webapiAuth)) {
-      throw new BadCredentialsException("Invalid authentication type");
+      String type = (authentication == null) ? "null" : authentication.getClass().getName();
+      throw new BadCredentialsException("Invalid authentication type: " + type);
     }
 
     UUID sessionId = webapiAuth.getSessionId();

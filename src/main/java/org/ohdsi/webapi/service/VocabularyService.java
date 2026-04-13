@@ -29,8 +29,6 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.vocabulary.SearchProviderConfig;
-import org.ohdsi.webapi.activity.Activity.ActivityType;
-import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
@@ -1353,7 +1351,6 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<Concept> getDescendantOfAncestorConcepts(
           @PathVariable("sourceKey") String sourceKey,
           @RequestBody DescendentOfAncestorSearch search) {
-    Tracker.trackActivity(ActivityType.Search, "getDescendantOfAncestorConcepts");
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetDescendantOfAncestorConcepts(search, source);
@@ -1408,7 +1405,6 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<Concept> getRelatedConcepts(
           @PathVariable("sourceKey") String sourceKey,
           @RequestBody RelatedConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, "getRelatedConcepts");
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetRelatedConcepts(search, source);

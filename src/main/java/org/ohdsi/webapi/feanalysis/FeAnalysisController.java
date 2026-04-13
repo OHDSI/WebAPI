@@ -163,7 +163,7 @@ public class FeAnalysisController {
      */
     @GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @PreAuthorize("(isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)) and isPermitted('create:feature-analysis')")
+    @PreAuthorize("(isOwner(#feAnalysisId, FE_ANALYSIS) or isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)) and isPermitted('create:feature-analysis')")
     public FeAnalysisDTO copy(@PathVariable("id") final Integer feAnalysisId) {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));

@@ -465,7 +465,7 @@ public class IRAnalysisService extends AbstractDaoService implements
     return getAnalysis(id);
   }
 
-  @PreAuthorize("(isOwner(#analysisId, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#analysisId, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+  @PreAuthorize("(isOwner(#analysisId, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#analysisId, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
   @Override
   public JobExecutionResource performAnalysis(final int analysisId, final String sourceKey) {
@@ -536,7 +536,7 @@ public class IRAnalysisService extends AbstractDaoService implements
     return jobService.runJob(generateIrJob.build(), jobParameters);
   }
 
-  @PreAuthorize("(isOwner(#analysisId, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#analysisId, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+  @PreAuthorize("(isOwner(#analysisId, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#analysisId, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
   @Override
   public void cancelAnalysis(int analysisId, String sourceKey) {
 
@@ -564,7 +564,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
-  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted('read:incidence') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
   @Transactional(readOnly = true)
   public AnalysisInfoDTO getAnalysisInfo(int id, String sourceKey) {
 
@@ -587,7 +587,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
-  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted('read:incidence') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted('read:incidence') or isAnyPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
   @Transactional
   public AnalysisReport getAnalysisReport(final int id, final String sourceKey, final int targetId, final int outcomeId ) {
 
@@ -628,7 +628,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
-  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.setTags(null);
@@ -640,7 +640,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
-  @PreAuthorize("isOwner(#id, INCIDENCE_RATE) or isPermitted('read:incidence') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, READ)")
+  @PreAuthorize("isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)")
   public ResponseEntity<byte[]> export(final int id) {
 
     Map<String, String> fileList = new HashMap<>();
@@ -770,7 +770,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
-  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
   public void deleteInfo(final int id, final String sourceKey) {
     IncidenceRateAnalysis analysis = irAnalysisRepository.findById(id).orElseThrow();
     ExecutionInfo itemToRemove = null;
@@ -855,7 +855,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
-  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
   @Transactional
   public IRAnalysisDTO copyAssetFromVersion(int id, int version) {
     checkVersion(id, version, false);

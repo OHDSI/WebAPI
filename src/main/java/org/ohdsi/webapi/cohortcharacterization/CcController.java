@@ -500,7 +500,10 @@ public class CcController {
      */
     @PostMapping(value = "/{id}/protectedtag")
     @Transactional
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
+    @PreAuthorize("""
+        (isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE))
+        and isPermitted('admin:tags')
+    """)
     public void assignPermissionProtectedTag(@PathVariable("id") final long id, @RequestBody final int tagId) {
         service.assignTag(id, tagId);
     }
@@ -513,7 +516,10 @@ public class CcController {
      */
     @DeleteMapping(value = "/{id}/protectedtag/{tagId}")
     @Transactional
-    @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('admin:tags') or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
+    @PreAuthorize("""
+        (isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE))
+        and isPermitted('admin:tags')
+    """)
     public void unassignPermissionProtectedTag(@PathVariable("id") final long id, @PathVariable("tagId") final int tagId) {
         service.unassignTag(id, tagId);
     }

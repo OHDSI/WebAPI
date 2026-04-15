@@ -717,7 +717,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @PostMapping(value = "/{id}/protectedtag", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
+	@PreAuthorize("""
+		(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE))
+		and isPermitted('admin:tags')
+	""")
     public void assignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @RequestBody final int tagId) {
@@ -735,7 +738,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @DeleteMapping(value = "/{id}/protectedtag/{tagId}")
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
-    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
+	@PreAuthorize("""
+		(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE))
+		and isPermitted('admin:tags')
+	""")
     public void unassignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @PathVariable("tagId") final int tagId) {

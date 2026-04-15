@@ -804,14 +804,14 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
-  @PreAuthorize("isOwner(#id, INCIDENCE_RATE) or isPermitted('admin:tags') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, WRITE)")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, WRITE)) and isPermitted('admin:tags')")
   public void assignPermissionProtectedTag(final int id, final int tagId) {
     assignTag(id, tagId);
   }
 
   @Override
   @Transactional
-  @PreAuthorize("isOwner(#id, INCIDENCE_RATE) or isPermitted('admin:tags') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, WRITE)")
+  @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, WRITE)) and isPermitted('admin:tags')")
   public void unassignPermissionProtectedTag(final int id, final int tagId) {
     unassignTag(id, tagId);
   }

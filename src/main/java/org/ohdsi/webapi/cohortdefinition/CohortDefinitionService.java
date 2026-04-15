@@ -1062,7 +1062,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
 	public void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
 		assignTag(id, tagId);
 	}
@@ -1076,7 +1079,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@DeleteMapping(value = "/{id}/protectedtag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
 	public void unassignPermissionProtectedTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
 		unassignTag(id, tagId);
 	}

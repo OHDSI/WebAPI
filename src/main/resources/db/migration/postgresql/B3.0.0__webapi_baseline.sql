@@ -2038,6 +2038,7 @@ FROM (
 	('admin:tools', 'Manage Tools'),
 	('admin:security', 'Manage users, roles, permissions'),
 	('admin:cache', 'View and manage chache functions'),
+	('admin:run-as', 'Run as another user'),    
 	('create', 'Create any asset'),
 	('create:conceptset', 'Create concept sets'),
 	('create:cohort-definition', 'Create cohort definitions'),
@@ -2072,7 +2073,7 @@ INSERT INTO ${ohdsiSchema}.sec_user (id, login, name, origin)
 VALUES (-1, 'anonymous', 'Anonymous', 'SYSTEM');
 
 INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
-VALUES (-1, 'anonymous', false);
+VALUES (-1, 'anonymous', true);
 
 INSERT INTO ${ohdsiSchema}.sec_user_role (id, user_id, role_id, origin)
 VALUES (nextval('${ohdsiSchema}.sec_user_role_sequence'), -1, -1, 'SYSTEM');

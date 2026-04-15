@@ -499,7 +499,7 @@ public class PathwayController {
 	 */
 	@PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('admin:tags') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)) and isPermitted('admin:tags')")
 	public void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
 		pathwayService.assignTag(id, tagId);
 	}
@@ -513,7 +513,7 @@ public class PathwayController {
 	 */
 	@DeleteMapping(value = "/{id}/protectedtag/{tagId}")
 	@Transactional
-	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('admin:tags') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)) and isPermitted('admin:tags')")
 	public void unassignPermissionProtectedTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
 		pathwayService.unassignTag(id, tagId);
 	}

@@ -31,6 +31,13 @@ public class CleanupScheduler {
             DateUtils.addDays(new Date(), -1 * invalidateAfterDays),
             DynamicEntityGraph.loading().addPath("source.daimons").build()
         );
-        caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), gc.getSource(), gc.getDesignHash()));
+
+        for (GenerationCache gc : caches) {
+            if (gc.getSource() != null) {
+                generationCacheService.removeCache(gc.getType(), gc.getSource(), gc.getDesignHash());
+            } else {
+                generationCacheRepository.delete(gc);
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ public class UserAuthorizations {
   public Map<Long, EntityGrant> feAnalysisAccess = Map.of();
   public Map<Long, EntityGrant> pathwayAccess = Map.of();
   public Map<Long, EntityGrant> incidenceRateAccess = Map.of();
+  public Map<Long, EntityGrant> reusableAccess = Map.of();
 
   /** Infrastructure entities: access grants only (no ownership semantics) */
   public Map<Long, Set<AccessType>> sourceAccess = Map.of();

@@ -412,6 +412,10 @@ public class AuthorizationService {
         EntityGrant grant = authz.pathwayAccess.get(entityId);
         yield grant != null && grant.isOwner();
       }
+      case REUSABLE -> {
+        EntityGrant grant = authz.reusableAccess.get(entityId);
+        yield grant != null && grant.isOwner();
+      }
       case SOURCE -> false;
     };
   }
@@ -456,9 +460,12 @@ public class AuthorizationService {
         EntityGrant grant = authz.incidenceRateAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
-
       case PATHWAY_ANALYSIS -> {
         EntityGrant grant = authz.pathwayAccess.get(entityId);
+        yield grant != null && grant.hasAccess(accessType);
+      }
+      case REUSABLE -> {
+        EntityGrant grant = authz.reusableAccess.get(entityId);
         yield grant != null && grant.hasAccess(accessType);
       }
 

@@ -6,6 +6,7 @@ import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.source.Source;
 
 public enum EntityType {
@@ -15,12 +16,8 @@ public enum EntityType {
     COHORT_CHARACTERIZATION(CohortCharacterizationEntity.class),
     FE_ANALYSIS(FeAnalysisEntity.class),
     INCIDENCE_RATE(IncidenceRateAnalysis.class),
-    PATHWAY_ANALYSIS(PathwayAnalysisEntity.class);
-    // FE_ANALYSIS(FeAnalysisEntity.class),
-    // COHORT_SAMPLE(CohortSample.class),
-    // TAG(Tag.class),
-    // TOOL(Tool.class),
-    // REUSABLE(Reusable.class);
+    PATHWAY_ANALYSIS(PathwayAnalysisEntity.class),
+    REUSABLE(Reusable.class);
     private final Class<?> entityClass;
 
     EntityType(Class<?> entityClass) {

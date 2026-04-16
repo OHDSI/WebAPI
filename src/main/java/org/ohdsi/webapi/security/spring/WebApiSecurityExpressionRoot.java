@@ -39,6 +39,7 @@ public class WebApiSecurityExpressionRoot
   public final EntityType FE_ANALYSIS = EntityType.FE_ANALYSIS;
   public final EntityType INCIDENCE_RATE = EntityType.INCIDENCE_RATE;
   public final EntityType PATHWAY_ANALYSIS = EntityType.PATHWAY_ANALYSIS;
+  public final EntityType REUSABLE = EntityType.REUSABLE;
 
   public WebApiSecurityExpressionRoot(
       Authentication authentication,

@@ -32,6 +32,7 @@ public class EntityAccessService {
   private final SourceAccessRepository sourceAccessRepo;
   private final IncidenceRateAccessRepository incidenceRateAccessRepo;
   private final PathwayAccessRepository pathwayAccessRepo;
+  private final ReusableAccessRepository reusableAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
@@ -41,6 +42,7 @@ public class EntityAccessService {
       SourceAccessRepository sourceAccessRepo,
       IncidenceRateAccessRepository incidenceRateAccessRepo,
       PathwayAccessRepository pathwayAccessRepo,
+      ReusableAccessRepository reusableAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
@@ -49,6 +51,7 @@ public class EntityAccessService {
     this.sourceAccessRepo = sourceAccessRepo;
     this.incidenceRateAccessRepo = incidenceRateAccessRepo;
     this.pathwayAccessRepo = pathwayAccessRepo;
+    this.reusableAccessRepo = reusableAccessRepo;
     this.permissionRepository = permissionRepository;
   }
 
@@ -81,10 +84,11 @@ public class EntityAccessService {
     authz.feAnalysisAccess = buildFeAnalysisAccess(userId);
     authz.pathwayAccess = buildPathwayAccess(userId);
     authz.incidenceRateAccess = buildIncidenceRateAccess(userId);
+    authz.reusableAccess = buildReusableAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, feAnalysis={}, pathwayAnalysis={}, incidenceAnalysis={}, sources={})",
+    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, feAnalysis={}, pathwayAnalysis={}, incidenceAnalysis={}, reusable={}, sources={})",
       userId, elapsedMs,
       authz.permissions.size(),
       authz.cohortDefinitionAccess.size(),
@@ -93,6 +97,7 @@ public class EntityAccessService {
       authz.feAnalysisAccess.size(),
       authz.pathwayAccess.size(),
       authz.incidenceRateAccess.size(),
+      authz.reusableAccess.size(),
       authz.sourceAccess.size());
 
     return authz;
@@ -336,6 +341,45 @@ public class EntityAccessService {
   }
 
   /**
+   * Build the reusable access map for a user.
+   * Queries the sec_reusable table via roles assigned to the user,
+   * then merges owned reusables as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of reusableId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildReusableAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : reusableAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : reusableAccessRepo.findOwnedReusableIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
    * Build the source access map for a user.
    * Queries the sec_source table via roles assigned to the user.
    * Note: Source ownership does NOT imply write access; only explicit
@@ -375,6 +419,7 @@ public class EntityAccessService {
       case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
       case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
       case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case REUSABLE -> reusableAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
       case SOURCE -> sourceAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
     };
   }
@@ -394,6 +439,7 @@ public class EntityAccessService {
       case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityId(entityId);
       case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityId(entityId);
       case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityId(entityId);
+      case REUSABLE -> reusableAccessRepo.findRoleIdsByEntityId(entityId);
       case SOURCE -> sourceAccessRepo.findRoleIdsByEntityId(entityId);
     };
   }
@@ -452,6 +498,13 @@ public class EntityAccessService {
         entity.setAccessType(accessType);
         pathwayAccessRepo.save(entity);
       }
+      case REUSABLE -> {
+        var entity = new ReusableAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setReusableId(entityId);
+        entity.setAccessType(accessType);
+        reusableAccessRepo.save(entity);
+      }
       case SOURCE -> {
         var entity = new SourceAccessEntity();
         entity.setRoleId(roleId);
@@ -480,6 +533,7 @@ public class EntityAccessService {
       case FE_ANALYSIS -> feAnalysisAccessRepo.deleteByRoleIdAndFeAnalysisIdAndAccessType(roleId, entityId, accessType);
       case INCIDENCE_RATE -> incidenceRateAccessRepo.deleteByRoleIdAndIrIdAndAccessType(roleId, entityId, accessType);
       case PATHWAY_ANALYSIS -> pathwayAccessRepo.deleteByRoleIdAndPathwayAnalysisIdAndAccessType(roleId, entityId, accessType);
+      case REUSABLE -> reusableAccessRepo.deleteByRoleIdAndReusableIdAndAccessType(roleId, entityId, accessType);
       case SOURCE -> sourceAccessRepo.deleteByRoleIdAndSourceIdAndAccessType(roleId, entityId, accessType);
     }
   }

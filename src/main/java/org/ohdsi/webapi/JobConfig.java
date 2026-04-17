@@ -5,17 +5,16 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
-import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
-import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
-import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ohdsi.webapi.batch.JdbcSearchableJobExecutionDao;
 import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -26,7 +25,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
@@ -92,6 +90,18 @@ public class JobConfig {
         factory.setTransactionManager(batchTransactionManager);
         factory.setTablePrefix(this.tablePrefix);
         factory.setIsolationLevelForCreate(isolationLevelForCreate);
+        factory.afterPropertiesSet();
+        return factory.getObject();
+    }
+    
+    // JobExplorer configuration for Spring Batch 5 - CRITICAL: Must use same table prefix as JobRepository
+    @Bean
+    public JobExplorer jobExplorer(DataSource dataSource,
+                                   @Qualifier("batchTransactionManager") DataSourceTransactionManager batchTransactionManager) throws Exception {
+        JobExplorerFactoryBean factory = new JobExplorerFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setTransactionManager(batchTransactionManager);
+        factory.setTablePrefix(this.tablePrefix);
         factory.afterPropertiesSet();
         return factory.getObject();
     }

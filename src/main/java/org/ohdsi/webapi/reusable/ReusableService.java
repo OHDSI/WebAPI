@@ -230,6 +230,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
     public ReusableDTO copyAssetFromVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
         checkVersion(id, version);

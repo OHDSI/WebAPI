@@ -75,6 +75,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -343,6 +344,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
   @PreAuthorize("isPermitted('create:incidence')")
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
@@ -628,6 +630,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
   @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
@@ -855,6 +858,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
+  @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
   @PreAuthorize("(isOwner(#id, INCIDENCE_RATE) or isAnyPermitted(anyOf('read:incidence','write:incidence')) or hasEntityAccess(#id, INCIDENCE_RATE, READ)) and isPermitted('create:incidence')")
   @Transactional
   public IRAnalysisDTO copyAssetFromVersion(int id, int version) {

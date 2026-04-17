@@ -741,7 +741,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true),
+			@CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
 		and isPermitted('create:cohort-definition')
@@ -1177,7 +1180,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true),
+			@CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})
 	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
 	public CohortDTO copyAssetFromVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		checkVersion(id, version);

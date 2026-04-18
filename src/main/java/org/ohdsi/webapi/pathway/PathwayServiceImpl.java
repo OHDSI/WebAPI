@@ -524,14 +524,31 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@Override
 	public List<PathwayAnalysisGenerationEntity> getPathwayGenerations(final Integer pathwayAnalysisId) {
 
-		return pathwayAnalysisGenerationRepository.findAllByPathwayAnalysisId(pathwayAnalysisId,
+		List<PathwayAnalysisGenerationEntity> generations = pathwayAnalysisGenerationRepository.findAllByPathwayAnalysisId(pathwayAnalysisId,
 				EntityUtils.fromAttributePaths("source"));
+		return filterGenerationsByValidSource(generations);
 	}
 
 	@Override
 	public PathwayAnalysisGenerationEntity getGeneration(Long generationId) {
 
-		return pathwayAnalysisGenerationRepository.findById(generationId, EntityUtils.fromAttributePaths("source")).orElseThrow();
+		PathwayAnalysisGenerationEntity generation = pathwayAnalysisGenerationRepository.findById(generationId, EntityUtils.fromAttributePaths("source")).orElseThrow();
+		// Treat generations with deleted sources as non-existent (since reports cannot be accessed)
+		if (generation.getSource() == null) {
+			throw new IllegalArgumentException(String.format("There is no generation with id = %d.", generationId));
+		}
+		return generation;
+	}
+
+	/**
+	 * Filters out generations where the associated source has been soft-deleted (null source).
+	 * @param generations the list of generations to filter
+	 * @return a list containing only generations with valid (non-null) sources
+	 */
+	private List<PathwayAnalysisGenerationEntity> filterGenerationsByValidSource(final List<PathwayAnalysisGenerationEntity> generations) {
+		return generations.stream()
+				.filter(g -> g.getSource() != null)
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 	@Override

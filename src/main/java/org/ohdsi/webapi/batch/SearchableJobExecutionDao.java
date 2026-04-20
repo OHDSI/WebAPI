@@ -18,4 +18,13 @@ public interface SearchableJobExecutionDao {
     int countJobExecutions();
 
     Collection<JobExecution> getRunningJobExecutions();
+
+    /**
+     * Fetches job executions with all their parameters loaded in a single database query.
+     * Parameters are collapsed from multiple rows into populated JobParameters objects.
+     * No pagination - returns all matching executions.
+     * 
+     * @return List of JobExecution objects with parameters fully populated
+     */
+    List<JobExecution> getJobExecutionsWithParams();
 }

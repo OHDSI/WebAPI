@@ -161,36 +161,39 @@ public class NotificationServiceImpl implements NotificationService {
         };
         final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
         final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
-        for (int start = 0; (!refreshJobsOnly && userJobMap.size() < MAX_SIZE) || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
-            final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
-            if(page.size() == 0) {
-                break;
+        
+        // Fetch all job executions with parameters in a single query
+        final List<JobExecution> allExecutions = jobExecutionDao.getJobExecutionsWithParams();
+        
+        // Iterate through results and break when we have enough
+        for (JobExecution jobExec : allExecutions) {
+            // Ignore completed jobs when user does not want to see them
+            if (hideStatuses.contains(jobExec.getStatus())) {
+                continue;
             }
-            for (JobExecution jobExec: page) {
-                // ignore completed jobs when user does not want to see them
-                if (hideStatuses.contains(jobExec.getStatus())) {
-                    continue;
+            
+            if (!refreshJobsOnly && isInWhiteList(jobExec)) {
+                // Check if this is the current user's job
+                boolean isMine = isMine(jobExec);
+                if (userJobMap.size() < maxSize && isMine) {
+                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
+                    userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
                 }
-                if (!refreshJobsOnly && isInWhiteList(jobExec)) {
-                    boolean isMine = isMine(jobExec);
-                    if (userJobMap.size() < MAX_SIZE && isMine) {
-                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
-                        userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                    }
-                    if (allJobMap.size() < MAX_SIZE) {
-                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
-                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                    }
-                } else if (refreshJobsOnly) {
-                    if (allJobMap.size() < MAX_SIZE && jobExec.getJobInstance().getJobName().startsWith("warming ")) {
-                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
-                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                    }
+                if (allJobMap.size() < maxSize) {
+                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                    allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
                 }
+            } else if (refreshJobsOnly) {
+                // Show warming/cache refresh jobs
+                if (allJobMap.size() < maxSize && jobExec.getJobInstance().getJobName().startsWith("warming ")) {
+                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                    allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                }
+            }
 
-                if ((refreshJobsOnly || userJobMap.size() >= maxSize) && allJobMap.size() >= maxSize) {
-                    break;
-                }
+            // Break when we have enough results
+            if ((refreshJobsOnly || userJobMap.size() >= maxSize) && allJobMap.size() >= maxSize) {
+                break;
             }
         }
 

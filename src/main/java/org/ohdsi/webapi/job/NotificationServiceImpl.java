@@ -8,7 +8,6 @@ import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
 
@@ -162,39 +162,40 @@ public class NotificationServiceImpl implements NotificationService {
         final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
         final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
         
-        // Fetch all job executions with parameters in a single query
-        final List<JobExecution> allExecutions = jobExecutionDao.getJobExecutionsWithParams();
-        
-        // Iterate through results and break when we have enough
-        for (JobExecution jobExec : allExecutions) {
-            // Ignore completed jobs when user does not want to see them
-            if (hideStatuses.contains(jobExec.getStatus())) {
-                continue;
-            }
-            
-            if (!refreshJobsOnly && isInWhiteList(jobExec)) {
-                // Check if this is the current user's job
-                boolean isMine = isMine(jobExec);
-                if (userJobMap.size() < maxSize && isMine) {
-                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
-                    userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                }
-                if (allJobMap.size() < maxSize) {
-                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
-                    allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                }
-            } else if (refreshJobsOnly) {
-                // Show warming/cache refresh jobs
-                if (allJobMap.size() < maxSize && jobExec.getJobInstance().getJobName().startsWith("warming ")) {
-                    JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
-                    allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                }
-            }
-
-            // Break when we have enough results
-            if ((refreshJobsOnly || userJobMap.size() >= maxSize) && allJobMap.size() >= maxSize) {
-                break;
-            }
+        // Fetch all job executions with parameters in a single query using Stream API
+        // Streams results lazily, grouped by execution ID; try-with-resources ensures resource cleanup
+        try (Stream<JobExecution> stream = jobExecutionDao.getJobExecutionsWithParams()) {
+            stream.limit(PAGE_SIZE)  // Limit to PAGE_SIZE to avoid loading excessive data
+                 .takeWhile(jobExec -> 
+                     // Continue processing while we need more results
+                     // Exit early when we have enough in both maps (or just allJobMap if refreshJobsOnly)
+                     (!refreshJobsOnly && userJobMap.size() < maxSize) || allJobMap.size() < maxSize
+                 )
+                 .forEach(jobExec -> {
+                    // Ignore completed jobs when user does not want to see them
+                    if (hideStatuses.contains(jobExec.getStatus())) {
+                        return;  // Continue to next item
+                    }
+                    
+                    if (!refreshJobsOnly && isInWhiteList(jobExec)) {
+                        // Check if this is the current user's job
+                        boolean isMine = isMine(jobExec);
+                        if (userJobMap.size() < maxSize && isMine) {
+                            JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
+                            userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                        }
+                        if (allJobMap.size() < maxSize) {
+                            JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                            allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                        }
+                    } else if (refreshJobsOnly) {
+                        // Show warming/cache refresh jobs
+                        if (allJobMap.size() < maxSize && jobExec.getJobInstance().getJobName().startsWith("warming ")) {
+                            JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                            allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                        }
+                    }
+                 });
         }
 
         final List<JobExecutionInfo> jobs = new ArrayList<>(allJobMap.values());

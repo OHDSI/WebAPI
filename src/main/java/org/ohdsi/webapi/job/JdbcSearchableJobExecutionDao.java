@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.batch;
+package org.ohdsi.webapi.job;
 
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
@@ -7,10 +7,11 @@ import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -18,9 +19,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Spring Batch 5.x compatible replacement for the discontinued
@@ -31,6 +38,8 @@ import java.util.Objects;
  * throws NoSuchMethodError at runtime.
  */
 public class JdbcSearchableJobExecutionDao implements SearchableJobExecutionDao {
+
+    private static final int FETCH_SIZE = 100;
 
     private static final String GET_RUNNING_EXECUTIONS =
             "SELECT E.JOB_EXECUTION_ID, E.START_TIME, E.END_TIME, E.STATUS, E.EXIT_CODE, E.EXIT_MESSAGE, " +
@@ -104,9 +113,119 @@ public class JdbcSearchableJobExecutionDao implements SearchableJobExecutionDao 
     }
 
     @Override
-    public List<JobExecution> getJobExecutionsWithParams() {
-        String sql = applyPrefix(GET_EXECUTIONS_WITH_PARAMS);
-        return jdbcTemplate.query(sql, new JobExecutionWithParamsResultSetExtractor());
+    public Stream<JobExecution> getJobExecutionsWithParams() {
+        try {
+            String sql = applyPrefix(GET_EXECUTIONS_WITH_PARAMS);
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setFetchSize(FETCH_SIZE);
+            ResultSet rs = stmt.executeQuery();
+
+            // Create iterator that groups rows by execution ID
+            JobExecutionIterator iterator = new JobExecutionIterator(rs);
+
+            // Wrap iterator in Spliterator and create Stream with resource cleanup
+            Spliterator<JobExecution> spliterator = Spliterators.spliteratorUnknownSize(
+                    iterator,
+                    Spliterator.ORDERED | Spliterator.NONNULL
+            );
+
+            return StreamSupport.stream(spliterator, false)
+                    .onClose(() -> {
+                        try { rs.close(); } catch (SQLException ignored) {}
+                        try { stmt.close(); } catch (SQLException ignored) {}
+                        try { conn.close(); } catch (SQLException ignored) {}
+                    });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Streams JobExecution objects grouped by execution ID, accumulating parameters
+     * from multiple result set rows into complete JobExecution objects.
+     * 
+     * Uses the lookahead pattern: when execution ID changes, we've already read the
+     * first row of the next group and buffer it (via prefetched flag) to avoid
+     * duplicate rs.next() calls.
+     */
+    private class JobExecutionIterator implements Iterator<JobExecution> {
+        private final ResultSet rs;
+        private boolean hasMore;
+        private boolean prefetched;
+
+        JobExecutionIterator(ResultSet rs) throws SQLException {
+            this.rs = rs;
+            this.hasMore = rs.next();
+            this.prefetched = true;  // We've already advanced to first row
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasMore;
+        }
+
+        @Override
+        public JobExecution next() {
+            try {
+                // If we have NOT already advanced, move cursor forward.
+                // prefetched=true means cursor is already on first row of current group.
+                if (!prefetched) {
+                    hasMore = rs.next();
+                }
+                prefetched = false;
+
+                if (!hasMore) {
+                    throw new NoSuchElementException();
+                }
+
+                // Capture execution ID to detect group boundaries
+                Long currentExecId = rs.getLong("JOB_EXECUTION_ID");
+
+                // Accumulate parameters for this execution group
+                Map<String, JobParameter<?>> currentParams = new HashMap<>();
+
+                do {
+                    // Add parameter from current row
+                    currentParams.put(rs.getString("PARAMETER_NAME"), 
+                        createJobParameter(rs.getString("PARAMETER_NAME"), 
+                                          rs.getString("PARAMETER_VALUE"), 
+                                          rs.getString("PARAMETER_TYPE")));
+
+                    // Try to read next row
+                    hasMore = rs.next();
+
+                    if (!hasMore) {
+                        // End of result set
+                        break;
+                    }
+
+                } while (Objects.equals(currentExecId, rs.getLong("JOB_EXECUTION_ID")));
+
+                // We have read ONE ROW AHEAD (first row of next execution).
+                // Set prefetched=true so next call to next() doesn't call rs.next() again.
+                prefetched = true;
+
+                // Build and return JobExecution with all accumulated parameters
+                // Read execution metadata directly from the buffer ResultSet row
+                JobInstance jobInstance = new JobInstance(rs.getLong("JOB_INSTANCE_ID"), rs.getString("JOB_NAME"));
+                JobParameters jobParameters = new JobParameters(currentParams);
+                JobExecution execution = new JobExecution(jobInstance, jobParameters);
+                execution.setId(currentExecId);
+                execution.setStartTime(toLocalDateTime(rs.getTimestamp("START_TIME")));
+                execution.setEndTime(toLocalDateTime(rs.getTimestamp("END_TIME")));
+                execution.setCreateTime(toLocalDateTime(rs.getTimestamp("CREATE_TIME")));
+                execution.setLastUpdated(toLocalDateTime(rs.getTimestamp("LAST_UPDATED")));
+                execution.setStatus(BatchStatus.valueOf(rs.getString("STATUS")));
+                execution.setExitStatus(new ExitStatus(rs.getString("EXIT_CODE"), rs.getString("EXIT_MESSAGE")));
+                execution.setVersion(rs.getInt("VERSION"));
+
+                return execution;
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private String applyPrefix(String sql) {
@@ -152,113 +271,7 @@ public class JdbcSearchableJobExecutionDao implements SearchableJobExecutionDao 
         return new JobParameter<>(value, String.class, false);
     }
 
-    /**
-     * ResultSetExtractor that collapses multiple parameter rows into single JobExecution objects.
-     * Reads result set containing job execution data with multiple rows per execution (one per parameter),
-     * groups by execution ID, and builds a single JobExecution with all parameters populated.
-     * No reflection needed - parameters are passed to JobExecution constructor.
-     */
-    private static class JobExecutionWithParamsResultSetExtractor implements ResultSetExtractor<List<JobExecution>> {
-        @Override
-        public List<JobExecution> extractData(ResultSet rs) throws SQLException {
-            List<JobExecution> results = new java.util.ArrayList<>();
-            
-            // Track state while iterating through rows
-            Long currentExecId = null;
-            Long currentExecInstanceId = null;
-            String currentJobName = null;
-            Timestamp currentStartTime = null;
-            Timestamp currentEndTime = null;
-            Timestamp currentCreateTime = null;
-            Timestamp currentLastUpdated = null;
-            String currentStatus = null;
-            String currentExitCode = null;
-            String currentExitMessage = null;
-            Integer currentVersion = null;
-            Map<String, JobParameter<?>> currentParams = new HashMap<>();
 
-            while (rs.next()) {
-                Long execId = rs.getLong("JOB_EXECUTION_ID");
-
-                // New execution ID detected - materialize previous execution with its parameters
-                if (currentExecId != null && !Objects.equals(currentExecId, execId)) {
-                    // Build JobExecution with parameters already included
-                    JobExecution execution = buildJobExecutionWithParams(
-                            currentExecId, currentExecInstanceId, currentJobName,
-                            currentStartTime, currentEndTime, currentCreateTime, currentLastUpdated,
-                            currentStatus, currentExitCode, currentExitMessage, currentVersion,
-                            currentParams);
-                    results.add(execution);
-                    currentParams.clear();
-                }
-
-                // Capture execution data (only store once per unique execution ID)
-                if (currentExecId == null || !Objects.equals(currentExecId, execId)) {
-                    currentExecId = execId;
-                    currentExecInstanceId = rs.getLong("JOB_INSTANCE_ID");
-                    currentJobName = rs.getString("JOB_NAME");
-                    currentStartTime = rs.getTimestamp("START_TIME");
-                    currentEndTime = rs.getTimestamp("END_TIME");
-                    currentCreateTime = rs.getTimestamp("CREATE_TIME");
-                    currentLastUpdated = rs.getTimestamp("LAST_UPDATED");
-                    currentStatus = rs.getString("STATUS");
-                    currentExitCode = rs.getString("EXIT_CODE");
-                    currentExitMessage = rs.getString("EXIT_MESSAGE");
-                    currentVersion = rs.getInt("VERSION");
-                }
-
-                // Accumulate parameters for current execution
-                String paramName = rs.getString("PARAMETER_NAME");
-                String paramValue = rs.getString("PARAMETER_VALUE");
-                String paramType = rs.getString("PARAMETER_TYPE");
-                currentParams.put(paramName, createJobParameter(paramName, paramValue, paramType));
-            }
-
-            // Handle the last execution
-            if (currentExecId != null) {
-                JobExecution execution = buildJobExecutionWithParams(
-                        currentExecId, currentExecInstanceId, currentJobName,
-                        currentStartTime, currentEndTime, currentCreateTime, currentLastUpdated,
-                        currentStatus, currentExitCode, currentExitMessage, currentVersion,
-                        currentParams);
-                results.add(execution);
-            }
-
-            return results;
-        }
-
-        /**
-         * Builds a JobExecution with parameters passed directly to the constructor.
-         * This avoids the need for reflection - parameters are properly initialized.
-         */
-        private static JobExecution buildJobExecutionWithParams(
-                Long executionId, Long jobInstanceId, String jobName,
-                Timestamp startTime, Timestamp endTime, Timestamp createTime, Timestamp lastUpdated,
-                String status, String exitCode, String exitMessage, Integer version,
-                Map<String, JobParameter<?>> params) throws SQLException {
-            
-            // Create JobInstance first
-            JobInstance jobInstance = new JobInstance(jobInstanceId, jobName);
-            
-            // Create JobParameters with all accumulated parameters
-            JobParameters jobParameters = new JobParameters(params);
-            
-            // Create JobExecution with both JobInstance and JobParameters
-            JobExecution execution = new JobExecution(jobInstance, jobParameters);
-            execution.setId(executionId);
-
-            // Set remaining fields
-            execution.setStartTime(toLocalDateTime(startTime));
-            execution.setEndTime(toLocalDateTime(endTime));
-            execution.setCreateTime(toLocalDateTime(createTime));
-            execution.setLastUpdated(toLocalDateTime(lastUpdated));
-            execution.setStatus(BatchStatus.valueOf(status));
-            execution.setExitStatus(new ExitStatus(exitCode, exitMessage));
-            execution.setVersion(version);
-
-            return execution;
-        }
-    }
 
     /**
      * RowMapper for running executions (no JOB_NAME join).

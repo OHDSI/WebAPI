@@ -5,13 +5,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
+import org.ohdsi.webapi.job.JdbcSearchableJobExecutionDao;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.job.SearchableJobExecutionDao;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ohdsi.webapi.batch.JdbcSearchableJobExecutionDao;
-import org.ohdsi.webapi.batch.SearchableJobExecutionDao;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;

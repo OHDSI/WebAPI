@@ -97,12 +97,14 @@ SearchableJobExecutionDao (enhanced interface)
        ↓
 JdbcSearchableJobExecutionDao.getJobExecutionsWithParams()
        ↓
-Single Query + ResultSetExtractor (collapse rows)
+SearchableJobExecutionDao.getJobExecutionsWithParams() (new method)
        ↓
 NotificationServiceImpl (streaming approach)
 ```
 
-### Single Optimized Query
+### New Function: getJobExecutionsWithParams()
+
+A new method in `SearchableJobExecutionDao` that streams job executions with their parameters loaded in a single optimized database query:
 
 ```sql
 SELECT E.JOB_EXECUTION_ID, E.START_TIME, ...,
@@ -116,34 +118,35 @@ ORDER BY E.JOB_EXECUTION_ID DESC, P.PARAMETER_NAME
 
 **Key insight**: INNER JOIN means only executions WITH parameters are returned. One row per parameter per execution.
 
-### Row Collapsing Strategy
+### Row Grouping and Streaming Strategy
 
-The `JobExecutionWithParamsResultSetExtractor` reads result set and:
+The method returns `Stream<JobExecution>` that performs grouped row aggregation using the lookahead pattern:
 
-1. **Accumulate**: For each execution ID, collect all parameter rows
-2. **Collapse**: When execution ID changes, build complete `JobParameters` map
-3. **Construct**: Pass parameters directly to `JobExecution` constructor
-4. **Return**: List of fully-materialized `JobExecution` objects
+1. **Stream rows**: ResultSet cursor advances through result set rows on-demand
+2. **Group by execution ID**: Detect when execution ID changes to identify group boundaries
+3. **Accumulate parameters**: Collect all parameter rows for one execution into a Map<String, JobParameter<?>>
+4. **Construct execution**: Build `JobParameters` object from the accumulated map and create `JobExecution`
+5. **Emit result**: Return one complete `JobExecution` per group
+6. **Lazy evaluation**: Only materializes objects as caller iterates, enabling early termination without loading entire result
 
+**Implementation details**:
 ```java
-// Pseudo-code of the logic
-Map<String,JobParameter<?>> params = new HashMap<>();
-while (rs.next()) {
-    if (newExecutionId) {
-        // Build previous execution with accumulated params
-        execution = new JobExecution(jobInstance, new JobParameters(params));
-        results.add(execution);
-        params.clear();
-    }
-    // Accumulate parameter
-    params.put(paramName, createJobParameter(...));
+// Pseudo-code of the lookahead pattern
+while (hasMore) {
+    // prefetched tracks if we've already advanced to the next row
+    Map<String, JobParameter<?>> params = new HashMap<>();
+    Long currentExecId = getCurrentRowExecId();
+    
+    do {
+        params.put(paramName, createJobParameter(...));
+        hasMore = rs.next();
+    } while (hasMore && rs.getLong("JOB_EXECUTION_ID") == currentExecId);
+    
+    // We've read ONE ROW AHEAD; mark prefetched=true to skip rs.next() call next time
+    execution = new JobExecution(jobInstance, new JobParameters(params));
+    yield(execution);
 }
-// Handle last execution
-execution = new JobExecution(jobInstance, new JobParameters(params));
-results.add(execution);
 ```
-
-**No reflection required**: Parameters passed to constructor, not injected afterward.
 
 ### Streaming Approach in NotificationServiceImpl
 
@@ -182,6 +185,212 @@ for (JobExecution jobExec : allExecutions) {
 - Natural early exit when we have enough results
 - Parameters guaranteed populated
 - Cleaner, more readable logic
+
+---
+
+## Implementation: Lookahead Iterator Pattern
+
+The streaming approach uses a lookahead iterator pattern built into `JdbcSearchableJobExecutionDao` as an inner class:
+
+### The Challenge
+
+The database query returns multiple rows per execution (one row per parameter). We need to:
+
+1. **Detect group boundaries**: Know when we've finished reading all parameters for one execution and the next execution starts
+2. **Build complete objects**: Accumulate all parameters before creating a `JobExecution` object
+3. **Avoid row data copying**: Don't store entire rows in memory—only cursor position state
+4. **Stay within transaction boundaries**: Iterator must be consumed without explicit resource management
+
+### The Solution: Lookahead Pattern
+
+The custom `JobExecutionIterator` uses a `prefetched` flag to manage cursor position state:
+
+```
+prefetched = true  →  Cursor is already positioned on first row of next group
+prefetched = false →  Need to call rs.next() to position on next row
+```
+
+**Example with 3 executions and parameters:**
+
+```
+Database rows (ordered by EXEC_ID DESC):
+┌─────────────┬──────────────────┐
+│ EXEC_ID     │ PARAM_NAME       │
+├─────────────┼──────────────────┤
+│ 100         │ author           │  ← First execution
+│ 100         │ cohort_id        │
+│ 99          │ author           │  ← Second execution (key changed!)
+│ 99          │ source_id        │
+│ 98          │ author           │  ← Third execution (key changed!)
+└─────────────┴──────────────────┘
+```
+
+**Iterator execution flow:**
+
+```
+Constructor: rs.next() → Load row 1 (EXEC_ID=100, author)
+            prefetched = true (we've read ahead)
+
+hasNext() #1: return true (hasMore=true)
+
+next() #1:
+  prefetched is true → don't call rs.next() yet
+  Create params map = {}
+  Loop reads rows while EXEC_ID is 100:
+    ├─ Add author parameter to map
+    ├─ rs.next() → Row 2 (EXEC_ID=100, cohort_id), same ID
+    ├─ Add cohort_id parameter to map
+    ├─ rs.next() → Row 3 (EXEC_ID=99, author), DIFFERENT ID!
+    └─ Exit loop (key changed)
+  prefetched = true (cursor is on row 3, won't call rs.next() next time)
+  Build JobExecution(100, params={author, cohort_id})
+  Return execution(100)
+
+hasNext() #2: return true (hasMore=true)
+
+next() #2:
+  prefetched is true → don't call rs.next() yet
+  Create params map = {}
+  Loop reads rows while EXEC_ID is 99:
+    ├─ Add author parameter to map (from row 3, already in cursor)
+    ├─ rs.next() → Row 4 (EXEC_ID=99, source_id), same ID
+    ├─ Add source_id parameter to map
+    ├─ rs.next() → Row 5 (EXEC_ID=98, author), DIFFERENT ID!
+    └─ Exit loop (key changed)
+  prefetched = true (cursor is on row 5)
+  Build JobExecution(99, params={author, source_id})
+  Return execution(99)
+
+hasNext() #3: return true (hasMore=true)
+
+next() #3:
+  prefetched is true → don't call rs.next() yet
+  Create params map = {}
+  Loop reads rows while EXEC_ID is 98:
+    ├─ Add author parameter to map (from row 5)
+    ├─ rs.next() → Returns false (EOF)
+    └─ Exit loop (no more rows)
+  prefetched = true (but hasMore=false)
+  Build JobExecution(98, params={author})
+  Return execution(98)
+
+hasNext() #4: return false (hasMore=false) → Iteration complete
+```
+
+**Key insight**: The cursor never stores row data. We only track whether we've already advanced (`prefetched` flag) and automatically close it when the transaction boundary exits.
+
+### Key Properties
+
+**No row data is copied**:
+- ResultSet cursor serves as the only row buffer
+- Values are read directly via `rs.getString()`, `rs.getLong()`, etc.
+- Only cursor position state (`prefetched` flag) is managed
+
+**Memory efficient**:
+- Only one `JobExecution` object materialized at a time
+- No intermediate data structures storing row values
+- Caller controls iteration—can break early without loading entire result
+
+**Early termination safe**:
+- Breaking from the iteration loop mid-stream is safe
+- ResultSet is closed automatically when transaction boundary exits
+- No explicit resource management needed by caller
+
+### Implementation in JdbcSearchableJobExecutionDao
+
+The `JobExecutionIterator` inner class in [JdbcSearchableJobExecutionDao.java](src/main/java/org/ohdsi/webapi/batch/JdbcSearchableJobExecutionDao.java) implements the lookahead pattern:
+
+```java
+// Returns Stream that lazily streams grouped rows with automatic resource cleanup
+@Override
+public Stream<JobExecution> getJobExecutionsWithParams() {
+    String sql = applyPrefix(GET_EXECUTIONS_WITH_PARAMS);
+    Connection conn = jdbcTemplate.getDataSource().getConnection();
+    PreparedStatement stmt = conn.prepareStatement(sql);
+    ResultSet rs = stmt.executeQuery();
+    
+    JobExecutionIterator iterator = new JobExecutionIterator(rs);
+    Spliterator<JobExecution> spliterator = Spliterators.spliteratorUnknownSize(
+            iterator, Spliterator.ORDERED | Spliterator.NONNULL);
+    
+    return StreamSupport.stream(spliterator, false)
+            .onClose(() -> {
+                try { rs.close(); } catch (SQLException ignored) {}
+                try { stmt.close(); } catch (SQLException ignored) {}
+                try { conn.close(); } catch (SQLException ignored) {}
+            });
+}
+
+private class JobExecutionIterator implements Iterator<JobExecution> {
+    private boolean hasMore;
+    private boolean prefetched;  // true = cursor already on next row
+    
+    @Override
+    public JobExecution next() {
+        if (!prefetched) {
+            hasMore = rs.next();  // Read next row if we haven't already
+        }
+        prefetched = false;  // We're using the previously-read row now
+        
+        // Read execution metadata from current row
+        Long currentExecId = rs.getLong("JOB_EXECUTION_ID");
+        Map<String, JobParameter<?>> params = new HashMap<>();
+        
+        // Accumulate rows until execution ID changes
+        do {
+            // Add parameter from current row
+            params.put(rs.getString("PARAMETER_NAME"), 
+                createJobParameter(...));
+            
+            // Try to read next row
+            hasMore = rs.next();
+            if (!hasMore) break;
+            
+        } while (Objects.equals(currentExecId, rs.getLong("JOB_EXECUTION_ID")));
+        
+        // We've read ONE ROW AHEAD (first row of next group)
+        prefetched = true;  // Mark that we've already advanced
+        
+        // Build complete JobExecution with accumulated parameters
+        JobParameters jobParameters = new JobParameters(params);
+        JobExecution execution = new JobExecution(jobInstance, jobParameters);
+        // ... set other fields ...
+        
+        return execution;
+    }
+}
+```
+
+**Key design features**:
+- No row data is copied—values read directly via `rs.getString()`, `rs.getLong()`, etc.
+- Only cursor position state (`prefetched` flag) is managed
+- One `JobExecution` object materialized at a time
+- Caller controls iteration—can break early without loading entire result
+
+### Resource Management Guarantees
+
+**Connection lifecycle is managed by Stream.onClose() hooks**:
+- Stream returned by `getJobExecutionsWithParams()` wraps ResultSet/Statement/Connection in explicit onClose() handlers
+- These resources are closed when the Stream exits (either via completion or exception)
+- Caller should use try-with-resources to ensure automatic cleanup:
+  ```java
+  try (Stream<JobExecution> stream = dao.getJobExecutionsWithParams()) {
+      // Use stream...
+      // onClose() hooks invoked automatically when exiting try block
+  }
+  ```
+- Safe to break mid-iteration—resources cleaned up immediately when stream closes
+
+**Safe to break mid-iteration with automatic resource cleanup**:
+```java
+try (Stream<JobExecution> stream = dao.getJobExecutionsWithParams()) {
+    stream.takeWhile(job -> needMoreResults())
+          .forEach(job -> {
+              // Process job...
+          });
+    // ResultSet, Statement, Connection automatically closed when stream exits
+}
+```
 
 ---
 
@@ -328,20 +537,34 @@ When `JobExecutionToDTOConverter` converts internal `JobExecution` objects to RE
 ## Implementation Files Modified
 
 **Interface Enhancement**:
-- `SearchableJobExecutionDao.java` - Added `getJobExecutionsWithParams()` method
+- `SearchableJobExecutionDao.java`:
+  - Added new method: `Stream<JobExecution> getJobExecutionsWithParams()`
+  - Returns a Stream that lazily streams job executions with parameters populated
+  - Uses try-with-resources for explicit resource management via onClose() hooks
+  - Enables functional composition (filter, map, limit) with automatic cleanup
 
 **DAO Implementation**:
 - `JdbcSearchableJobExecutionDao.java`:
-  - Added `GET_EXECUTIONS_WITH_PARAMS` SQL constant (INNER JOIN to BATCH_JOB_EXECUTION_PARAMS)
-  - Implemented `getJobExecutionsWithParams()` method
-  - Added `JobExecutionWithParamsResultSetExtractor` (accumulates and collapses rows)
-  - Added `createJobParameter()` helper (parses DB values to typed JobParameters)
+  - Implemented `getJobExecutionsWithParams()` to return a Stream
+  - Wraps `JobExecutionIterator` in `Spliterator` and uses `StreamSupport.stream()` for API flexibility
+  - Added inner class `JobExecutionIterator` that implements the lookahead pattern:
+    - Uses `prefetched` flag to track cursor position (whether next row already read)
+    - Accumulates parameters into a Map for each execution group
+    - Creates JobParameters from the map once all rows for a group are read
+    - Returns one complete JobExecution per group
+  - Attaches onClose() hooks to handle resource cleanup (ResultSet, Statement, Connection)
+  - Kept existing `createJobParameter()` helper (parses DB values to typed JobParameters)
+  - Removed old `JobExecutionWithParamsResultSetExtractor` class (no longer needed)
+  - All other DAO methods remain unchanged
 
 **Service Layer**:
 - `NotificationServiceImpl.java`:
-  - Refactored `findJobs()` to use streaming approach
-  - Removed pagination loop
-  - Simplified logic: single query → iterate → break when satisfied
+  - Updated `findJobs()` to use Stream API with try-with-resources pattern
+  - Changed from: `Iterator<JobExecution> allExecutions = dao.getJobExecutionsWithParams();`
+  - Changed to: `try (Stream<JobExecution> stream = dao.getJobExecutionsWithParams()) { ... }`
+  - Uses functional composition: `stream.limit(PAGE_SIZE).takeWhile(...).forEach(...)`
+  - Enables early termination via `takeWhile()` for efficient result collection
+  - Automatic resource cleanup when try-with-resources block exits
 
 ---
 

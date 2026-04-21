@@ -2,6 +2,7 @@ package org.ohdsi.webapi.security.authz;
 
 import org.ohdsi.webapi.arachne.logging.event.*;
 import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
+import org.ohdsi.webapi.util.UseEtag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -41,6 +42,7 @@ public class UserController {
     return users;
   }
 
+  @UseEtag
   @GetMapping(value = "/user/me", produces = MediaType.APPLICATION_JSON_VALUE)
   public UserInfo getCurrentUser() throws Exception {
     User currentUser = this.authorizer.getCurrentUser();

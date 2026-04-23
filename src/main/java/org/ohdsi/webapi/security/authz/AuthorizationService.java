@@ -180,7 +180,7 @@ public class AuthorizationService {
   public List<String> getOidcOriginRoles(String login) {
     UserEntity user = userService.getUserByLogin(login).orElseThrow();
     return user.getUserRoles().stream()
-        .filter(ur -> ur.getOrigin() == UserOrigin.OPENID)
+        .filter(ur -> ur.getOrigin() == UserOrigin.OIDC)
         .map(ur -> ur.getRole())
         .filter(role -> Boolean.TRUE.equals(role.isSystemRole()))
         .map(role -> role.getName())

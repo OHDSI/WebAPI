@@ -217,7 +217,7 @@ security:
         apiKey: ""
         apiSecret: ""
 
-    openId: # OpenID
+    oidc: # OpenID Connect
       enabled: false
       apiSecret: ""
       clientId: ""

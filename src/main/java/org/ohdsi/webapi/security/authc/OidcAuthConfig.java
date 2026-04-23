@@ -31,7 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
-@ConditionalOnProperty(prefix = "security.auth.openId", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "security.auth.oidc", name = "enabled", havingValue = "true")
 public class OidcAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(OidcAuthConfig.class);
@@ -42,27 +42,27 @@ public class OidcAuthConfig {
   private final AuthorizationService authorizationService;
   private final LoginService loginService;
 
-  @Value("${security.auth.openId.clientId}")
+  @Value("${security.auth.oidc.clientId}")
   private String clientId;
 
-  @Value("${security.auth.openId.apiSecret}")
+  @Value("${security.auth.oidc.apiSecret}")
   private String clientSecret;
 
-  @Value("${security.auth.openId.url}")
+  @Value("${security.auth.oidc.url}")
   private String discoveryOrIssuerUrl;
 
-  @Value("${security.auth.openId.externalUrl:}")
+  @Value("${security.auth.oidc.externalUrl:}")
   private String externalUrl;
 
-  @Value("${security.auth.openId.extraScopes:}")
+  @Value("${security.auth.oidc.extraScopes:}")
   private String extraScopes;
 
-  @Value("${security.auth.openId.rolesClaim:}")
+  @Value("${security.auth.oidc.rolesClaim:}")
   private String rolesClaim;
 
   // Default true to mirror LdapAuthConfig's SimpleGrantedAuthority upper-casing, so roles from
   // the two IdPs collide in sec_role by name rather than creating parallel mixed-case duplicates.
-  @Value("${security.auth.openId.rolesToUpperCase:true}")
+  @Value("${security.auth.oidc.rolesToUpperCase:true}")
   private boolean rolesToUpperCase;
 
   @Value("${security.auth.oauth.callback.api}")
@@ -134,7 +134,7 @@ public class OidcAuthConfig {
     log.info("OIDC: Authenticated user sub={}", login);
 
     List<String> filteredDefaults = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
-    authorizationService.ensureUserExists(login, name, UserOrigin.OPENID, filteredDefaults);
+    authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, filteredDefaults);
 
     List<String> idpRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
     if (!idpRoles.isEmpty()) {
@@ -157,14 +157,14 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     try {
       currentOidcRoleNames = authorizationService.getOidcOriginRoles(login);
     } catch (Exception e) {
-      log.warn("OIDC: Could not fetch OPENID-origin roles for user {}: {}", login, e.getMessage());
+      log.warn("OIDC: Could not fetch OIDC-origin roles for user {}: {}", login, e.getMessage());
       return;
     }
 
     for (String roleName : idpRoles) {
       if (!currentOidcRoleNames.contains(roleName)) {
         try {
-          authorizationService.addUserToRole(roleName, login, UserOrigin.OPENID);
+          authorizationService.addUserToRole(roleName, login, UserOrigin.OIDC);
           log.info("OIDC: Added role '{}' to user '{}'", roleName, login);
         } catch (Exception e) {
           log.warn("OIDC: Could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
@@ -175,7 +175,7 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     for (String roleName : currentOidcRoleNames) {
       if (!idpRoles.contains(roleName)) {
         try {
-          authorizationService.removeUserFromRole(roleName, login, UserOrigin.OPENID);
+          authorizationService.removeUserFromRole(roleName, login, UserOrigin.OIDC);
           log.info("OIDC: Removed role '{}' from user '{}'", roleName, login);
         } catch (Exception e) {
           log.warn("OIDC: Could not remove role '{}' from user '{}': {}", roleName, login, e.getMessage());
@@ -210,7 +210,7 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
 
   private String stripDiscoverySuffix(String url) {
     if (url == null || url.isBlank()) {
-      throw new IllegalStateException("security.auth.openId.url must be configured when OpenID is enabled");
+      throw new IllegalStateException("security.auth.oidc.url must be configured when OIDC is enabled");
     }
     if (url.endsWith(DISCOVERY_SUFFIX)) {
       return url.substring(0, url.length() - DISCOVERY_SUFFIX.length());

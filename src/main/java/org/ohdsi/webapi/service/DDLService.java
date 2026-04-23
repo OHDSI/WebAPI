@@ -20,14 +20,12 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
-import org.ohdsi.webapi.common.DBMSType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
@@ -61,16 +59,6 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result_cache.sql",
 		"/ddl/results/cohort_inclusion_stats_cache.sql",
 		"/ddl/results/cohort_summary_stats_cache.sql",
-		// cohort feasibility analysis
-		"/ddl/results/feas_study_inclusion_stats.sql",
-		"/ddl/results/feas_study_index_stats.sql",
-		"/ddl/results/feas_study_result.sql",
-		// cohort reports (heracles)
-		"/ddl/results/heracles_analysis.sql",
-		"/ddl/results/heracles_heel_results.sql",
-		"/ddl/results/heracles_results.sql",
-		"/ddl/results/heracles_results_dist.sql",
-		"/ddl/results/heracles_periods.sql",
 		// cohort sampling
 		"/ddl/results/cohort_sample_element.sql",
 		// incidence rates
@@ -85,16 +73,6 @@ public class DDLService {
 		"/ddl/results/pathway_analysis_events.sql",
 		"/ddl/results/pathway_analysis_paths.sql",
 		"/ddl/results/pathway_analysis_stats.sql"
-	);
-
-	private static final String INIT_HERACLES_PERIODS = "/ddl/results/init_heracles_periods.sql";
-
-	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-			"/ddl/results/init_heracles_analysis.sql", INIT_HERACLES_PERIODS
-	);
-
-	public static final Collection<String> HIVE_RESULT_INIT_FILE_PATHS = Arrays.asList(
-			"/ddl/results/init_hive_heracles_analysis.sql", INIT_HERACLES_PERIODS
 	);
 
 	public static final Collection<String> INIT_CONCEPT_HIERARCHY_FILE_PATHS = Arrays.asList(
@@ -154,11 +132,7 @@ public class DDLService {
 	}
 
 	private Collection<String> getResultInitFilePaths(String dialect) {
-		if (Objects.equals(DBMSType.HIVE.getOhdsiDB(), dialect)) {
-			return HIVE_RESULT_INIT_FILE_PATHS;
-		} else {
-			return RESULT_INIT_FILE_PATHS;
-		}
+		return new ArrayList<>();
 	}
 
 	/**

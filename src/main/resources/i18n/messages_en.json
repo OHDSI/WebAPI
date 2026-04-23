@@ -1024,29 +1024,6 @@
     "exportSql": {
       "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
     },
-    "feasibilityAttritionReport": {
-      "attritionVisualization": "Attrition Visualization",
-      "inclusionRule": "Inclusion Rule",
-      "percentRemain": "% Remain",
-      "precentDiff": "% Diff"
-    },
-    "feasibilityIntersectReport": {
-      "inclusionRule": "Inclusion Rule",
-      "percentSatisfied": "% Satisfied",
-      "percentToGain": "% To-Gain",
-      "populationVisualization": "Population Visualization",
-      "rectSummary": "<%=size%> people (<%=percentage%>%), <%=passCount%> criteria passed, <%=failCount%> criteria failed."
-    },
-    "feasibilityReportViewer": {
-      "feasibilityReportViewerText_1": "Match Rate",
-      "feasibilityReportViewerText_2": "Matches",
-      "feasibilityReportViewerText_3": "Lost from censoring",
-      "feasibilityReportViewerText_4": "Total Events",
-      "feasibilityReportViewerText_5": "Summary Statistics:",
-      "feasibilityReportViewerText_6": "Switch to attrition view",
-      "feasibilityReportViewerText_7": "Switch to intersect view",
-      "feasibilityReportViewerText_8": "No inclusion rules specified for this cohort definition."
-    },
     "featureextraction": {
       "covariateSettingsEditor": {
         "age": "Age",

@@ -103,6 +103,7 @@ import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.UseEtag;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -133,6 +134,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -437,6 +439,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@UseEtag
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
 		boolean globalRead = authorizationService.isPermitted("read:cohort-definition");
@@ -522,7 +525,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return The cohort definition JSON expression
 	 */
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
 	public CohortRawDTO getCohortDefinitionRaw(@PathVariable("id") final int id) {
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinitionEntity d = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -611,8 +614,8 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@GetMapping(value = "/{id}/generate/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("""
-		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and (isPermitted('read:write') or hasSourceAccess(#sourceKey, WRITE)
+		(isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('write:cohort-definition','read:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
 	""")
 	public JobExecutionResource generateCohort(@PathVariable("id") final int id,
 			@PathVariable("sourceKey") final String sourceKey,
@@ -667,7 +670,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(value = "/{id}/cancel/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("""
 		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)
+		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
 	""")	
 	public ResponseEntity cancelGenerateCohort(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
 
@@ -769,6 +772,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void delete(@PathVariable("id") final int id) {
 		// perform the JPA update in a separate transaction
 		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
@@ -783,17 +787,19 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 							JobParameters parameters = e.getJobParameters();
 							String jobName = e.getJobInstance().getJobName();
 							return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-											&& Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId))
-											&& Objects.equals(Constants.GENERATE_COHORT, jobName);
+										&& Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId))
+										&& Objects.equals(Constants.GENERATE_COHORT, jobName);
 						});
 					});
 					cohortDefinitionRepository.delete(def);
-					samplingService.launchDeleteSamplesTasklet(id);
 				} else {
 					log.warn("Failed to delete Cohort Definition with ID = {}", id);
 				}
 			}
 		});
+
+		// Launch cleanup job outside of transaction to avoid conflict with batch transaction manager
+		samplingService.launchDeleteSamplesTasklet(id);
 
 		JobParametersBuilder builder = new JobParametersBuilder();
 		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.", id));
@@ -851,7 +857,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
-	public ResponseEntity exportConceptSets(@PathVariable("id") final int id) {
+	public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportConceptSets(@PathVariable("id") final int id) {
 
 		Source source = sourceService.getPriorityVocabularySource();
 		if (Objects.isNull(source)) {
@@ -885,8 +891,8 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GetMapping(value = "/{id}/report/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	@PreAuthorize("""
-		(isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
-		and (isPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, anyOf(READ, WRITE)))
+		(isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))
 	""")
 	public InclusionRuleReport getInclusionRuleReport(
 					@PathVariable("id") final int id,
@@ -1056,7 +1062,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
 	public void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
 		assignTag(id, tagId);
 	}
@@ -1070,7 +1079,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@DeleteMapping(value = "/{id}/protectedtag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
 	public void unassignPermissionProtectedTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
 		unassignTag(id, tagId);
 	}
@@ -1191,7 +1203,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 */
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	@PreAuthorize("isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition')")
 	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
 		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
 			return Collections.emptyList();

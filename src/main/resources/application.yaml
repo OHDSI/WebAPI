@@ -89,6 +89,8 @@ kerberos:
   kinitPath: ""
   timeout: 60
 logging:
+  stacktrace:
+    filter-packages: org.springframework,org.apache,jakarta.servlet,org.hibernate,java.lang.reflect,jdk.internal,sun.reflect,com.sun.proxy
   level:
     org:
       hibernate: info
@@ -293,6 +295,10 @@ sensitiveinfo:
 
 # EMBEDDED SERVER CONFIGURATION (ServerProperties)
 server:
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
   servlet:
     context-path: /WebAPI
   port: 8080
@@ -306,9 +312,9 @@ server:
     key-store-password: ""
 
 solr:
-  endpoint: ${solr.endpoint}
+  endpoint: ""
   query:
-    prefix: ${solr.query.prefix}
+    prefix: ""
 
 sparql:
   endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=
@@ -370,6 +376,7 @@ spring:
     show-sql: false
   profiles:
     active: default
+  mvc.pathmatch.matching-strategy: ant_path_matcher
 tag:
   enabled: true
   refreshStat:

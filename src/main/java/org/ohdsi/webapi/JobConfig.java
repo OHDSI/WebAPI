@@ -32,6 +32,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Spring Batch 5.x configuration for Java 21 / Spring Boot 3.2
@@ -127,6 +129,33 @@ public class JobConfig {
     public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, AuthorizationService authorizationService,
                                    @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
         return new JobTemplate(jobLauncher, jobRepository, authorizationService, batchTransactionManager);
+    }
+    
+    /**
+     * TransactionTemplate for batch tasklets using batchTransactionManager.
+     * This ensures tasklets use the same transaction manager as the Spring Batch step,
+     * preventing conflicts when creating nested transactions.
+     */
+    @Bean("batchTransactionTemplate")
+    public TransactionTemplate batchTransactionTemplate(
+            @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
+        TransactionTemplate template = new TransactionTemplate();
+        template.setTransactionManager(batchTransactionManager);
+        return template;
+    }
+    
+    /**
+     * TransactionTemplate with PROPAGATION_REQUIRES_NEW for batch tasklets.
+     * Used when tasklets need to commit data immediately (e.g., cache updates)
+     * independent of the step's transaction.
+     */
+    @Bean("batchTransactionTemplateRequiresNew")
+    public TransactionTemplate batchTransactionTemplateRequiresNew(
+            @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
+        TransactionTemplate template = new TransactionTemplate();
+        template.setTransactionManager(batchTransactionManager);
+        template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return template;
     }
     
     @Bean

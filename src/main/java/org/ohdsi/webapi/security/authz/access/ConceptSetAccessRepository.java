@@ -38,4 +38,21 @@ public interface ConceptSetAccessRepository extends JpaRepository<ConceptSetAcce
      */
     @Query("SELECT cs.createdBy.id FROM ConceptSet cs WHERE cs.id = :conceptSetId")
     Long getCreatedById(@Param("conceptSetId") Long conceptSetId);
+
+    /**
+     * Find all role IDs that have a specific access type to a concept set.
+     */
+    @Query("SELECT ca.roleId FROM ConceptSetAccess ca WHERE ca.conceptSetId = :entityId AND ca.accessType = :accessType")
+    List<Long> findRoleIdsByEntityIdAndAccessType(@Param("entityId") Long entityId, @Param("accessType") AccessType accessType);
+
+    /**
+     * Find all role IDs that have any access to a concept set.
+     */
+    @Query("SELECT DISTINCT ca.roleId FROM ConceptSetAccess ca WHERE ca.conceptSetId = :entityId")
+    List<Long> findRoleIdsByEntityId(@Param("entityId") Long entityId);
+
+    /**
+     * Delete a specific access grant.
+     */
+    void deleteByRoleIdAndConceptSetIdAndAccessType(Long roleId, Long conceptSetId, AccessType accessType);
 }

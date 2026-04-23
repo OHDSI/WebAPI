@@ -56,6 +56,7 @@ import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.util.UseEtag;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
@@ -173,6 +174,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @Transactional(readOnly = true)
+    @UseEtag
     public Collection<ConceptSetDTO> getConceptSets() {
         UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
         boolean globalRead = authorizationService.isPermitted("read:conceptset");
@@ -673,7 +675,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id    The concept set ID
      * @param tagId The tag ID
      */
-    @PostMapping(value = "/{id}/tag/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/tag", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     @Override
@@ -713,9 +715,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id    The concept set ID
      * @param tagId The tag ID
      */
-    @PostMapping(value = "/{id}/protectedtag/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/protectedtag", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
+	@PreAuthorize("""
+		(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE))
+		and isPermitted('admin:tags')
+	""")
     public void assignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @RequestBody final int tagId) {
@@ -733,7 +738,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @DeleteMapping(value = "/{id}/protectedtag/{tagId}")
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
-    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or isPermitted('admin:tags') or hasEntityAccess(#id, CONCEPT_SET, WRITE)")
+	@PreAuthorize("""
+		(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE))
+		and isPermitted('admin:tags')
+	""")
     public void unassignPermissionProtectedTag(
             @PathVariable("id") final int id,
             @PathVariable("tagId") final int tagId) {
@@ -764,7 +772,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id The concept set ID
      * @return A list of version information
      */
-    @GetMapping(value = "/{id}/version/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @PreAuthorize("isOwner(#id, CONCEPT_SET) or isPermitted('read:conceptset') or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public List<VersionDTO> getVersions(@PathVariable("id") final int id) {
@@ -978,7 +986,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         (
             isPermitted('write:conceptset') 
             or isOwner(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET)
-            or hasEntityAccess(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET, WRITE))"
+            or hasEntityAccess(#copyAnnotationsRequest.targetConceptSetId, CONCEPT_SET, WRITE)
         )
     """)
     public void copyAnnotations(@RequestBody CopyAnnotationsRequest copyAnnotationsRequest) {

@@ -6,7 +6,7 @@ INSERT INTO ${ohdsiSchema}.sec_user (id, login, name, origin)
 VALUES (-1, 'anonymous', 'Anonymous', 'SYSTEM');
 
 INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)
-VALUES (-1, 'anonymous', false);
+VALUES (-1, 'anonymous', true);
 
 INSERT INTO ${ohdsiSchema}.sec_user_role (id, user_id, role_id, origin)
 VALUES (nextval('${ohdsiSchema}.sec_user_role_sequence'), -1, -1, 'SYSTEM');
@@ -920,6 +920,7 @@ FROM (
 	('admin:tools', 'Manage Tools'),
 	('admin:security', 'Manage users, roles, permissions'),
 	('admin:cache', 'View and manage chache functions'),
+	('admin:run-as', 'Run as another user'),
 	('create', 'Create any asset'),
 	('create:conceptset', 'Create concept sets'),
 	('create:cohort-definition', 'Create cohort definitions'),
@@ -956,14 +957,16 @@ WITH perm_map AS (
       /* ---------- ADMIN-Privs ---------- */
       WHEN p.value ~ '^source:\*:(put|post|delete)$'
         THEN 'admin:source'
- 	  WHEN p.value ~ '^(role:post|role:\*:(put|delete)|role:\*:users:\*:(put|delete)|role:\*:permissions:\*:(put|delete)|user:import:\*:(post|put|delete)|user:runas:post)$'
+ 	  WHEN p.value ~ '^(role:post|role:\*:(put|delete)|role:\*:users:\*:(put|delete)|role:\*:permissions:\*:(put|delete)|user:import:\*:(post|put|delete))$'
   		THEN 'admin:security'		
 	  WHEN p.value ~ '^(tag:\*:(put|delete)|tag:(post|management)|tag:multi(Assign|Unassign):post)$'
   		THEN 'admin:tags'
 	  WHEN p.value ~ '^(tool:\*:(put|delete)|tool:(post|put))$'
 	    THEN 'admin:tools'
 	  WHEN p.value ~ '^(cache:.*|cdmresults:clearcache:post)$'
-	    THEN 'admin:cache'		
+	    THEN 'admin:cache'
+	  WHEN p.value ~ '^(user:runas:post)$'
+	    THEN 'admin:run-as'	      	
 	
       /* ---------- CREATE ---------- */
       WHEN p.value ~ '^conceptset:post$'

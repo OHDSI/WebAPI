@@ -27,16 +27,31 @@ public class EntityAccessService {
 
   private final CohortDefinitionAccessRepository cohortDefAccessRepo;
   private final ConceptSetAccessRepository conceptSetAccessRepo;
+  private final CohortCharacterizationAccessRepository cohortCharAccessRepo;
+  private final FeAnalysisAccessRepository feAnalysisAccessRepo;
   private final SourceAccessRepository sourceAccessRepo;
+  private final IncidenceRateAccessRepository incidenceRateAccessRepo;
+  private final PathwayAccessRepository pathwayAccessRepo;
+  private final ReusableAccessRepository reusableAccessRepo;
   private final PermissionRepository permissionRepository;
 
   public EntityAccessService(CohortDefinitionAccessRepository cohortDefAccessRepo,
       ConceptSetAccessRepository conceptSetAccessRepo,
+      CohortCharacterizationAccessRepository cohortCharAccessRepo,
+      FeAnalysisAccessRepository feAnalysisAccessRepo,
       SourceAccessRepository sourceAccessRepo,
+      IncidenceRateAccessRepository incidenceRateAccessRepo,
+      PathwayAccessRepository pathwayAccessRepo,
+      ReusableAccessRepository reusableAccessRepo,
       PermissionRepository permissionRepository) {
     this.cohortDefAccessRepo = cohortDefAccessRepo;
     this.conceptSetAccessRepo = conceptSetAccessRepo;
+    this.cohortCharAccessRepo = cohortCharAccessRepo;
+    this.feAnalysisAccessRepo = feAnalysisAccessRepo;
     this.sourceAccessRepo = sourceAccessRepo;
+    this.incidenceRateAccessRepo = incidenceRateAccessRepo;
+    this.pathwayAccessRepo = pathwayAccessRepo;
+    this.reusableAccessRepo = reusableAccessRepo;
     this.permissionRepository = permissionRepository;
   }
 
@@ -65,15 +80,25 @@ public class EntityAccessService {
     // Per-entity access maps built from sec_* tables + ownership
     authz.cohortDefinitionAccess = buildCohortDefinitionAccess(userId);
     authz.conceptSetAccess = buildConceptSetAccess(userId);
+    authz.cohortCharacterizationAccess = buildCohortCharacterizationAccess(userId);
+    authz.feAnalysisAccess = buildFeAnalysisAccess(userId);
+    authz.pathwayAccess = buildPathwayAccess(userId);
+    authz.incidenceRateAccess = buildIncidenceRateAccess(userId);
+    authz.reusableAccess = buildReusableAccess(userId);
     authz.sourceAccess = buildSourceAccess(userId);
 
     long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, sources={})",
-        userId, elapsedMs,
-        authz.permissions.size(),
-        authz.cohortDefinitionAccess.size(),
-        authz.conceptSetAccess.size(),
-        authz.sourceAccess.size());
+    log.debug("Built UserAuthorizations for userId={} in {}ms (permissions={}, cohortDefs={}, conceptSets={}, cohortChars={}, feAnalysis={}, pathwayAnalysis={}, incidenceAnalysis={}, reusable={}, sources={})",
+      userId, elapsedMs,
+      authz.permissions.size(),
+      authz.cohortDefinitionAccess.size(),
+      authz.conceptSetAccess.size(),
+      authz.cohortCharacterizationAccess.size(),
+      authz.feAnalysisAccess.size(),
+      authz.pathwayAccess.size(),
+      authz.incidenceRateAccess.size(),
+      authz.reusableAccess.size(),
+      authz.sourceAccess.size());
 
     return authz;
   }
@@ -162,6 +187,199 @@ public class EntityAccessService {
   }
 
   /**
+   * Build the cohort characterization access map for a user.
+   * Queries the sec_cohort_characterization table via roles assigned to the user,
+   * then merges owned cohort characterizations as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of cohortCharacterizationId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildCohortCharacterizationAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : cohortCharAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Long ownedId : cohortCharAccessRepo.findOwnedCohortCharacterizationIds(userId)) {
+      ownedIds.add(ownedId);
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the feature analysis access map for a user.
+   * Queries the sec_fe_analysis table via roles assigned to the user,
+   * then merges owned feature analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of feAnalysisId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildFeAnalysisAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : feAnalysisAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : feAnalysisAccessRepo.findOwnedFeAnalysisIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the incidence rate access map for a user.
+   * Queries the sec_ir_analysis table via roles assigned to the user,
+   * then merges owned incidence rate analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of irId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildIncidenceRateAccess(Long userId) {
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : incidenceRateAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : incidenceRateAccessRepo.findOwnedIncidenceRateIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the pathway analysis access map for a user.
+   * Queries the sec_pathway_analysis table via roles assigned to the user,
+   * then merges owned pathway analyses as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of pathwayAnalysisId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildPathwayAccess(Long userId) {
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : pathwayAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : pathwayAccessRepo.findOwnedPathwayAnalysisIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
+   * Build the reusable access map for a user.
+   * Queries the sec_reusable table via roles assigned to the user,
+   * then merges owned reusables as implicit WRITE access.
+   *
+   * @param userId The user ID
+   * @return Map of reusableId → EntityGrant
+   */
+  public Map<Long, EntityGrant> buildReusableAccess(Long userId) {
+    // Collect role-based grants
+    Map<Long, Set<AccessType>> roleGrants = new HashMap<>();
+    for (EntityAccessProjection p : reusableAccessRepo.findAccessByUserId(userId)) {
+      roleGrants.computeIfAbsent(p.getEntityId(), k -> EnumSet.noneOf(AccessType.class))
+                .add(p.getAccessType());
+    }
+
+    // Collect owned entity IDs
+    Set<Long> ownedIds = new java.util.HashSet<>();
+    for (Integer ownedId : reusableAccessRepo.findOwnedReusableIds(userId)) {
+      ownedIds.add(ownedId.longValue());
+    }
+
+    // Merge into EntityGrant map
+    Map<Long, EntityGrant> access = new HashMap<>();
+
+    // Start with role-granted entities
+    for (Map.Entry<Long, Set<AccessType>> entry : roleGrants.entrySet()) {
+      Long entityId = entry.getKey();
+      access.put(entityId, new EntityGrant(entry.getValue(), ownedIds.contains(entityId)));
+    }
+
+    // Add owned entities that had no role-based grants
+    for (Long ownedId : ownedIds) {
+      access.computeIfAbsent(ownedId, k -> new EntityGrant(EnumSet.noneOf(AccessType.class), true));
+    }
+
+    return access;
+  }
+
+  /**
    * Build the source access map for a user.
    * Queries the sec_source table via roles assigned to the user.
    * Note: Source ownership does NOT imply write access; only explicit
@@ -181,18 +399,143 @@ public class EntityAccessService {
     return access;
   }
 
+  // -------------------------
+  // Entity Access Management (grant / revoke / query by entity)
+  // -------------------------
+
   /**
-   * Get the owner (created_by_id) of an entity
-   * 
-   * @param entityId   The entity ID
+   * Find all role IDs that have a specific access type to an entity.
+   *
    * @param entityType The type of entity
-   * @return The user ID of the owner, or null if not found
+   * @param entityId   The entity ID
+   * @param accessType The access type to filter by
+   * @return List of role IDs with the specified access
    */
-  public Long getOwnerId(Long entityId, EntityType entityType) {
+  public List<Long> getRoleIdsForEntity(EntityType entityType, Long entityId, AccessType accessType) {
     return switch (entityType) {
-      case COHORT_DEFINITION -> cohortDefAccessRepo.getCreatedById(entityId);
-      case CONCEPT_SET -> conceptSetAccessRepo.getCreatedById(entityId);
-      case SOURCE -> null; // no one owns a source
+      case COHORT_DEFINITION -> cohortDefAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case CONCEPT_SET -> conceptSetAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case REUSABLE -> reusableAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
+      case SOURCE -> sourceAccessRepo.findRoleIdsByEntityIdAndAccessType(entityId, accessType);
     };
   }
+
+  /**
+   * Find all role IDs that have any access to an entity.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @return List of distinct role IDs with any access
+   */
+  public List<Long> getRoleIdsForEntity(EntityType entityType, Long entityId) {
+    return switch (entityType) {
+      case COHORT_DEFINITION -> cohortDefAccessRepo.findRoleIdsByEntityId(entityId);
+      case CONCEPT_SET -> conceptSetAccessRepo.findRoleIdsByEntityId(entityId);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.findRoleIdsByEntityId(entityId);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.findRoleIdsByEntityId(entityId);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.findRoleIdsByEntityId(entityId);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.findRoleIdsByEntityId(entityId);
+      case REUSABLE -> reusableAccessRepo.findRoleIdsByEntityId(entityId);
+      case SOURCE -> sourceAccessRepo.findRoleIdsByEntityId(entityId);
+    };
+  }
+
+  /**
+   * Grant access to an entity for a specific role.
+   * Inserts a row in the appropriate sec_{entity} table.
+   * If the grant already exists, this is a no-op (JPA save on existing composite key).
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to grant access to
+   * @param accessType The access type to grant (READ or WRITE)
+   */
+  public void grantAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    switch (entityType) {
+      case COHORT_DEFINITION -> {
+        var entity = new CohortDefinitionAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setCohortDefinitionId(entityId);
+        entity.setAccessType(accessType);
+        cohortDefAccessRepo.save(entity);
+      }
+      case CONCEPT_SET -> {
+        var entity = new ConceptSetAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setConceptSetId(entityId);
+        entity.setAccessType(accessType);
+        conceptSetAccessRepo.save(entity);
+      }
+      case COHORT_CHARACTERIZATION -> {
+        var entity = new CohortCharacterizationAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setCohortCharacterizationId(entityId);
+        entity.setAccessType(accessType);
+        cohortCharAccessRepo.save(entity);
+      }
+      case FE_ANALYSIS -> {
+        var entity = new FeAnalysisAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setFeAnalysisId(entityId);
+        entity.setAccessType(accessType);
+        feAnalysisAccessRepo.save(entity);
+      }
+      case INCIDENCE_RATE -> {
+        var entity = new IncidenceRateAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setIrId(entityId);
+        entity.setAccessType(accessType);
+        incidenceRateAccessRepo.save(entity);
+      }
+      case PATHWAY_ANALYSIS -> {
+        var entity = new PathwayAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setPathwayAnalysisId(entityId);
+        entity.setAccessType(accessType);
+        pathwayAccessRepo.save(entity);
+      }
+      case REUSABLE -> {
+        var entity = new ReusableAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setReusableId(entityId);
+        entity.setAccessType(accessType);
+        reusableAccessRepo.save(entity);
+      }
+      case SOURCE -> {
+        var entity = new SourceAccessEntity();
+        entity.setRoleId(roleId);
+        entity.setSourceId(entityId);
+        entity.setAccessType(accessType);
+        sourceAccessRepo.save(entity);
+      }
+    }
+  }
+
+  /**
+   * Revoke a specific access type from a role for an entity.
+   * Deletes the row in the appropriate sec_{entity} table.
+   * If the grant does not exist, this is a no-op.
+   *
+   * @param entityType The type of entity
+   * @param entityId   The entity ID
+   * @param roleId     The role ID to revoke access from
+   * @param accessType The access type to revoke (READ or WRITE)
+   */
+  public void revokeAccess(EntityType entityType, Long entityId, Long roleId, AccessType accessType) {
+    switch (entityType) {
+      case COHORT_DEFINITION -> cohortDefAccessRepo.deleteByRoleIdAndCohortDefinitionIdAndAccessType(roleId, entityId, accessType);
+      case CONCEPT_SET -> conceptSetAccessRepo.deleteByRoleIdAndConceptSetIdAndAccessType(roleId, entityId, accessType);
+      case COHORT_CHARACTERIZATION -> cohortCharAccessRepo.deleteByRoleIdAndCohortCharacterizationIdAndAccessType(roleId, entityId, accessType);
+      case FE_ANALYSIS -> feAnalysisAccessRepo.deleteByRoleIdAndFeAnalysisIdAndAccessType(roleId, entityId, accessType);
+      case INCIDENCE_RATE -> incidenceRateAccessRepo.deleteByRoleIdAndIrIdAndAccessType(roleId, entityId, accessType);
+      case PATHWAY_ANALYSIS -> pathwayAccessRepo.deleteByRoleIdAndPathwayAnalysisIdAndAccessType(roleId, entityId, accessType);
+      case REUSABLE -> reusableAccessRepo.deleteByRoleIdAndReusableIdAndAccessType(roleId, entityId, accessType);
+      case SOURCE -> sourceAccessRepo.deleteByRoleIdAndSourceIdAndAccessType(roleId, entityId, accessType);
+    }
+  }
+
 }

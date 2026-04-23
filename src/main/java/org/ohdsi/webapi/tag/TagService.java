@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.tag;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
@@ -260,11 +261,11 @@ public class TagService extends AbstractDaoService {
      */
     @GetMapping(value = "/assignmentPermissions", produces = MediaType.APPLICATION_JSON_VALUE)
     public AssignmentPermissionsDTO getAssignmentPermissions() {
+        AuthorizationService authSvc = this.getAuthorizationService();
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
-        // TODO: determine what permission rules are being checked here for WebAPI 3.0 semantics.
-        // tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
-        // tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
-        // tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
+        tagPermission.setAnyAssetMultiAssignPermitted(authSvc.isPermitted("admin:tags"));
+        tagPermission.setCanAssignProtectedTags(authSvc.isPermitted("admin:tags"));
+        tagPermission.setCanUnassignProtectedTags(authSvc.isPermitted("admin:tags"));
         return tagPermission;
     }
 

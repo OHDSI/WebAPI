@@ -26,9 +26,6 @@ public class RolePermissionEntity implements Serializable {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sec_role_permission_seq")
   private Long id;
 
-  @Column(name = "STATUS")
-  private String status;
-
   @ManyToOne
   @JoinColumn(name="ROLE_ID", nullable=false)
   private RoleEntity role;
@@ -43,14 +40,6 @@ public class RolePermissionEntity implements Serializable {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
   }
 
   public RoleEntity getRole() {

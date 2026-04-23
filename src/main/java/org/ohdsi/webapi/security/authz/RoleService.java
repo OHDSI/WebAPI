@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.security.authz;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,18 +26,20 @@ class RoleService {
   private final RoleRepository roleRepository;
   private final UserRoleRepository userRoleRepository;
   private final RolePermissionRepository rolePermissionRepository;
-
+  private final AuthorizationCacheService authCacheService;
   public RoleService(
       RoleRepository roleRepository,
       UserRoleRepository userRoleRepository,
       RolePermissionRepository rolePermissionRepository,
       UserService userService,
-      PermissionService permissionService) {
+      PermissionService permissionService,
+      AuthorizationCacheService authCacheService) {
     this.roleRepository = roleRepository;
     this.userRoleRepository = userRoleRepository;
     this.rolePermissionRepository = rolePermissionRepository;
     this.userService = userService;
     this.permissionService = permissionService;
+    this.authCacheService = authCacheService;
   }
 
   // -------------------------
@@ -98,6 +101,22 @@ class RoleService {
     return this.roleRepository.existsByName(roleName);
   }
 
+  /**
+   * Search for system roles whose name contains the search string (case-insensitive).
+   * Returns all system roles if roleSearch is null or empty.
+   *
+   * @param roleSearch The partial role name to search for, or null/empty for all
+   * @return List of matching RoleEntity instances
+   */
+  public List<RoleEntity> searchRoles(String roleSearch) {
+    if (roleSearch == null || roleSearch.isBlank()) {
+      List<RoleEntity> roles = new java.util.ArrayList<>();
+      this.roleRepository.findAllBySystemRoleTrue().forEach(roles::add);
+      return roles;
+    }
+    return this.roleRepository.findByNameIgnoreCaseContaining(roleSearch);
+  }
+
   // -------------------------
   // Role Permissions
   // -------------------------
@@ -122,16 +141,18 @@ class RoleService {
       relation.setRole(role);
       relation.setPermission(permission);
       relation = this.rolePermissionRepository.save(relation);
+      authCacheService.evictUsersWithRole(role.getId());
     }
 
     return relation;
   }
 
-  public void removePermission(Long permissionId, Long roleId) {
+  public void removePermission(Long roleId, Long permissionId) {
     RolePermissionEntity rolePermission = this.rolePermissionRepository.findByRoleIdAndPermissionId(roleId,
         permissionId);
     if (rolePermission != null)
       this.rolePermissionRepository.delete(rolePermission);
+      authCacheService.evictUsersWithRole(roleId);
   }
 
   private Set<PermissionEntity> getRolePermissions(RoleEntity role) {
@@ -191,6 +212,7 @@ class RoleService {
           newRelation.setRole(role);
           newRelation.setOrigin(userOrigin != null ? userOrigin : UserOrigin.SYSTEM);
           newRelation = this.userRoleRepository.save(newRelation);
+          authCacheService.evictUser(user.getId());
           return newRelation;
         });
 
@@ -211,6 +233,7 @@ class RoleService {
         .ifPresent((userRole) -> {
           if (origin == null || origin.equals(userRole.getOrigin())) {
             this.userRoleRepository.delete(userRole);
+            authCacheService.evictUser(user.getId());
           }
         });
   }
@@ -220,7 +243,10 @@ class RoleService {
     RoleEntity role = this.getRole(roleId);
 
     this.userRoleRepository.findByUserAndRole(user, role)
-      .ifPresent((userRole) -> this.userRoleRepository.delete(userRole));
+      .ifPresent((userRole) -> {
+        this.userRoleRepository.delete(userRole);
+        authCacheService.evictUser(user.getId());
+      });
   }
 
   public Set<RoleEntity> getUserRoles(Long userId) {

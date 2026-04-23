@@ -6,28 +6,26 @@ import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.arachne.logging.event.AddDataSourceEvent;
-import org.ohdsi.webapi.arachne.logging.event.ChangeDataSourceEvent;
-import org.ohdsi.webapi.arachne.logging.event.DeleteDataSourceEvent;
 import org.ohdsi.webapi.common.DBMSType;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.exception.SourceDuplicateKeyException;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.RoleEntity;
 import org.ohdsi.webapi.security.authz.UserEntity;
-import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,9 +45,6 @@ import java.util.stream.Collectors;
 
 import org.ohdsi.webapi.util.CacheHelper;
 
-/**
- * TODO: Need to add permission annotations to these methods
- */
 @RestController
 @RequestMapping("/source")
 @Transactional
@@ -90,7 +85,6 @@ public class SourceService extends AbstractDaoService {
     
     private final GenericConversionService conversionService;
     private final VocabularyService vocabularyService;
-    private final ApplicationEventPublisher publisher;
 
     public SourceService(SourceRepository sourceRepository,
                          SourceDaimonRepository sourceDaimonRepository,
@@ -98,8 +92,7 @@ public class SourceService extends AbstractDaoService {
                          JdbcTemplate jdbcTemplate,
                          PBEStringEncryptor defaultStringEncryptor,
                          GenericConversionService conversionService,
-                         @Lazy VocabularyService vocabularyService,
-                         ApplicationEventPublisher publisher) {
+                         @Lazy VocabularyService vocabularyService) {
         this.sourceRepository = sourceRepository;
         this.sourceDaimonRepository = sourceDaimonRepository;
         this.authorizationService = authorizationService;
@@ -107,7 +100,6 @@ public class SourceService extends AbstractDaoService {
         this.defaultStringEncryptor = defaultStringEncryptor;
         this.conversionService = conversionService;
         this.vocabularyService = vocabularyService;
-        this.publisher = publisher;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -205,6 +197,7 @@ public class SourceService extends AbstractDaoService {
      * @return
      */
     @GetMapping(value = "/details/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<SourceDetails> getSourceDetails(@PathVariable("sourceId") Integer sourceId) {
         Source source = sourceRepository.findBySourceId(sourceId);
         return ResponseEntity.ok(new SourceDetails(source));
@@ -221,6 +214,7 @@ public class SourceService extends AbstractDaoService {
      */
     @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<SourceInfo> createSource(
             @RequestPart(value = "keyfile", required = false) MultipartFile keyfile,
             @RequestPart("source") SourceRequest source) throws Exception {
@@ -258,9 +252,13 @@ public class SourceService extends AbstractDaoService {
         sourceEntity.setCreatedDate(new Date());
         try {
             Source saved = sourceRepository.saveAndFlush(sourceEntity);
+            // Sources have a role to grant write access to the source
+            AuthorizationService authSvc = this.getAuthorizationService();
+            RoleEntity sourceRole = authSvc.addRole(getSourceRoleName(saved.getSourceKey()), true);
+            // we are going to default giving this role 'WRITE', but could possibly define a read-only and a writeable roles in the future.
+            authSvc.grantEntityAccess(EntityType.SOURCE, Long.valueOf(saved.getId().longValue()),sourceRole.getId(), AccessType.WRITE);
             invalidateCache();
             SourceInfo sourceInfo = new SourceInfo(saved);
-            publisher.publishEvent(new AddDataSourceEvent(this, sourceEntity.getSourceId(), sourceEntity.getSourceName()));
             return ResponseEntity.ok(sourceInfo);
         } catch (PersistenceException ex) {
             throw new SourceDuplicateKeyException("You cannot use this Source Key, please use different one");
@@ -280,6 +278,7 @@ public class SourceService extends AbstractDaoService {
     @PutMapping(value = "/{sourceId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<SourceInfo> updateSource(
             @PathVariable("sourceId") Integer sourceId,
             @RequestPart(value = "keyfile", required = false) MultipartFile keyfile,
@@ -313,7 +312,6 @@ public class SourceService extends AbstractDaoService {
             // Delete MUST be called after fetching user or source data to prevent autoflush (see DefaultPersistEventListener.onPersist)
             sourceDaimonRepository.deleteAll(removed);
             Source result = sourceRepository.save(updated);
-            publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
             invalidateCache();
             return ResponseEntity.ok(new SourceInfo(result));
         } else {
@@ -332,12 +330,13 @@ public class SourceService extends AbstractDaoService {
     @DeleteMapping("/{sourceId}")
     @Transactional
     @CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<Void> delete(@PathVariable("sourceId") Integer sourceId) throws Exception {
 
         Source source = sourceRepository.findBySourceId(sourceId);
         if (source != null) {
             sourceRepository.delete(source);
-            publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+            // TODO: Deletes are 'soft-delete' so need to determine how to clean up the source's role.
             invalidateCache();
             return ResponseEntity.ok().build();
         } else {
@@ -355,6 +354,7 @@ public class SourceService extends AbstractDaoService {
      */
     @GetMapping(value = "/connection/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
+    @PreAuthorize("isPermitted('admin:source') or hasSourceAccess(#sourceKey, READ)")
     public ResponseEntity<SourceInfo> checkConnectionEndpoint(@PathVariable("key") final String sourceKey) {
         final Source source = findBySourceKey(sourceKey);
         checkConnection(source);
@@ -389,6 +389,7 @@ public class SourceService extends AbstractDaoService {
      */
     @PostMapping(value = "/{sourceKey}/daimons/{daimonType}/set-priority", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<Void> updateSourcePriority(
             @PathVariable("sourceKey") final String sourceKey,
             @PathVariable("daimonType") final String daimonTypeName) {
@@ -550,6 +551,10 @@ public class SourceService extends AbstractDaoService {
         } catch (CannotGetJdbcConnectionException ex) {
             return false;
         }
+    }
+
+    private String getSourceRoleName(String sourceKey) {
+        return String.format("Source user (%s)", sourceKey);
     }
 
     private class SortByKey implements Comparator<Source> {

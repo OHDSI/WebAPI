@@ -478,7 +478,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	}
 
 	public CleanupCohortSamplesTasklet createDeleteSamplesTasklet() {
-		return new CleanupCohortSamplesTasklet(getTransactionTemplate(), getSourceRepository(), this, sampleRepository);
+		return new CleanupCohortSamplesTasklet(getBatchTransactionTemplate(), getSourceRepository(), this, sampleRepository);
 	}
 
 	/** Maps a SQL result to a sample element. */

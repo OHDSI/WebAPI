@@ -60,8 +60,6 @@ public class OidcAuthConfig {
   @Value("${security.auth.oidc.rolesClaim:}")
   private String rolesClaim;
 
-  // Default true to mirror LdapAuthConfig's SimpleGrantedAuthority upper-casing, so roles from
-  // the two IdPs collide in sec_role by name rather than creating parallel mixed-case duplicates.
   @Value("${security.auth.oidc.rolesToUpperCase:true}")
   private boolean rolesToUpperCase;
 
@@ -126,8 +124,7 @@ public class OidcAuthConfig {
                              HttpServletResponse response,
                              Authentication authentication) throws IOException {
     OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
-    // Lowercase to match LoginService.mintSession which normalizes via Authentication.getName().toLowerCase();
-    // a mixed-case sub would otherwise create the DB row as-is while the JWT encodes the lowercased form.
+    // Lowercase so the DB row login matches mintSession's JWT subject (which lowercases via getName()).
     String login = oidcUser.getSubject().toLowerCase();
     String name = firstNonBlank(oidcUser.getFullName(), oidcUser.getEmail(), login);
 
@@ -204,8 +201,12 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
   }
 
   private static String appendQueryParam(String url, String key, String value) {
-    String separator = url.contains("?") ? "&" : "?";
-    return url + separator + key + "=" + value;
+    // Insert before any URL fragment so SPA hash-route callbacks keep the param queryable.
+    int fragmentIdx = url.indexOf('#');
+    String base = fragmentIdx >= 0 ? url.substring(0, fragmentIdx) : url;
+    String fragment = fragmentIdx >= 0 ? url.substring(fragmentIdx) : "";
+    String separator = base.contains("?") ? "&" : "?";
+    return base + separator + key + "=" + value + fragment;
   }
 
   private String stripDiscoverySuffix(String url) {

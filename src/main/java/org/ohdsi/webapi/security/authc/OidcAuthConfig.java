@@ -1,16 +1,12 @@
 package org.ohdsi.webapi.security.authc;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.slf4j.Logger;
@@ -19,33 +15,32 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistrations;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @ConditionalOnProperty(prefix = "security.auth.openId", name = "enabled", havingValue = "true")
 public class OidcAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(OidcAuthConfig.class);
-  private static final long STATE_TTL_SECONDS = 300; // 5 minutes
+  private static final String REGISTRATION_ID = "openid";
+  private static final String DISCOVERY_SUFFIX = "/.well-known/openid-configuration";
 
   private final HttpSecurityShared httpSecurityShared;
   private final AuthorizationService authorizationService;
+  private final LoginService loginService;
 
   @Value("${security.auth.openId.clientId}")
   private String clientId;
@@ -54,7 +49,7 @@ public class OidcAuthConfig {
   private String clientSecret;
 
   @Value("${security.auth.openId.url}")
-  private String discoveryUrl;
+  private String discoveryOrIssuerUrl;
 
   @Value("${security.auth.openId.externalUrl:}")
   private String externalUrl;
@@ -65,192 +60,107 @@ public class OidcAuthConfig {
   @Value("${security.auth.openId.rolesClaim:}")
   private String rolesClaim;
 
+  // Default true to mirror LdapAuthConfig's SimpleGrantedAuthority upper-casing, so roles from
+  // the two IdPs collide in sec_role by name rather than creating parallel mixed-case duplicates.
+  @Value("${security.auth.openId.rolesToUpperCase:true}")
+  private boolean rolesToUpperCase;
+
   @Value("${security.auth.oauth.callback.api}")
   private String callbackApi;
 
   @Value("${security.auth.oauth.callback.ui}")
   private String callbackUi;
 
-  // Discovered endpoints
-  private String authorizationEndpoint;
-  private String tokenEndpoint;
-  private String jwksUri;
-  private String issuer;
-  private JwtDecoder idTokenDecoder;
+  @Value("${security.defaultRoles:}")
+  private List<String> defaultRoles;
 
-  // State store for CSRF protection
-  private final ConcurrentHashMap<String, Instant> stateStore = new ConcurrentHashMap<>();
-
-  public OidcAuthConfig(HttpSecurityShared httpSecurityShared, AuthorizationService authorizationService) {
+  public OidcAuthConfig(HttpSecurityShared httpSecurityShared,
+                        AuthorizationService authorizationService,
+                        LoginService loginService) {
     this.httpSecurityShared = httpSecurityShared;
     this.authorizationService = authorizationService;
-  }
-
-  @PostConstruct
-  void discover() {
-    log.info("OIDC: Fetching discovery document from {}", discoveryUrl);
-    try {
-      RestTemplate rest = new RestTemplate();
-      Map<String, Object> doc = rest.exchange(
-          discoveryUrl, HttpMethod.GET, null,
-          new ParameterizedTypeReference<Map<String, Object>>() {}).getBody();
-
-      if (doc == null) {
-        throw new IllegalStateException("OIDC discovery document is empty");
-      }
-
-      authorizationEndpoint = (String) doc.get("authorization_endpoint");
-      tokenEndpoint = (String) doc.get("token_endpoint");
-      jwksUri = (String) doc.get("jwks_uri");
-      issuer = (String) doc.get("issuer");
-
-      if (authorizationEndpoint == null || tokenEndpoint == null || jwksUri == null) {
-        throw new IllegalStateException(
-            "OIDC discovery document missing required endpoints (authorization_endpoint, token_endpoint, jwks_uri)");
-      }
-
-      idTokenDecoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
-
-      log.info("OIDC: Discovery complete. issuer={}, authz={}, token={}", issuer, authorizationEndpoint, tokenEndpoint);
-    } catch (Exception e) {
-      log.error("OIDC: Failed to fetch discovery document from {}. OIDC login will not work.", discoveryUrl, e);
-    }
+    this.loginService = loginService;
   }
 
   @Bean
-  @Order(2)
+  public ClientRegistrationRepository oidcClientRegistrationRepository() {
+    String issuer = stripDiscoverySuffix(discoveryOrIssuerUrl);
+    log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
+
+    ClientRegistration.Builder builder = ClientRegistrations.fromIssuerLocation(issuer)
+        .registrationId(REGISTRATION_ID)
+        .clientId(clientId)
+        .clientSecret(clientSecret)
+        .redirectUri(joinPath(callbackApi, REGISTRATION_ID))
+        .scope(buildScopes());
+
+    if (externalUrl != null && !externalUrl.isBlank()) {
+      String discoveredAuthUri = builder.build().getProviderDetails().getAuthorizationUri();
+      String rewritten = rewriteAuthorizationUri(discoveredAuthUri);
+      builder.authorizationUri(rewritten);
+      log.info("OIDC: Using external authorization URI {}", rewritten);
+    }
+
+    return new InMemoryClientRegistrationRepository(builder.build());
+  }
+
+  @Bean
+  @Order(1)
   public SecurityFilterChain oidcAuthChain(HttpSecurity http) throws Exception {
     httpSecurityShared.configureDefaults(http);
-    http.securityMatcher("/user/login/openid", "/user/oauth/callback")
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    http
+        .securityMatcher("/user/login/" + REGISTRATION_ID, "/user/oauth/callback/**")
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .oauth2Login(oauth -> oauth
+            .authorizationEndpoint(authz -> authz.baseUri("/user/login"))
+            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/*"))
+            .successHandler(this::handleSuccess)
+            .failureHandler((req, res, ex) -> {
+              log.warn("OIDC: Authentication failed: {}", ex.getMessage());
+              res.sendRedirect(appendQueryParam(callbackUi, "error", "oidc_failed"));
+            }));
     return http.build();
   }
 
-  /**
-   * Generate a state token and store it for CSRF validation.
-   */
-  public String createState() {
-    evictExpiredStates();
-    String state = UUID.randomUUID().toString();
-    stateStore.put(state, Instant.now());
-    return state;
+  private void handleSuccess(HttpServletRequest request,
+                             HttpServletResponse response,
+                             Authentication authentication) throws IOException {
+    OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
+    // Lowercase to match LoginService.mintSession which normalizes via Authentication.getName().toLowerCase();
+    // a mixed-case sub would otherwise create the DB row as-is while the JWT encodes the lowercased form.
+    String login = oidcUser.getSubject().toLowerCase();
+    String name = firstNonBlank(oidcUser.getFullName(), oidcUser.getEmail(), login);
+
+    log.info("OIDC: Authenticated user sub={}", login);
+
+    List<String> filteredDefaults = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
+    authorizationService.ensureUserExists(login, name, UserOrigin.OPENID, filteredDefaults);
+
+    List<String> idpRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
+    if (!idpRoles.isEmpty()) {
+      log.info("OIDC: Syncing roles from token for user {}: {}", login, idpRoles);
+      syncRoles(login, idpRoles);
+    }
+
+    List<SimpleGrantedAuthority> authorities = idpRoles.stream()
+        .map(SimpleGrantedAuthority::new)
+        .toList();
+Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, authorities);
+    // mintSession — not onSuccess — so onSuccess's ensureUserExists doesn't overwrite the display name.
+    LoginService.Result result = loginService.mintSession(wrapped);
+
+    response.sendRedirect(appendQueryParam(callbackUi, "token", result.jwt()));
   }
 
-  /**
-   * Validate and consume a state token. Returns true if valid.
-   */
-  public boolean validateState(String state) {
-    Instant created = stateStore.remove(state);
-    if (created == null) {
-      return false;
-    }
-    return Instant.now().isBefore(created.plusSeconds(STATE_TTL_SECONDS));
-  }
-
-  /**
-   * Build the authorization URL for redirecting the user to the IdP.
-   */
-  public String buildAuthorizationUrl(String state) {
-    // Use externalUrl for the authorization endpoint if configured (browser-accessible URL)
-    String authEndpoint = resolveExternalAuthEndpoint();
-
-    StringBuilder url = new StringBuilder(authEndpoint);
-    url.append("?response_type=code");
-    url.append("&client_id=").append(encode(clientId));
-    url.append("&redirect_uri=").append(encode(callbackApi));
-    url.append("&state=").append(encode(state));
-
-    String scope = "openid";
-    if (extraScopes != null && !extraScopes.isBlank()) {
-      scope = scope + " " + extraScopes.trim();
-    }
-    url.append("&scope=").append(encode(scope));
-
-    return url.toString();
-  }
-
-  /**
-   * Exchange an authorization code for tokens, decode the ID token, and return it.
-   */
-  public Jwt exchangeCodeForIdToken(String code) {
-    RestTemplate rest = new RestTemplate();
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add("grant_type", "authorization_code");
-    params.add("code", code);
-    params.add("redirect_uri", callbackApi);
-    params.add("client_id", clientId);
-    params.add("client_secret", clientSecret);
-
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-    ResponseEntity<Map<String, Object>> response = rest.exchange(
-        tokenEndpoint, HttpMethod.POST, request,
-        new ParameterizedTypeReference<Map<String, Object>>() {});
-
-    Map<String, Object> body = response.getBody();
-    if (body == null || !body.containsKey("id_token")) {
-      throw new IllegalStateException("OIDC token response missing id_token");
+  private void syncRoles(String login, List<String> idpRoles) {
+    List<String> currentOidcRoleNames;
+    try {
+      currentOidcRoleNames = authorizationService.getOidcOriginRoles(login);
+    } catch (Exception e) {
+      log.warn("OIDC: Could not fetch OPENID-origin roles for user {}: {}", login, e.getMessage());
+      return;
     }
 
-    String idTokenStr = (String) body.get("id_token");
-    return idTokenDecoder.decode(idTokenStr);
-  }
-
-  /**
-   * Extract roles from the ID token using the configured rolesClaim.
-   * Supports dot-notation for nested claims (e.g., "realm_access.roles").
-   */
-  @SuppressWarnings("unchecked")
-  public List<String> extractRoles(Jwt idToken) {
-    if (rolesClaim == null || rolesClaim.isBlank()) {
-      return Collections.emptyList();
-    }
-
-    String[] parts = rolesClaim.split("\\.");
-    Object current = idToken.getClaims();
-
-    for (String part : parts) {
-      if (current instanceof Map) {
-        current = ((Map<String, Object>) current).get(part);
-      } else {
-        log.warn("OIDC: Cannot traverse claim path '{}' - intermediate value is not a map", rolesClaim);
-        return Collections.emptyList();
-      }
-      if (current == null) {
-        log.debug("OIDC: Claim '{}' not found in ID token", rolesClaim);
-        return Collections.emptyList();
-      }
-    }
-
-    if (current instanceof List<?> list) {
-      List<String> roles = new ArrayList<>();
-      for (Object item : list) {
-        if (item instanceof String s) {
-          roles.add(s);
-        }
-      }
-      return roles;
-    } else if (current instanceof String s) {
-      return List.of(s);
-    }
-
-    log.warn("OIDC: Claim '{}' is not a list or string: {}", rolesClaim, current.getClass().getName());
-    return Collections.emptyList();
-  }
-
-  /**
-   * Full-sync roles from the IdP token to the user in the database.
-   * Adds roles present in the token, removes OPENID-origin roles not in the token.
-   * Only touches roles with OPENID origin.
-   */
-  public void syncRoles(String login, List<String> idpRoles) {
-    List<String> currentOidcRoleNames = getOidcOriginRoleNames(login);
-
-    // Add new roles from the token
     for (String roleName : idpRoles) {
       if (!currentOidcRoleNames.contains(roleName)) {
         try {
@@ -262,7 +172,6 @@ public class OidcAuthConfig {
       }
     }
 
-    // Remove OPENID-origin roles no longer in the token
     for (String roleName : currentOidcRoleNames) {
       if (!idpRoles.contains(roleName)) {
         try {
@@ -275,53 +184,99 @@ public class OidcAuthConfig {
     }
   }
 
-  public String getCallbackUi() {
-    return callbackUi;
+  private Set<String> buildScopes() {
+    Set<String> scopes = new LinkedHashSet<>();
+    scopes.add("openid");
+    scopes.add("profile");
+    scopes.add("email");
+    if (extraScopes != null && !extraScopes.isBlank()) {
+      for (String s : extraScopes.trim().split("\\s+")) {
+        if (!s.isBlank()) {
+          scopes.add(s);
+        }
+      }
+    }
+    return scopes;
   }
 
-  // --- private helpers ---
+  private static String joinPath(String base, String segment) {
+    return (base.endsWith("/") ? base : base + "/") + segment;
+  }
 
-  private List<String> getOidcOriginRoleNames(String login) {
+  private static String appendQueryParam(String url, String key, String value) {
+    String separator = url.contains("?") ? "&" : "?";
+    return url + separator + key + "=" + value;
+  }
+
+  private String stripDiscoverySuffix(String url) {
+    if (url == null || url.isBlank()) {
+      throw new IllegalStateException("security.auth.openId.url must be configured when OpenID is enabled");
+    }
+    if (url.endsWith(DISCOVERY_SUFFIX)) {
+      return url.substring(0, url.length() - DISCOVERY_SUFFIX.length());
+    }
+    return url;
+  }
+
+  private String rewriteAuthorizationUri(String authorizationUri) {
     try {
-      return authorizationService.getOidcOriginRoles(login);
+      URI authUri = URI.create(authorizationUri);
+      URI extUri = URI.create(externalUrl);
+      String discoveryBase = stripDiscoverySuffix(discoveryOrIssuerUrl);
+      URI discoveryBaseUri = URI.create(discoveryBase);
+      String pathSuffix = authUri.getPath().substring(discoveryBaseUri.getPath().length());
+      String extBase = extUri.toString();
+      if (extBase.endsWith("/")) {
+        extBase = extBase.substring(0, extBase.length() - 1);
+      }
+      return extBase + pathSuffix;
     } catch (Exception e) {
-      log.warn("OIDC: Could not fetch OPENID-origin roles for user {}: {}", login, e.getMessage());
-      return Collections.emptyList();
+      log.warn("OIDC: Could not rewrite authorization URI with externalUrl '{}', using discovered value '{}'",
+          externalUrl, authorizationUri, e);
+      return authorizationUri;
     }
   }
 
-  private String resolveExternalAuthEndpoint() {
-    if (externalUrl != null && !externalUrl.isBlank() && authorizationEndpoint != null) {
-      // Replace the host portion of the authorization endpoint with the external URL
-      // e.g., internal: http://mock-oauth2:9090/default/authorize
-      //        external: http://localhost:9090/default
-      //        result:   http://localhost:9090/default/authorize
-      try {
-        URI authUri = URI.create(authorizationEndpoint);
-        URI extUri = URI.create(externalUrl);
-        // Take the path suffix from authorizationEndpoint that extends beyond the discovery path
-        String discoveryBase = discoveryUrl.replace("/.well-known/openid-configuration", "");
-        URI discoveryBaseUri = URI.create(discoveryBase);
-        String pathSuffix = authUri.getPath().substring(discoveryBaseUri.getPath().length());
-        return extUri.toString() + pathSuffix;
-      } catch (Exception e) {
-        log.warn("OIDC: Could not resolve external auth endpoint, using discovery value", e);
+  private static String firstNonBlank(String... values) {
+    if (values == null) return null;
+    for (String v : values) {
+      if (v != null && !v.isBlank()) return v;
+    }
+    return null;
+  }
+
+  static List<String> extractRoles(Map<String, Object> claims, String claimPath, boolean toUpperCase) {
+    if (claimPath == null || claimPath.isBlank() || claims == null) {
+      return List.of();
+    }
+    String[] parts = claimPath.split("\\.");
+    Object current = claims;
+    for (String part : parts) {
+      if (current instanceof Map<?, ?> map) {
+        current = map.get(part);
+      } else {
+        log.warn("OIDC: Cannot traverse claim path '{}' - intermediate value is not a map", claimPath);
+        return List.of();
+      }
+      if (current == null) {
+        log.debug("OIDC: Claim '{}' not found in ID token", claimPath);
+        return List.of();
       }
     }
-    return authorizationEndpoint;
-  }
 
-  private void evictExpiredStates() {
-    Instant cutoff = Instant.now().minusSeconds(STATE_TTL_SECONDS);
-    Iterator<Map.Entry<String, Instant>> it = stateStore.entrySet().iterator();
-    while (it.hasNext()) {
-      if (it.next().getValue().isBefore(cutoff)) {
-        it.remove();
+    if (current instanceof List<?> list) {
+      List<String> roles = new ArrayList<>();
+      for (Object item : list) {
+        if (item instanceof String s) {
+          roles.add(toUpperCase ? s.toUpperCase() : s);
+        }
       }
+      return roles;
     }
-  }
-
-  private static String encode(String value) {
-    return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    if (current instanceof String s) {
+      return List.of(toUpperCase ? s.toUpperCase() : s);
+    }
+    log.warn("OIDC: Claim '{}' is not a list or string: {}", claimPath, current.getClass().getName());
+    return List.of();
   }
 }

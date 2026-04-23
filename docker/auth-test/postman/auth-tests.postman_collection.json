@@ -343,14 +343,15 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/user/oauth/callback?code={{oidc_auth_code}}&state={{oidc_state}}",
+              "raw": "{{base_url}}/user/oauth/callback/openid?code={{oidc_auth_code}}&state={{oidc_state}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "user",
                 "oauth",
-                "callback"
+                "callback",
+                "openid"
               ],
               "query": [
                 {

@@ -175,10 +175,8 @@ public class AuthorizationService {
     this.roleService.removeUserFromRole(login, roleName, origin);
   }
 
-  /**
-   * Get the names of system roles assigned to a user with a specific origin.
-   * Used for OIDC role sync to identify which roles were granted by the IdP.
-   */
+  // @Transactional required: UserEntity.userRoles is FetchType.LAZY and getUserByLogin closes its own txn.
+  @Transactional(readOnly = true)
   public List<String> getOidcOriginRoles(String login) {
     UserEntity user = userService.getUserByLogin(login).orElseThrow();
     return user.getUserRoles().stream()

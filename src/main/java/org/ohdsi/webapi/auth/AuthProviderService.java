@@ -50,7 +50,7 @@ public class AuthProviderService {
     @Value("${security.auth.cas.enabled}")
     private boolean casAuthEnabled;
 
-    @Value("${security.auth.openId.enabled}")
+    @Value("${security.auth.oidc.enabled}")
     private boolean openidAuthEnabled;
 
     @Value("${security.auth.oauth.facebook.enabled}")
@@ -65,7 +65,7 @@ public class AuthProviderService {
     @Value("${security.auth.saml.enabled}")
     private boolean samlAuthEnabled;
 
-    @Value("${security.auth.openId.logoutUrl:}")
+    @Value("${security.auth.oidc.logoutUrl:}")
     private String oidcLogoutUrl;
 
     /**

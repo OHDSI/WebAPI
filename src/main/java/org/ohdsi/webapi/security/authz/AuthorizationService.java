@@ -175,6 +175,18 @@ public class AuthorizationService {
     this.roleService.removeUserFromRole(login, roleName, origin);
   }
 
+  // @Transactional required: UserEntity.userRoles is FetchType.LAZY and getUserByLogin closes its own txn.
+  @Transactional(readOnly = true)
+  public List<String> getOidcOriginRoles(String login) {
+    UserEntity user = userService.getUserByLogin(login).orElseThrow();
+    return user.getUserRoles().stream()
+        .filter(ur -> ur.getOrigin() == UserOrigin.OIDC)
+        .map(ur -> ur.getRole())
+        .filter(role -> Boolean.TRUE.equals(role.isSystemRole()))
+        .map(role -> role.getName())
+        .toList();
+  }
+
   public void addUserToRole(String roleName, String login, UserOrigin origin) {
     this.roleService.addUserToRole(login, roleName, origin);
   }

@@ -217,7 +217,7 @@ security:
         apiKey: ""
         apiSecret: ""
 
-    openId: # OpenID
+    oidc: # OpenID Connect
       enabled: false
       apiSecret: ""
       clientId: ""
@@ -226,6 +226,7 @@ security:
       extraScopes: ""
       logoutUrl: ""
       redirectUrl: http://localhost/index.html#/welcome/
+      rolesClaim: ""
       url: ""
 
     saml: # SAML (Security Assertion Markup Language)

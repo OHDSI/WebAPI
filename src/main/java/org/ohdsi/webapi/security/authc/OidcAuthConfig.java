@@ -146,7 +146,10 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     // mintSession — not onSuccess — so onSuccess's ensureUserExists doesn't overwrite the display name.
     LoginService.Result result = loginService.mintSession(wrapped);
 
-    response.sendRedirect(appendQueryParam(callbackUi, "token", result.jwt()));
+    // Deliver the session JWT in the URL fragment so it is not transmitted to
+    // servers, recorded in access logs, or leaked via the Referer header
+    // (RFC 6750 §5.3, OAuth 2.0 Security BCP §4.3.2).
+    response.sendRedirect(appendFragmentParam(callbackUi, "token", result.jwt()));
   }
 
   private void syncRoles(String login, List<String> idpRoles) {
@@ -207,6 +210,17 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     String fragment = fragmentIdx >= 0 ? url.substring(fragmentIdx) : "";
     String separator = base.contains("?") ? "&" : "?";
     return base + separator + key + "=" + value + fragment;
+  }
+
+  private static String appendFragmentParam(String url, String key, String value) {
+    int fragmentIdx = url.indexOf('#');
+    if (fragmentIdx < 0) {
+      return url + "#" + key + "=" + value;
+    }
+    String base = url.substring(0, fragmentIdx);
+    String fragment = url.substring(fragmentIdx + 1);
+    String separator = fragment.isEmpty() ? "" : "&";
+    return base + "#" + fragment + separator + key + "=" + value;
   }
 
   private String stripDiscoverySuffix(String url) {

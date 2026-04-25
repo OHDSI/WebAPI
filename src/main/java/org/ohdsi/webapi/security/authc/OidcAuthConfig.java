@@ -146,9 +146,6 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     // mintSession — not onSuccess — so onSuccess's ensureUserExists doesn't overwrite the display name.
     LoginService.Result result = loginService.mintSession(wrapped);
 
-    // Deliver the session JWT in the URL fragment so it is not transmitted to
-    // servers, recorded in access logs, or leaked via the Referer header
-    // (RFC 6750 §5.3, OAuth 2.0 Security BCP §4.3.2).
     response.sendRedirect(appendFragmentParam(callbackUi, "token", result.jwt()));
   }
 

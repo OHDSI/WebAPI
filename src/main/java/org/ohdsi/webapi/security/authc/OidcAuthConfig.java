@@ -114,12 +114,6 @@ public class OidcAuthConfig {
     return new InMemoryClientRegistrationRepository(builder.build());
   }
 
-  /**
-   * Permits {@code /user/login/openidDirect} through Spring Security so the
-   * controller below can validate the bearer token itself. The browser-flow
-   * chain at @Order(1) matches the exact path {@code /user/login/openid}, so
-   * it does not capture the {@code openidDirect} variant.
-   */
   @Bean
   @Order(0)
   public SecurityFilterChain oidcDirectAuthChain(HttpSecurity http) throws Exception {
@@ -161,9 +155,6 @@ public class OidcAuthConfig {
     List<String> filteredDefaults = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
     authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, filteredDefaults);
 
-    // Auto-filter: keep only role names that match an existing WebAPI sec_role.
-    // Logto seeds scopes whose names line up with WebAPI role names; anything that
-    // doesn't match (granular permissions, unknown roles) is silently dropped.
     List<String> rawRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
     List<String> idpRoles = authorizationService.filterToExistingRoles(rawRoles);
     if (rawRoles.size() != idpRoles.size()) {
@@ -296,14 +287,6 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     return List.of();
   }
 
-  /**
-   * Service-to-service token-exchange endpoint. Accepts a Logto/OIDC bearer
-   * token in the {@code Authorization} header, validates it against the
-   * OIDC provider's JWKS, provisions/looks up the local user, and mints a
-   * WebAPI session JWT. The minted JWT is returned both in a {@code Bearer}
-   * response header (consumed by the trex auth proxy) and in the response
-   * body for callers that prefer JSON.
-   */
   @RestController
   @ConditionalOnProperty(prefix = "security.auth.oidc", name = "enabled", havingValue = "true")
   public static class OpenidDirect {

@@ -16,6 +16,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
@@ -25,7 +27,17 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -103,6 +115,16 @@ public class OidcAuthConfig {
   }
 
   @Bean
+  @Order(0)
+  public SecurityFilterChain oidcDirectAuthChain(HttpSecurity http) throws Exception {
+    httpSecurityShared.configureDefaults(http);
+    http
+        .securityMatcher("/user/login/openidDirect")
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    return http.build();
+  }
+
+  @Bean
   @Order(1)
   public SecurityFilterChain oidcAuthChain(HttpSecurity http) throws Exception {
     httpSecurityShared.configureDefaults(http);
@@ -133,11 +155,16 @@ public class OidcAuthConfig {
     List<String> filteredDefaults = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
     authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, filteredDefaults);
 
-    List<String> idpRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
+    List<String> rawRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
+    List<String> idpRoles = authorizationService.filterToExistingRoles(rawRoles);
+    if (rawRoles.size() != idpRoles.size()) {
+      log.debug("OIDC: dropped {} unknown roles from token for user {}",
+          rawRoles.size() - idpRoles.size(), login);
+    }
     if (!idpRoles.isEmpty()) {
       log.info("OIDC: Syncing roles from token for user {}: {}", login, idpRoles);
-      syncRoles(login, idpRoles);
     }
+    authorizationService.syncOidcRoles(login, idpRoles);
 
     List<SimpleGrantedAuthority> authorities = idpRoles.stream()
         .map(SimpleGrantedAuthority::new)
@@ -147,38 +174,6 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     LoginService.Result result = loginService.mintSession(wrapped);
 
     response.sendRedirect(appendFragmentParam(callbackUi, "token", result.jwt()));
-  }
-
-  private void syncRoles(String login, List<String> idpRoles) {
-    List<String> currentOidcRoleNames;
-    try {
-      currentOidcRoleNames = authorizationService.getOidcOriginRoles(login);
-    } catch (Exception e) {
-      log.warn("OIDC: Could not fetch OIDC-origin roles for user {}: {}", login, e.getMessage());
-      return;
-    }
-
-    for (String roleName : idpRoles) {
-      if (!currentOidcRoleNames.contains(roleName)) {
-        try {
-          authorizationService.addUserToRole(roleName, login, UserOrigin.OIDC);
-          log.info("OIDC: Added role '{}' to user '{}'", roleName, login);
-        } catch (Exception e) {
-          log.warn("OIDC: Could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
-        }
-      }
-    }
-
-    for (String roleName : currentOidcRoleNames) {
-      if (!idpRoles.contains(roleName)) {
-        try {
-          authorizationService.removeUserFromRole(roleName, login, UserOrigin.OIDC);
-          log.info("OIDC: Removed role '{}' from user '{}'", roleName, login);
-        } catch (Exception e) {
-          log.warn("OIDC: Could not remove role '{}' from user '{}': {}", roleName, login, e.getMessage());
-        }
-      }
-    }
   }
 
   private Set<String> buildScopes() {
@@ -290,5 +285,104 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     }
     log.warn("OIDC: Claim '{}' is not a list or string: {}", claimPath, current.getClass().getName());
     return List.of();
+  }
+
+  @RestController
+  @ConditionalOnProperty(prefix = "security.auth.oidc", name = "enabled", havingValue = "true")
+  public static class OpenidDirect {
+
+    private static final Logger log = LoggerFactory.getLogger(OpenidDirect.class);
+
+    private final AuthorizationService authorizationService;
+    private final LoginService loginService;
+    private final JwtDecoder jwtDecoder;
+    private final List<String> defaultRoles;
+    private final String rolesClaim;
+    private final boolean rolesToUpperCase;
+
+    public OpenidDirect(
+        AuthorizationService authorizationService,
+        LoginService loginService,
+        @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
+        @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
+        @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase,
+        @Value("${security.defaultRoles:}") List<String> defaultRoles) {
+      this.authorizationService = authorizationService;
+      this.loginService = loginService;
+      String issuer = stripDiscoverySuffixStatic(discoveryOrIssuerUrl);
+      log.info("OIDC direct: building JwtDecoder for issuer {}", issuer);
+      // Accept both `JWT` and `at+jwt` (RFC 9068) header types — Logto and other
+      // providers tag access tokens as `at+jwt`, which Spring's default verifier rejects.
+      this.jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuer)
+          .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(
+              new DefaultJOSEObjectTypeVerifier<>(
+                  JOSEObjectType.JWT,
+                  new JOSEObjectType("at+jwt"),
+                  null)))
+          .build();
+      this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
+      this.rolesClaim = rolesClaim;
+      this.rolesToUpperCase = rolesToUpperCase;
+    }
+
+    @GetMapping("/user/login/openidDirect")
+    public ResponseEntity<LoginService.Result> login(
+        @RequestHeader(value = "Authorization", required = false) String auth) {
+
+      if (auth == null || !auth.regionMatches(true, 0, "Bearer ", 0, 7)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new LoginService.Result(null, null, null, "Missing Bearer token"));
+      }
+      String token = auth.substring(7).trim();
+
+      Jwt jwt;
+      try {
+        jwt = jwtDecoder.decode(token);
+      } catch (JwtException e) {
+        log.warn("OIDC direct: token validation failed: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new LoginService.Result(null, null, null, "Invalid token"));
+      }
+
+      String login = jwt.getSubject().toLowerCase();
+      String name = firstNonBlankStatic(
+          jwt.getClaimAsString("name"),
+          jwt.getClaimAsString("email"),
+          login);
+
+      log.info("OIDC direct: authenticated user sub={}", login);
+
+      authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, defaultRoles);
+
+      List<String> rawRoles = extractRoles(jwt.getClaims(), rolesClaim, rolesToUpperCase);
+      List<String> idpRoles = authorizationService.filterToExistingRoles(rawRoles);
+      authorizationService.syncOidcRoles(login, idpRoles);
+
+      List<SimpleGrantedAuthority> authorities = idpRoles.stream()
+          .map(SimpleGrantedAuthority::new)
+          .toList();
+      Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, authorities);
+      LoginService.Result result = loginService.mintSession(wrapped);
+
+      return ResponseEntity.ok()
+          .header("Bearer", result.jwt())
+          .body(result);
+    }
+
+    private static String stripDiscoverySuffixStatic(String url) {
+      if (url == null || url.isBlank()) {
+        throw new IllegalStateException("security.auth.oidc.url must be configured when OIDC is enabled");
+      }
+      String suffix = "/.well-known/openid-configuration";
+      return url.endsWith(suffix) ? url.substring(0, url.length() - suffix.length()) : url;
+    }
+
+    private static String firstNonBlankStatic(String... values) {
+      if (values == null) return null;
+      for (String v : values) {
+        if (v != null && !v.isBlank()) return v;
+      }
+      return null;
+    }
   }
 }

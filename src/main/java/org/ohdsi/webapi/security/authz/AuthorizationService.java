@@ -69,6 +69,73 @@ public class AuthorizationService {
     return users;
   }
 
+  /**
+   * Reconciles the OIDC-origin role assignments of {@code login} with
+   * {@code targetRoleNames}: roles in the target set that the user lacks are
+   * added with origin {@link UserOrigin#OIDC}; existing OIDC-origin roles
+   * absent from the target set are removed. Roles assigned via other origins
+   * (SYSTEM, LDAP, …) are left untouched. Per-role failures are logged and
+   * swallowed so a single bad row can't break the whole sync.
+   */
+  public void syncOidcRoles(String login, List<String> targetRoleNames) {
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthorizationService.class);
+    List<String> currentOidcRoleNames;
+    try {
+      currentOidcRoleNames = getOidcOriginRoles(login);
+    } catch (Exception e) {
+      log.warn("OIDC sync: could not fetch OIDC-origin roles for user {}: {}", login, e.getMessage());
+      return;
+    }
+    for (String roleName : targetRoleNames) {
+      if (!currentOidcRoleNames.contains(roleName)) {
+        try {
+          addUserToRole(roleName, login, UserOrigin.OIDC);
+          log.info("OIDC sync: added role '{}' to user '{}'", roleName, login);
+        } catch (Exception e) {
+          log.warn("OIDC sync: could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
+        }
+      }
+    }
+    for (String roleName : currentOidcRoleNames) {
+      if (!targetRoleNames.contains(roleName)) {
+        try {
+          removeUserFromRole(roleName, login, UserOrigin.OIDC);
+          log.info("OIDC sync: removed role '{}' from user '{}'", roleName, login);
+        } catch (Exception e) {
+          log.warn("OIDC sync: could not remove role '{}' from user '{}': {}", roleName, login, e.getMessage());
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns the subset of {@code roleNames} that match an existing non-personal
+   * (system) role in the WebAPI {@code sec_role} table. Names not matching any
+   * existing role are silently dropped — used by OIDC sync so unknown IdP-side
+   * roles are ignored rather than auto-created.
+   * <p>
+   * Matching is case-insensitive (OIDC tokens commonly upper-case role names),
+   * but the WebAPI canonical name is returned so downstream sync hits the
+   * correct {@code sec_role} row.
+   */
+  public List<String> filterToExistingRoles(List<String> roleNames) {
+    if (roleNames == null || roleNames.isEmpty()) {
+      return java.util.Collections.emptyList();
+    }
+    java.util.Map<String, String> canonicalByLower = new java.util.HashMap<>();
+    for (RoleEntity r : this.roleService.getRoles(false)) {
+      canonicalByLower.put(r.getName().toLowerCase(), r.getName());
+    }
+    java.util.ArrayList<String> kept = new java.util.ArrayList<>(roleNames.size());
+    for (String n : roleNames) {
+      String canonical = canonicalByLower.get(n.toLowerCase());
+      if (canonical != null) {
+        kept.add(canonical);
+      }
+    }
+    return kept;
+  }
+
   public User getCurrentUser() {
     WebApiPrincipal principal = getAuthenticatedPrincipal();
     UserEntity ue = this.userService.getUserById(principal.getUserId());

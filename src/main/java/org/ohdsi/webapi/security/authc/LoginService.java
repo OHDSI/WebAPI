@@ -52,24 +52,22 @@ public class LoginService {
   }
 
   public Result onSuccess(Authentication authentication) {
-
     String login = authentication.getName().toLowerCase();
-    log.info("LoginService: onSuccess: " + login);
+    authorizationService.ensureUserExists(login, login, null, this.defaultRoles);
+    return mintSession(authentication);
+  }
+
+  // Skips ensureUserExists; for callers (e.g. OIDC) that provision the user themselves.
+  public Result mintSession(Authentication authentication) {
+    String login = authentication.getName().toLowerCase();
+    log.info("LoginService: mintSession: " + login);
 
     String[] roles = authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
         .toArray(String[]::new);
 
-    // ensure the user exists
-    authorizationService.ensureUserExists(login, login, null, this.defaultRoles);
-
-    // Generate a unique session ID and store session
     UUID sessionId = sessionService.createSession(login);
-
-    // Calculate expiration for JWT (same as session)
     Instant expiresAt = Instant.now().plus(sessionProps.getExpiration());
-
-    // mint the JWT
     String jwt = jwtService.generateToken(login, sessionId.toString(), Date.from(expiresAt));
 
     return new Result(login, jwt, roles, "Login successful");

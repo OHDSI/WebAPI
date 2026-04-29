@@ -79,7 +79,7 @@ services:
       - SPRING_FLYWAY_SCHEMAS=webapi
       - SPRING_FLYWAY_PLACEHOLDERS_OHDSISCHEMA=webapi
       - SECURITY_PROVIDER=AtlasRegularSecurity
-      - SECURITY_AUTH_OPENID_ENABLED=true
+      - SECURITY_AUTH_OIDC_ENABLED=true
       - SECURITY_AUTH_DB_ENABLED=true
       - SECURITY_AUTH_LDAP_ENABLED=false
       - SECURITY_AUTH_AD_ENABLED=false
@@ -89,12 +89,12 @@ services:
       - SECURITY_AUTH_OAUTH_GOOGLE_ENABLED=false
       - SECURITY_AUTH_OAUTH_FACEBOOK_ENABLED=false
       - SECURITY_AUTH_OAUTH_GITHUB_ENABLED=false
-      - SECURITY_AUTH_OPENID_CLIENTID=webapi-client
-      - SECURITY_AUTH_OPENID_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
-      - SECURITY_AUTH_OPENID_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
-      - SECURITY_AUTH_OPENID_EXTERNALURL=http://localhost:9090/default
-      - SECURITY_AUTH_OPENID_LOGOUTURL=http://localhost:9090/default/endsession
-      - SECURITY_AUTH_OPENID_EXTRASCOPES=profile email
+      - SECURITY_AUTH_OIDC_CLIENTID=webapi-client
+      - SECURITY_AUTH_OIDC_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
+      - SECURITY_AUTH_OIDC_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
+      - SECURITY_AUTH_OIDC_EXTERNALURL=http://localhost:9090/default
+      - SECURITY_AUTH_OIDC_LOGOUTURL=http://localhost:9090/default/endsession
+      - SECURITY_AUTH_OIDC_EXTRASCOPES=profile email
       - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
       - SECURITY_AUTH_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
       - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query

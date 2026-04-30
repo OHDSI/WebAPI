@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -82,6 +83,7 @@ public class PathwayController {
 	 * @return the created pathway analysis
 	 */
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
 	@PreAuthorize("isPermitted('create:pathway')")
 	public PathwayAnalysisDTO create(@RequestBody final PathwayAnalysisDTO dto) {
 
@@ -101,6 +103,7 @@ public class PathwayController {
 	 * @return The copied pathway analysis.
 	 */
 	@PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
 	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)) and isPermitted('create:pathway')")
 	public PathwayAnalysisDTO copy(@PathVariable("id") final Integer id) {
 
@@ -125,6 +128,7 @@ public class PathwayController {
 	 */
 	@PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
 	@PreAuthorize("isPermitted('create:pathway')")
 	public PathwayAnalysisDTO importAnalysis(@RequestBody final PathwayAnalysisExportDTO dto) {
 		dto.setTags(null);
@@ -583,6 +587,7 @@ public class PathwayController {
 	 * @return
 	 */
 	@PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
 	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
 	public PathwayAnalysisDTO copyAssetFromVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		return pathwayService.copyAssetFromVersion(id, version);

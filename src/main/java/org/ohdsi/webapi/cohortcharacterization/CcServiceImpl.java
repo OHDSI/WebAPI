@@ -708,23 +708,42 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public List<CcGenerationEntity> findGenerationsByCcId(final Long id) {
-        return ccGenerationRepository.findByCohortCharacterizationIdOrderByIdDesc(id,
+        List<CcGenerationEntity> generations = ccGenerationRepository.findByCohortCharacterizationIdOrderByIdDesc(id,
                 EntityUtils.fromAttributePaths("source"));
+        return filterGenerationsByValidSource(generations);
     }
 
     @Override
     public CcGenerationEntity findGenerationById(final Long id) {
-        return ccGenerationRepository.findById(id, EntityUtils.fromAttributePaths("source")).orElseThrow();
+        CcGenerationEntity generation = ccGenerationRepository.findById(id, EntityUtils.fromAttributePaths("source")).orElseThrow();
+        // Treat generations with deleted sources as non-existent (since reports cannot be accessed)
+        if (generation.getSource() == null) {
+            throw new IllegalArgumentException(String.format("There is no generation with id = %d.", id));
+        }
+        return generation;
     }
 
     @Override
     public List<CcGenerationEntity> findGenerationsByCcIdAndSource(final Long id, final String sourceKey) {
-        return ccGenerationRepository.findByCohortCharacterizationIdAndSourceSourceKeyOrderByIdDesc(id, sourceKey,
+        List<CcGenerationEntity> generations = ccGenerationRepository.findByCohortCharacterizationIdAndSourceSourceKeyOrderByIdDesc(id, sourceKey,
                 EntityUtils.fromAttributePaths("source"));
+        return filterGenerationsByValidSource(generations);
     }
 
     public List<CcGenerationEntity> findAllIncompleteGenerations() {
-        return ccGenerationRepository.findByStatusIn(INCOMPLETE_STATUSES);
+        List<CcGenerationEntity> generations = ccGenerationRepository.findByStatusIn(INCOMPLETE_STATUSES);
+        return filterGenerationsByValidSource(generations);
+    }
+
+    /**
+     * Filters out generations where the associated source has been soft-deleted (null source).
+     * @param generations the list of generations to filter
+     * @return a list containing only generations with valid (non-null) sources
+     */
+    private List<CcGenerationEntity> filterGenerationsByValidSource(final List<CcGenerationEntity> generations) {
+        return generations.stream()
+                .filter(g -> g.getSource() != null)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     protected List<CcResult> findResults(final Long generationId, ExecutionResultRequest params) {

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayOutputStream;
@@ -95,6 +96,7 @@ public class FeAnalysisController {
      * @return
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("isPermitted('create:feature-analysis')")
     public FeAnalysisDTO createAnalysis(@RequestBody final FeAnalysisDTO dto) {
         final FeAnalysisEntity createdEntity = service.createAnalysis(conversionService.convert(dto, FeAnalysisEntity.class));
@@ -163,6 +165,7 @@ public class FeAnalysisController {
      */
     @GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("(isOwner(#feAnalysisId, FE_ANALYSIS) or isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)) and isPermitted('create:feature-analysis')")
     public FeAnalysisDTO copy(@PathVariable("id") final Integer feAnalysisId) {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);

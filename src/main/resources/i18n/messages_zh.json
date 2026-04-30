@@ -970,29 +970,6 @@
     "exportSql": {
       "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
     },
-    "feasibilityAttritionReport": {
-      "attritionVisualization": "流失可视化",
-      "inclusionRule": "纳入规则",
-      "percentRemain": "保留百分比",
-      "precentDiff": "差异百分比"
-    },
-    "feasibilityIntersectReport": {
-      "inclusionRule": "纳入规则",
-      "percentSatisfied": "满足纳入规则的百分比（%）",
-      "percentToGain": "不满足纳入规则的百分比（%）",
-      "populationVisualization": "人群可视化",
-      "rectSummary": "<%=size%>的病人（<%=percentage%>％），<%=passCount%>个条件通过，<%=failCount%>个条件失败。"
-    },
-    "feasibilityReportViewer": {
-      "feasibilityReportViewerText_1": "匹配率",
-      "feasibilityReportViewerText_2": "符合条件",
-      "feasibilityReportViewerText_3": "失去审查",
-      "feasibilityReportViewerText_4": "总事件",
-      "feasibilityReportViewerText_5": "统计摘要",
-      "feasibilityReportViewerText_6": "切换到流失视图",
-      "feasibilityReportViewerText_7": "切换到相交视图",
-      "feasibilityReportViewerText_8": "没有为此队列定义指定包含规则。"
-    },
     "featureextraction": {
       "covariateSettingsEditor": {
         "age": "年龄",

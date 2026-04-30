@@ -32,6 +32,7 @@ import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
+import org.ohdsi.webapi.security.authz.AuthorizationCacheService;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.security.authz.UserEntity;
@@ -70,6 +71,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
@@ -506,7 +508,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @return The concept set saved with the concept set identifier
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+	@Caching(evict = {
+        @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})    
     @PreAuthorize("isPermitted('create:conceptset')")
     public ConceptSetDTO createConceptSet(@RequestBody ConceptSetDTO conceptSetDTO) {
 
@@ -858,7 +863,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true),
+        @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+    })
     @PreAuthorize("(isOwner(#id, CONCEPT_SET) or isPermitted('write:conceptset') or hasEntityAccess(#id, CONCEPT_SET, WRITE)) and isPermitted('create:conceptset')")
     public ConceptSetDTO copyAssetFromVersion(
             @PathVariable("id") final int id,

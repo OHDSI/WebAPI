@@ -50,6 +50,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.ohdsi.webapi.security.authz.access.AccessType;
 import org.ohdsi.webapi.security.authz.access.EntityType;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
@@ -106,6 +107,7 @@ public class CcController {
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO create(@RequestBody final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
@@ -119,6 +121,7 @@ public class CcController {
      * @return The cohort characterization definition of the newly created copy
      */
     @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("(isOwner(#id, COHORT_CHARACTERIZATION) or isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization')) or hasEntityAccess(#id, COHORT_CHARACTERIZATION, READ)) and isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO copy(@PathVariable("id") final Long id) {
         CohortCharacterizationDTO dto = getDesign(id);
@@ -233,6 +236,7 @@ public class CcController {
      * @return The same cohort characterization definition that was passed as input
      */
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("isPermitted('create:cohort-characterization')")
     public CohortCharacterizationDTO doImport(@RequestBody final CcExportDTO dto) {
         dto.setName(service.getNameWithSuffix(dto.getName()));
@@ -584,6 +588,7 @@ public class CcController {
      * @return
      */
     @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @PreAuthorize("isOwner(#id, COHORT_CHARACTERIZATION) or isPermitted('write:cohort-characterization') or hasEntityAccess(#id, COHORT_CHARACTERIZATION, WRITE)")
     public CohortCharacterizationDTO copyAssetFromVersion(@PathVariable("id") final long id,
                                                           @PathVariable("version") final int version) {

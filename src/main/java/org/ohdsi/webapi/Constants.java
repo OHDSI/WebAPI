@@ -22,18 +22,18 @@ public interface Constants {
   Float DEFAULT_THRESHOLD = 0.01f;
 
   ImmutableList<String> ALLOWED_JOB_EXECUTION_PARAMETERS = ImmutableList.of(
-          "jobName",
-          "jobAuthor",
-          "cohort_definition_id",
+          Params.JOB_NAME,
+          Params.JOB_AUTHOR,
+          Params.COHORT_DEFINITION_ID,
           "cohortId",
           "cohortDefinitionIds",
-          "source_id",
-          "source_key",
+          Params.SOURCE_ID,
+          Params.SOURCE_KEY,
           "scriptType",
-          "analysis_id",
+          Params.ANALYSIS_ID,
           "concept_set_id",
-          "estimation_analysis_id",
-          "prediction_analysis_id"
+          Params.PATHWAY_ANALYSIS_ID,
+          Params.COHORT_CHARACTERIZATION_ID
   );
 
   String SESSION_ID = "sid";

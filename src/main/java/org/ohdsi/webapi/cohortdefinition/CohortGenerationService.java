@@ -1,7 +1,11 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
+import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
+import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -34,6 +38,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +52,7 @@ import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
 
 @Component
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
@@ -57,6 +64,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   private final JobService jobService;
   private final SourceService sourceService;
   private final GenerationCacheHelper generationCacheHelper;
+  private final FeAnalysisEntityRepository feAnalysisRepository;
   private final SourceAwareSqlRender sourceAwareSqlRender;
   private TransactionTemplate transactionTemplate;
 
@@ -68,6 +76,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
                                  JobService jobService,
                                  SourceService sourceService,
                                  GenerationCacheHelper generationCacheHelper,
+                                 FeAnalysisEntityRepository feAnalysisRepository,
           @Qualifier("transactionTemplate") TransactionTemplate transactionTemplate,
           SourceAwareSqlRender sourceAwareSqlRender) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
@@ -77,24 +86,31 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.jobService = jobService;
     this.sourceService = sourceService;
     this.generationCacheHelper = generationCacheHelper;
+    this.feAnalysisRepository = feAnalysisRepository;
     this.transactionTemplate = transactionTemplate;
     this.sourceAwareSqlRender = sourceAwareSqlRender;
   }
 
   @Transactional(propagation = Propagation.NOT_SUPPORTED)
-  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinitionEntity cohortDefinition,
-          Source source, boolean demographicStat) {
-      // Store ID to reload later
-      final Integer cohortDefId = cohortDefinition.getId();
-      final Integer sourceId = source.getSourceId();
-      
+  public JobExecutionResource generateCohortViaJob(Long userId, Integer cohortDefId, String sourceKey,
+          boolean demographicStat) {
       // Execute the persistence logic in a new separate transaction that completes before batch job
       transactionTemplate.execute(status -> {
-          // Reload entity in this transaction
+          // Load all entities in this transaction
+          UserEntity userEntity = userRepository.findById(userId)
+              .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+          
           CohortDefinitionEntity cd = cohortDefinitionRepository.findOneWithDetail(cohortDefId);
           if (cd == null) {
               throw new RuntimeException("CohortDefinition not found: " + cohortDefId);
           }
+          
+          Source source = getSourceRepository().findBySourceKey(sourceKey);
+          if (source == null) {
+              throw new RuntimeException("Source not found: " + sourceKey);
+          }
+          
+          Integer sourceId = source.getSourceId();
           
           CohortGenerationInfo info = cd.getGenerationInfoList().stream()
                   .filter(val -> Objects.equals(val.getId().getSourceId(), sourceId)).findFirst()
@@ -122,6 +138,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       CohortDefinitionEntity reloadedDef = transactionTemplate.execute(status -> 
           cohortDefinitionRepository.findOneWithDetail(cohortDefId)
       );
+      
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
       
       return runGenerateCohortJob(reloadedDef, source, demographicStat);
   }
@@ -159,17 +177,77 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     return generateJobBuilder.build();
   }
 
+  public Job buildJobForCohortGenerationWithDemographic(
+          CohortDefinitionEntity cohortDefinition,
+          Source source,
+          JobParametersBuilder builder) {
+      JobParameters jobParameters = builder.toJobParameters();
+      addSessionParams(builder, jobParameters.getString(SESSION_ID));
+
+      CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(getSourceJdbcTemplate(source), transactionTemplate, sourceService, sourceAwareSqlRender);
+      Step createCohortTableStep = new StepBuilder(GENERATE_COHORT + ".createCohortTable", jobRepository)
+              .tasklet(createCohortTableTasklet, transactionManager)
+              .build();
+
+      log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
+
+      GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
+              transactionTemplate,
+              getSourceJdbcTemplate(source),
+              this,
+              sourceService,
+              chunkContext -> {
+                  return Arrays.asList(cohortDefinition);
+              },
+              generationCacheHelper,
+              false
+      );
+      Step generateLocalCohortStep =  new StepBuilder(GENERATE_COHORT + ".generateCohort", jobRepository)
+              .tasklet(generateLocalCohortTasklet, transactionManager)
+              .build();
+
+      GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source),
+              getTransactionTemplate(), generationCacheHelper, cohortDefinitionRepository, sourceService,
+              feAnalysisRepository);
+
+      ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(
+              getSourceJdbcTemplate(source), getTransactionTemplate(), source.getSourceDialect(),
+              jobParameters.getString(SESSION_ID), SourceUtils.getTempQualifierOrNull(source)));
+
+      Step generateCohortStep = new StepBuilder("cohortDefinition.generateCohort", jobRepository)
+        .tasklet(generateTasklet, transactionManager)
+        .exceptionHandler(exceptionHandler).build();
+
+      DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(getSourceJdbcTemplate(source), sourceService, sourceAwareSqlRender);
+
+      SimpleJobBuilder generateJobBuilder = new JobBuilder(GENERATE_COHORT, jobRepository)
+              .start(createCohortTableStep)
+              .next(generateLocalCohortStep)
+              .next(generateCohortStep)
+              .listener(dropCohortTableListener);
+
+      generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+              this.getSourceJdbcTemplate(source)));
+
+      return generateJobBuilder.build();
+  }
+
   protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
       builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
   }
 
   private JobExecutionResource runGenerateCohortJob(CohortDefinitionEntity cohortDefinition, Source source,
-          Boolean demographic) {
+          boolean demographic) {
       final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
 
-      // Demographic stats generation removed - analysis modules deleted
-      Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
-      return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+      if (demographic) {
+         jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
+         Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder);
+         return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+      } else {
+          Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
+          return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+      }
   }
 
   private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinitionEntity cohortDefinition) {

@@ -330,16 +330,6 @@
       "delete": "Удалить",
       "ruleDescriptionPlaceholder": "введите описание правила"
     },
-    "feasibilityReportViewer": {
-      "feasibilityReportViewerText_1": "Степень совпадения",
-      "feasibilityReportViewerText_2": "Совпадений",
-      "feasibilityReportViewerText_3": "Утерян от цензуры",
-      "feasibilityReportViewerText_4": "Всего событий",
-      "feasibilityReportViewerText_5": "Сводные статистические данные:",
-      "feasibilityReportViewerText_6": "Переключиться на вид истощения",
-      "feasibilityReportViewerText_7": "Переключиться на пересечение",
-      "feasibilityReportViewerText_8": "Не определены правила включения для этого определения когорты."
-    },
     "accessDenied": {
       "forbidden": {
         "message1": "У вас нет доступа к этой функции.",

@@ -233,21 +233,6 @@ CREATE TABLE ${ohdsiSchema}.cdm_cache (
     descendant_person_count bigint
 );
 
-CREATE TABLE ${ohdsiSchema}.cohort_analysis_gen_info (
-    source_id integer NOT NULL,
-    cohort_id integer NOT NULL,
-    last_execution timestamp(3) without time zone,
-    execution_duration integer,
-    fail_message character varying(2000),
-    progress integer DEFAULT 0
-);
-
-CREATE TABLE ${ohdsiSchema}.cohort_analysis_list_xref (
-    source_id integer NOT NULL,
-    cohort_id integer NOT NULL,
-    analysis_id integer NOT NULL
-);
-
 CREATE TABLE ${ohdsiSchema}.cohort_concept_map (
     cohort_definition_id integer NOT NULL,
     cohort_definition_name character varying(255),
@@ -294,27 +279,6 @@ CREATE TABLE ${ohdsiSchema}.cohort_generation_info (
     cc_generate_id integer
 );
 
-CREATE TABLE ${ohdsiSchema}.cohort_inclusion (
-    cohort_definition_id integer NOT NULL,
-    rule_sequence integer NOT NULL,
-    name character varying(255),
-    description character varying(1000)
-);
-
-CREATE TABLE ${ohdsiSchema}.cohort_inclusion_result (
-    cohort_definition_id integer NOT NULL,
-    inclusion_rule_mask bigint NOT NULL,
-    person_count bigint NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.cohort_inclusion_stats (
-    cohort_definition_id integer NOT NULL,
-    rule_sequence integer NOT NULL,
-    person_count bigint NOT NULL,
-    gain_count bigint NOT NULL,
-    person_total bigint NOT NULL
-);
-
 CREATE TABLE ${ohdsiSchema}.cohort_sample (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
@@ -355,12 +319,6 @@ CREATE SEQUENCE ${ohdsiSchema}.cohort_study_cohort_study_id_seq
     CACHE 1;
 
 ALTER SEQUENCE ${ohdsiSchema}.cohort_study_cohort_study_id_seq OWNED BY ${ohdsiSchema}.cohort_study.cohort_study_id;
-
-CREATE TABLE ${ohdsiSchema}.cohort_summary_stats (
-    cohort_definition_id integer NOT NULL,
-    base_count bigint NOT NULL,
-    final_count bigint NOT NULL
-);
 
 CREATE TABLE ${ohdsiSchema}.cohort_tag (
     asset_id integer NOT NULL,
@@ -695,114 +653,6 @@ CREATE TABLE ${ohdsiSchema}.generation_cache (
     created_date date DEFAULT now() NOT NULL
 );
 
-CREATE TABLE ${ohdsiSchema}.heracles_analysis (
-    analysis_id integer NOT NULL,
-    analysis_name character varying(255),
-    stratum_1_name character varying(255),
-    stratum_2_name character varying(255),
-    stratum_3_name character varying(255),
-    stratum_4_name character varying(255),
-    stratum_5_name character varying(255),
-    analysis_type character varying(255)
-);
-
-CREATE TABLE ${ohdsiSchema}.heracles_heel_results (
-    cohort_definition_id integer,
-    analysis_id integer,
-    heracles_heel_warning character varying(255),
-    id integer NOT NULL
-);
-
-CREATE SEQUENCE ${ohdsiSchema}.heracles_heel_results_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE ${ohdsiSchema}.heracles_heel_results_id_seq OWNED BY ${ohdsiSchema}.heracles_heel_results.id;
-
-CREATE TABLE ${ohdsiSchema}.heracles_results (
-    cohort_definition_id integer,
-    analysis_id integer,
-    stratum_1 character varying(255),
-    stratum_2 character varying(255),
-    stratum_3 character varying(255),
-    stratum_4 character varying(255),
-    stratum_5 character varying(255),
-    count_value bigint,
-    last_update_time timestamp without time zone DEFAULT now(),
-    id integer NOT NULL
-);
-
-CREATE TABLE ${ohdsiSchema}.heracles_results_dist (
-    cohort_definition_id integer,
-    analysis_id integer,
-    stratum_1 character varying(255),
-    stratum_2 character varying(255),
-    stratum_3 character varying(255),
-    stratum_4 character varying(255),
-    stratum_5 character varying(255),
-    count_value bigint,
-    min_value double precision,
-    max_value double precision,
-    avg_value double precision,
-    stdev_value double precision,
-    median_value double precision,
-    p10_value double precision,
-    p25_value double precision,
-    p75_value double precision,
-    p90_value double precision,
-    last_update_time timestamp without time zone DEFAULT now(),
-    id integer NOT NULL
-);
-
-CREATE SEQUENCE ${ohdsiSchema}.heracles_results_dist_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE ${ohdsiSchema}.heracles_results_dist_id_seq OWNED BY ${ohdsiSchema}.heracles_results_dist.id;
-
-CREATE SEQUENCE ${ohdsiSchema}.heracles_results_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE ${ohdsiSchema}.heracles_results_id_seq OWNED BY ${ohdsiSchema}.heracles_results.id;
-
-CREATE SEQUENCE ${ohdsiSchema}.heracles_vis_data_sequence
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE TABLE ${ohdsiSchema}.heracles_visualization_data (
-    id integer DEFAULT nextval('${ohdsiSchema}.heracles_vis_data_sequence'::regclass) NOT NULL,
-    cohort_definition_id integer NOT NULL,
-    source_id integer NOT NULL,
-    visualization_key character varying(300) NOT NULL,
-    drilldown_id integer,
-    data text NOT NULL,
-    end_time timestamp(3) without time zone NOT NULL
-);
-
-CREATE SEQUENCE ${ohdsiSchema}.heracles_viz_data_sequence
-    START WITH 0
-    INCREMENT BY 1
-    MINVALUE 0
-    NO MAXVALUE
-    CACHE 1;
-
-
 CREATE SEQUENCE ${ohdsiSchema}.ir_analysis_sequence
     START WITH 1
     INCREMENT BY 1
@@ -916,11 +766,6 @@ COMMENT ON COLUMN ${ohdsiSchema}.laertes_summary.hoi IS 'the HOI name, this is a
 COMMENT ON COLUMN ${ohdsiSchema}.laertes_summary.splicer_count IS 'counts of SPLs that mention specific drugs and hois';
 
 COMMENT ON COLUMN ${ohdsiSchema}.laertes_summary.eu_spc_count IS 'counts of SPCs that mention specific drugs and hois';
-
-CREATE TABLE ${ohdsiSchema}.output_file_contents (
-    output_file_id integer NOT NULL,
-    file_contents bytea
-);
 
 CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence
     START WITH 1
@@ -1440,12 +1285,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.cohort_study ALTER COLUMN cohort_study_id SET DE
 
 ALTER TABLE ONLY ${ohdsiSchema}.concept_of_interest ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.concept_of_interest_id_seq'::regclass);
 
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_heel_results ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.heracles_heel_results_id_seq'::regclass);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_results ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.heracles_results_id_seq'::regclass);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_results_dist ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.heracles_results_dist_id_seq'::regclass);
-
 ALTER TABLE ONLY ${ohdsiSchema}.penelope_laertes_uni_pivot ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.penelope_laertes_uni_pivot_id_seq'::regclass);
 
 ALTER TABLE ONLY ${ohdsiSchema}.achilles_cache
@@ -1478,47 +1317,14 @@ ALTER TABLE ONLY ${ohdsiSchema}.cdm_cache
 ALTER TABLE ONLY ${ohdsiSchema}.cdm_cache
     ADD CONSTRAINT cdm_cache_un UNIQUE (concept_id, source_id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_gen_info
-    ADD CONSTRAINT cohort_analysis_gen_info_pkey PRIMARY KEY (source_id, cohort_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_list_xref
-    ADD CONSTRAINT cohort_analysis_list_xref_pkey PRIMARY KEY (source_id, cohort_id, analysis_id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_concept_map
     ADD CONSTRAINT cohort_concept_map_pkey PRIMARY KEY (cohort_definition_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_inclusion
-    ADD CONSTRAINT cohort_inclusion_pkey PRIMARY KEY (cohort_definition_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_inclusion_result
-    ADD CONSTRAINT cohort_inclusion_result_pkey PRIMARY KEY (cohort_definition_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_inclusion_stats
-    ADD CONSTRAINT cohort_inclusion_stats_pkey PRIMARY KEY (cohort_definition_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_sample
     ADD CONSTRAINT cohort_sample_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_summary_stats
-    ADD CONSTRAINT cohort_summary_stats_pkey PRIMARY KEY (cohort_definition_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_analysis
-    ADD CONSTRAINT heracles_analysis_pkey PRIMARY KEY (analysis_id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_heel_results
-    ADD CONSTRAINT heracles_heel_results_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_results_dist
-    ADD CONSTRAINT heracles_results_dist_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_results
-    ADD CONSTRAINT heracles_results_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY ${ohdsiSchema}.batch_job_instance
     ADD CONSTRAINT job_inst_un UNIQUE (job_name, job_key);
-
-ALTER TABLE ONLY ${ohdsiSchema}.output_file_contents
-    ADD CONSTRAINT output_file_contents_pkey PRIMARY KEY (output_file_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.penelope_laertes_uni_pivot
     ADD CONSTRAINT penelope_laertes_uni_pivot_pkey PRIMARY KEY (id);
@@ -1588,9 +1394,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.fe_analysis_conceptset
 
 ALTER TABLE ONLY ${ohdsiSchema}.generation_cache
     ADD CONSTRAINT pk_generation_cache PRIMARY KEY (id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.heracles_visualization_data
-    ADD CONSTRAINT pk_heracles_viz_data PRIMARY KEY (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.ir_version
     ADD CONSTRAINT pk_ir_version_id PRIMARY KEY (asset_id, version);
@@ -1693,28 +1496,6 @@ CREATE INDEX concept_set_tags_tag_id_idx ON ${ohdsiSchema}.concept_set_tag USING
 
 CREATE INDEX concept_set_version_asset_idx ON ${ohdsiSchema}.concept_set_version USING btree (asset_id);
 
-CREATE INDEX heracles_viz_data_idx ON ${ohdsiSchema}.heracles_visualization_data USING btree (cohort_definition_id, source_id, visualization_key);
-
-CREATE UNIQUE INDEX heracles_viz_data_unq_idx ON ${ohdsiSchema}.heracles_visualization_data USING btree (cohort_definition_id, source_id, visualization_key, drilldown_id);
-
-CREATE INDEX hh_idx_cohort_id_analysis_id ON ${ohdsiSchema}.heracles_heel_results USING btree (cohort_definition_id, analysis_id);
-
-CREATE INDEX hr_idx_cohort_def_id ON ${ohdsiSchema}.heracles_results USING btree (cohort_definition_id);
-
-CREATE INDEX hr_idx_cohort_def_id_dt ON ${ohdsiSchema}.heracles_results USING btree (cohort_definition_id, last_update_time);
-
-CREATE INDEX hr_idx_cohort_id_analysis_id ON ${ohdsiSchema}.heracles_results USING btree (cohort_definition_id, analysis_id);
-
-CREATE INDEX hr_idx_cohort_id_first_res ON ${ohdsiSchema}.heracles_results USING btree (cohort_definition_id, analysis_id, count_value, stratum_1);
-
-CREATE INDEX hrd_idx_cohort_def_id ON ${ohdsiSchema}.heracles_results_dist USING btree (cohort_definition_id);
-
-CREATE INDEX hrd_idx_cohort_def_id_dt ON ${ohdsiSchema}.heracles_results_dist USING btree (cohort_definition_id, last_update_time);
-
-CREATE INDEX hrd_idx_cohort_id_analysis_id ON ${ohdsiSchema}.heracles_results_dist USING btree (cohort_definition_id, analysis_id);
-
-CREATE INDEX hrd_idx_cohort_id_first_res ON ${ohdsiSchema}.heracles_results_dist USING btree (cohort_definition_id, analysis_id, count_value, stratum_1);
-
 CREATE INDEX idx_cohort_sample_source ON ${ohdsiSchema}.cohort_sample USING btree (cohort_definition_id, source_id);
 
 CREATE INDEX idx_penelope_laertes_uni_pivot ON ${ohdsiSchema}.penelope_laertes_uni_pivot USING btree (ingredient_concept_id, condition_concept_id);
@@ -1778,12 +1559,6 @@ ALTER TABLE ONLY ${ohdsiSchema}.cc_strata_conceptset
 
 ALTER TABLE ONLY ${ohdsiSchema}.cdm_cache
     ADD CONSTRAINT cdm_cache_fk FOREIGN KEY (source_id) REFERENCES ${ohdsiSchema}.source(source_id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_gen_info
-    ADD CONSTRAINT fk_cagi_cohort_id FOREIGN KEY (cohort_id) REFERENCES ${ohdsiSchema}.cohort_definition(id);
-
-ALTER TABLE ONLY ${ohdsiSchema}.cohort_analysis_list_xref
-    ADD CONSTRAINT fk_calx_source_id FOREIGN KEY (source_id, cohort_id) REFERENCES ${ohdsiSchema}.cohort_analysis_gen_info(source_id, cohort_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.cohort_characterization
     ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id);

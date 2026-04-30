@@ -36,7 +36,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
      * Creates the incidence rate analysis
      *
      * @param analysis The analysis to create.
-     * @return The new FeasibilityStudy
+     * @return The new IR Analysis
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     IRAnalysisDTO createAnalysis(@RequestBody IRAnalysisDTO analysis);

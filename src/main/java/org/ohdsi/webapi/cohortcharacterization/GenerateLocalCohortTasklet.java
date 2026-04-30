@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 

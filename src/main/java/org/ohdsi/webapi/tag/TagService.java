@@ -78,7 +78,7 @@ public class TagService extends AbstractDaoService {
                 .filter(Tag::isAllowCustom)
                 .count() == groups.size();
 
-        if (allowCustom) {
+        if (!allowCustom) {
             throw new IllegalArgumentException("Tag can be added only to groups that allows to do it");
         }
 

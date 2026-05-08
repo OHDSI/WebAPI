@@ -137,9 +137,7 @@ public class AuthorizationService {
   }
 
   public User getCurrentUser() {
-    WebApiPrincipal principal = getAuthenticatedPrincipal();
-    UserEntity ue = this.userService.getUserById(principal.getUserId());
-    return User.fromEntity(ue);
+    return getAuthenticatedPrincipal().getUser();
   }
 
   @Transactional(readOnly = true)

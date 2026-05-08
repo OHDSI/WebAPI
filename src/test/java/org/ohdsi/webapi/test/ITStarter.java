@@ -5,6 +5,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.ohdsi.webapi.security.authz.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
@@ -44,7 +45,7 @@ public class ITStarter extends AbstractSpringSecurity {
             }
 
             // set up Spring Security test principal (replaces legacy Shiro subject)
-            org.ohdsi.webapi.security.identity.WebApiPrincipal principal = new org.ohdsi.webapi.security.identity.WebApiPrincipal(1L, "admin@odysseusinc.com");
+            org.ohdsi.webapi.security.identity.WebApiPrincipal principal = new org.ohdsi.webapi.security.identity.WebApiPrincipal(new User(1L, "admin@odysseusinc.com", "Admin"));
             setSubject(principal);
         }
     }

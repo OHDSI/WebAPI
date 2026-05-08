@@ -22,6 +22,7 @@ import java.util.Locale;
 
 import jakarta.annotation.PostConstruct;
 
+import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
@@ -314,7 +315,7 @@ public class JwtAuthConfig {
       UserEntity user = userRepository.findByLogin(login).orElseThrow(() -> new BadCredentialsException("User not found: %s".formatted(login)));
 
       // Build principal and authentication token
-      WebApiPrincipal principal = new WebApiPrincipal(user.getId(), user.getLogin());
+      WebApiPrincipal principal = new WebApiPrincipal(User.fromEntity(user));
 
       Collection<GrantedAuthority> authorities = List.of(); // populate as needed
 

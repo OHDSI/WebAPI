@@ -3,6 +3,8 @@ package org.ohdsi.webapi;
 import org.ohdsi.webapi.i18n.mvc.LocaleInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -15,6 +17,7 @@ import java.util.List;
  * Configures interceptors, message converters, and other MVC components.
  */
 @Configuration
+@EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired(required = false)

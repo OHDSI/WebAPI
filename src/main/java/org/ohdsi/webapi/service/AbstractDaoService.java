@@ -1,38 +1,44 @@
 package org.ohdsi.webapi.service;
 
-import org.ohdsi.webapi.common.DBMSType;
+import java.io.File;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.arachne.datasource.dto.DataSourceUnsecuredDTO;
 import org.ohdsi.webapi.arachne.kerberos.KerberosService;
 import org.ohdsi.webapi.arachne.kerberos.KrbConfig;
 import org.ohdsi.webapi.arachne.kerberos.RuntimeServiceMode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.UnauthorizedException;
-import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
-import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.IExecutionInfo;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.DBMSType;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
-import org.ohdsi.webapi.conceptset.ConceptSet;
-import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotationRepository;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.reusable.domain.Reusable;
-import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
+import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.management.DisabledSecurity;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.tag.TagSecurityUtils;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -41,41 +47,25 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import java.io.File;
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
+
+  private static final String ASSIGN_TAG_PERMISSION = "admin:tag:assign";
+  private static final String UNASSIGN_TAG_PERMISSION = "admin:tag:unassign";
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -87,12 +77,6 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Value("${datasource.dialect.source}")
   private String sourceDialect;
-
-  @Value("${source.name}")
-  private String sourceName;
-
-  @Value("${cdm.version}")
-  private String cdmVersion;
 
   @Value("${jdbc.suppressInvalidApiException}")
   protected boolean suppressApiException;
@@ -108,9 +92,6 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Autowired
   private ConceptSetAnnotationRepository conceptSetAnnotationRepository;
-
-  @Autowired
-  protected Security security;
 
   @Autowired
   protected UserRepository userRepository;
@@ -143,6 +124,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   @Autowired
   private TransactionTemplate transactionTemplateNoTransaction;
 
+  @Autowired(required = false)
+  @Qualifier("batchTransactionTemplate")
+  private TransactionTemplate batchTransactionTemplate;
+
+  @Autowired(required = false)
+  @Qualifier("batchTransactionTemplateRequiresNew")
+  private TransactionTemplate batchTransactionTemplateRequiresNew;
+
   @Autowired
   private KerberosService kerberosService;
 
@@ -154,7 +143,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   private TagService tagService;
 
   @Autowired
-  private PermissionService permissionService;
+  private AuthorizationService authorizationService;
   
   @Autowired
   private ConversionService conversionService;
@@ -262,34 +251,6 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     this.sourceDialect = sourceDialect;
   }
 
-  /**
-   * @return the sourceName
-   */
-  public String getSourceName() {
-    return sourceName;
-  }
-
-  /**
-   * @param sourceName the sourceName to set
-   */
-  public void setSourceName(String sourceName) {
-    this.sourceName = sourceName;
-  }
-
-  /**
-   * @return the cdmVersion
-   */
-  public String getCdmVersion() {
-    return cdmVersion;
-  }
-
-  /**
-   * @param cdmVersion the cdmVersion to set
-   */
-  public void setCdmVersion(String cdmVersion) {
-    this.cdmVersion = cdmVersion;
-  }
-
   protected List<Map<String, String>> genericResultSetLoader(PreparedStatementRenderer psr, Source source) {
     List<Map<String, String>> results = null;
     try {
@@ -337,7 +298,20 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   public TransactionTemplate getTransactionTemplateNoTransaction() {
     return transactionTemplateNoTransaction;
   }
-	
+
+  /**
+   * @return the batchTransactionTemplate for batch job tasklets
+   */
+  public TransactionTemplate getBatchTransactionTemplate() {
+    return batchTransactionTemplate;
+  }
+
+  /**
+   * @return the batchTransactionTemplateRequiresNew for batch job tasklets with REQUIRES_NEW
+   */
+  public TransactionTemplate getBatchTransactionTemplateRequiresNew() {
+    return batchTransactionTemplateRequiresNew;
+  }
   
   /**
    * @return the ohdsiSchema
@@ -347,7 +321,6 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected IExecutionInfo invalidateExecution(IExecutionInfo executionInfo) {
-
     return executionInfo.setIsValid(false)
             .setStatus(GenerationStatus.COMPLETE)
             .setMessage("Invalidated by system");
@@ -359,24 +332,24 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected UserEntity getCurrentUser() {
-    return userRepository.findByLogin(getCurrentUserLogin());
+    WebApiPrincipal principal = authorizationService.getAuthenticatedPrincipal();
+    return userRepository.findById(principal.getUserId()).orElseThrow();
   }
 
-  protected String getCurrentUserLogin() {
-    return security.getSubject();
+  protected AuthorizationService getAuthorizationService() {
+    return this.authorizationService;
+  }
+
+  protected TagService getTagService() {
+    return this.tagService;
   }
   
-  protected PermissionService getPermissionService() {
-    return this.permissionService;
-  }
-
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
-    checkOwnerOrAdminOrGrantedOrTagManager(entity);
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "post")) {
-          throw new UnauthorizedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
+        if (tag.isPermissionProtected() && !authorizationService.isPermitted(ASSIGN_TAG_PERMISSION)) {
+          throw new AccessDeniedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
 
@@ -391,19 +364,17 @@ public abstract class AbstractDaoService extends AbstractAdminService {
           }
         });
 
-
         entity.getTags().add(tag);
       }
     }
   }
 
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
-    checkOwnerOrAdminOrGrantedOrTagManager(entity);
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "delete")) {
-          throw new UnauthorizedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
+        if (tag.isPermissionProtected() && !authorizationService.isPermitted(UNASSIGN_TAG_PERMISSION)) {
+          throw new AccessDeniedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
         Set<Tag> tags = entity.getTags().stream()
@@ -411,66 +382,6 @@ public abstract class AbstractDaoService extends AbstractAdminService {
                 .collect(Collectors.toSet());
         entity.setTags(tags);
       }
-    }
-  }
-
-  private boolean hasPermissionToAssignProtectedTags(final CommonEntityExt<?> entity, final String method) {
-    if (!isSecured()) {
-      return true;
-    }
-
-    return TagSecurityUtils.checkPermission(TagSecurityUtils.getAssetName(entity), method);
-  }
-
-  protected void checkOwnerOrAdmin(UserEntity owner) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin())) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-  }
-
-  protected void checkOwnerOrAdminOrModerator(UserEntity owner) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-  }
-
-  protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-  }
-
-  protected void checkOwnerOrAdminOrGrantedOrTagManager(CommonEntity<?> entity) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity) || TagSecurityUtils.canManageTags())) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 
@@ -484,7 +395,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
                     .containsAll(names))
             .map(entity -> {
               T dto = conversionService.convert(entity, clazz);
-              permissionService.fillWriteAccess(entity, dto);
+              // authorizationService.fillWriteAccess(entity, dto);
               return dto;
             })
             .collect(Collectors.toList());

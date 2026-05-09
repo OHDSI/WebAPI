@@ -20,7 +20,6 @@ import org.ohdsi.webapi.report.CDMDeath;
 import org.ohdsi.webapi.report.CDMObservationPeriod;
 import org.ohdsi.webapi.report.CDMPersonSummary;
 import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
@@ -34,11 +33,9 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,8 +49,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.annotation.PostConstruct;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +79,7 @@ import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.TREEMAP;
  */
 @RestController
 @RequestMapping("/cdmresults")
-@DependsOn({"jobInvalidator", "flyway"})
-public class CDMResultsService extends AbstractDaoService implements InitializingBean {
+public class CDMResultsService extends AbstractDaoService {
     private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
     private static final String CONCEPT_COUNT_SQL = "/resources/cdmresults/sql/getConceptRecordCount.sql";
@@ -102,8 +101,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private SourceService sourceService;
 
-    @Autowired
-    private SourceAccessor sourceAccessor;
+    
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -135,9 +133,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private ConversionService conversionService;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    @PostConstruct
+    public void initQueryRunner() {
         queryRunner.init(this.getSourceDialect(), objectMapper);
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
         warmCaches();
     }
 
@@ -263,18 +265,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      */
     @GetMapping(value = "/{sourceKey}/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
     public JobExecutionResource refreshCache(@PathVariable("sourceKey") final String sourceKey) {
-        if(isSecured() && isAdmin()) {
-            Source source = getSourceRepository().findBySourceKey(sourceKey);
-            if (sourceAccessor.hasAccess(source)) {
-                JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
-                if (jobExecutionResource == null) {
-                    if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
-                        return warmCacheByKey(source.getSourceKey());
-                    }
-                } else {
-                    return jobExecutionResource;
-                }
+        // TODO: Add Source Permission Check
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
+        if (jobExecutionResource == null) {
+            if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+                return warmCacheByKey(source.getSourceKey());
             }
+        } else {
+            return jobExecutionResource;
         }
         return new JobExecutionResource();
     }
@@ -289,9 +288,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @PostMapping(value = "/{sourceKey}/clearCache")
     @Transactional()
     public void clearCacheForSource(@PathVariable("sourceKey") final String sourceKey) {
-      if (!isSecured() || !isAdmin()) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-      }
+      // TODO: Add admin:source permission check
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       cacheService.clearCache(source);
       cdmCacheService.clearCache(source);
@@ -306,9 +303,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @PostMapping(value = "/clearCache")
     @Transactional()
     public void clearCache() {
-        if (!isSecured() || !isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        //TODO: Add admin permission check
         cacheService.clearCache();
         cdmCacheService.clearCache();
     }
@@ -371,7 +366,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @param domain The domain
      * @return ArrayNode
      */
-    @GetMapping(value = "/{sourceKey}/{domain}/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{sourceKey}/{domain}", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(TREEMAP)
     public ArrayNode getTreemap(
             @PathVariable("sourceKey") final String sourceKey,

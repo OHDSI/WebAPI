@@ -1,0 +1,1515 @@
+/*
+ * Copyright 2015 Observational Health Data Sciences and Informatics [OHDSI.org].
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.ohdsi.webapi.cohortdefinition;
+
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.DISTRIBUTION;
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.PREVALENCE;
+
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
+
+import org.apache.commons.lang3.StringUtils;
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.hibernate.Hibernate;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.check.Checker;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningUtils;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
+import org.ohdsi.webapi.cohortcharacterization.report.AnalysisResultItem;
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
+import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.generation.GenerateSqlResult;
+import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.security.authz.AuthorizationCacheService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.User;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.WildcardPermission;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.service.dto.CheckResultDTO;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
+import org.ohdsi.webapi.tag.domain.HasTags;
+import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
+import org.ohdsi.webapi.util.CacheHelper;
+import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.ExportUtil;
+import org.ohdsi.webapi.util.HttpUtils;
+import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.UseEtag;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.ServletContext;
+
+/**
+ * Provides REST services for working with cohort definitions.
+ *
+ * @summary Provides REST services for working with cohort definitions.
+ * @author cknoll1
+ */
+@RestController
+@RequestMapping("/cohortdefinition")
+public class CohortDefinitionService extends AbstractDaoService implements HasTags<Integer> {
+
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String COHORT_DEFINITION_LIST_CACHE = "cohortDefinitionList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!CacheHelper.getCacheNames(cacheManager).contains(COHORT_DEFINITION_LIST_CACHE)) {
+				cacheManager.createCache(COHORT_DEFINITION_LIST_CACHE, new MutableConfiguration<Long, List<CohortMetadataDTO>>()
+					.setTypes(Long.class, (Class<List<CohortMetadataDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
+	
+	private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
+    private static final int DEMOGRAPHIC_MODE = 2;
+    private static final String DEMOGRAPHIC_DOMAIN = "DEMOGRAPHICS";
+    private static final String[] PARAMETERS_RESULTS_FILTERED = { "cohort_characterization_generation_id",
+                    "threshold_level", "analysis_ids", "cohort_ids", "vocabulary_schema" };
+    private final List<String[]> executionPrevalenceHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Cohort ID", "Cohort name",
+                            "Covariate ID", "Covariate name", "Covariate short name", "Count", "Percent" });
+        }
+    };
+    private final List<String[]> executionDistributionHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Cohort ID", "Cohort name",
+                            "Covariate ID", "Covariate name", "Covariate short name", "Value field",
+                            "Missing Means Zero", "Count", "Avg", "StdDev", "Min", "P10", "P25", "Median", "P75", "P90",
+                            "Max" });
+        }
+    };
+    private final List<String[]> executionComparativeHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Target cohort ID",
+                            "Target cohort name", "Comparator cohort ID", "Comparator cohort name", "Covariate ID",
+                            "Covariate name", "Covariate short name", "Target count", "Target percent",
+                            "Comparator count", "Comparator percent", "Std. Diff Of Mean" });
+        }
+    };
+    private Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction
+            .getNameToPrespecAnalysis();
+    private final String QUERY_RESULTS = ResourceHelper
+            .GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
+
+	@Autowired
+	private CohortDefinitionRepository cohortDefinitionRepository;
+
+	@Autowired
+	private AuthorizationService authorizationService;
+
+	@Autowired
+	private JobRepository jobRepository;
+
+	@Autowired
+	private PlatformTransactionManager transactionManager;
+	
+	private TransactionTemplate transactionTemplate;
+	
+	@Autowired
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+		this.transactionTemplate = new TransactionTemplate(transactionManager);
+	}
+
+	@Autowired
+	private JobTemplate jobTemplate;
+
+	@Autowired
+	private CohortGenerationService cohortGenerationService;
+
+	@Autowired
+	private JobService jobService;
+
+	@Autowired
+	private CohortGenerationSensitiveInfoService sensitiveInfoService;
+
+	@Autowired
+	ConversionService conversionService;
+
+	@Autowired
+	private ObjectMapper objectMapper;
+  
+	@Autowired
+	private CohortSamplingService samplingService;
+
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
+
+	@Autowired
+	private SourceService sourceService;
+
+	@Autowired
+	private VocabularyService vocabularyService;
+
+	@Autowired
+	private CohortChecker cohortChecker;
+
+	@Autowired
+	private VersionService<CohortVersion> versionService;
+
+  @Autowired
+  private FeAnalysisEntityRepository feAnalysisRepository;
+
+  @Autowired
+  private SourceAwareSqlRender sourceAwareSqlRender;
+
+  @Value("${security.defaultGlobalReadPermissions}")
+	private boolean defaultGlobalReadPermissions;
+
+	private final MarkdownRender markdownPF = new MarkdownRender();
+
+	private final List<Extension> extensions = Arrays.asList(TablesExtension.create());
+
+	private final RowMapper<InclusionRuleReport.Summary> summaryMapper = (rs, rowNum) -> {
+		InclusionRuleReport.Summary summary = new InclusionRuleReport.Summary();
+		summary.baseCount = rs.getLong("base_count");
+		summary.finalCount = rs.getLong("final_count");
+		summary.lostCount = rs.getLong("lost_count");
+
+		double matchRatio = (summary.baseCount > 0) ? ((double) summary.finalCount / (double) summary.baseCount) : 0.0;
+		summary.percentMatched = new BigDecimal(matchRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%";
+		return summary;
+	};
+
+	private final RowMapper<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStatisticMapper = new RowMapper<InclusionRuleReport.InclusionRuleStatistic>() {
+
+		@Override
+		public InclusionRuleReport.InclusionRuleStatistic mapRow(ResultSet rs, int rowNum) throws SQLException {
+			InclusionRuleReport.InclusionRuleStatistic statistic = new InclusionRuleReport.InclusionRuleStatistic();
+			statistic.id = rs.getInt("rule_sequence");
+			statistic.name = rs.getString("name");
+			statistic.countSatisfying = rs.getLong("person_count");
+			long personTotal = rs.getLong("person_total");
+
+			long gainCount = rs.getLong("gain_count");
+			double excludeRatio = personTotal > 0 ? (double) gainCount / (double) personTotal : 0.0;
+			String percentExcluded = new BigDecimal(excludeRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString();
+			statistic.percentExcluded = percentExcluded + "%";
+
+			long satisfyCount = rs.getLong("person_count");
+			double satisfyRatio = personTotal > 0 ? (double) satisfyCount / (double) personTotal : 0.0;
+			String percentSatisfying = new BigDecimal(satisfyRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString();
+			statistic.percentSatisfying = percentSatisfying + "%";
+			return statistic;
+		}
+	};
+
+	private final RowMapper<Long[]> inclusionRuleResultItemMapper = new RowMapper<Long[]>() {
+
+		@Override
+		public Long[] mapRow(ResultSet rs, int rowNum) throws SQLException {
+			Long[] resultItem = new Long[2];
+			resultItem[0] = rs.getLong("inclusion_rule_mask");
+			resultItem[1] = rs.getLong("person_count");
+			return resultItem;
+		}
+	};
+
+	private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId) {
+		for (CohortGenerationInfo info : infoList) {
+			if (info.getId().getSourceId().equals(sourceId)) {
+				return info;
+			}
+		}
+		return null;
+	}
+
+	private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
+
+		String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc "
+						+ "on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId";
+		String tqName = "tableQualifier";
+		String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};
+		PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
+		List<InclusionRuleReport.Summary> result = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
+		return result.isEmpty() ? new InclusionRuleReport.Summary() : result.get(0);
+	}
+
+	private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source, int modeId) {
+
+		String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
+						+ " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
+						+ " and i.rule_sequence = s.rule_sequence"
+						+ " where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
+		String tqName = "tableQualifier";
+		String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};
+		PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
+		return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
+	}
+
+    private List<Report> getDemographicStatistics(int id, Source source, long ccGenerateId) {
+        ExecutionResultRequest params = new ExecutionResultRequest();
+
+        // Get FE Analysis Demographic (Gender, Age, Race,)
+        Set<FeAnalysisEntity> featureAnalyses = feAnalysisRepository.findByListIds(Arrays.asList(70, 72, 74, 77));
+
+        params.setCohortIds(Arrays.asList(id));
+        params.setAnalysisIds(featureAnalyses.stream().map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
+        params.setDomainIds(Arrays.asList(DEMOGRAPHIC_DOMAIN));
+
+        List<CcResult> ccResults = findResults(ccGenerateId, params, source);
+        Map<Integer, AnalysisItem> analysisMap = new HashMap<>();
+        ccResults.stream().peek(cc -> {
+            if (StandardFeatureAnalysisType.PRESET.toString().equals(cc.getFaType())) {
+                featureAnalyses.stream().filter(fa -> Objects.equals(fa.getDesign(), cc.getAnalysisName())).findFirst()
+                        .ifPresent(v -> cc.setAnalysisId(v.getId()));
+            }
+        }).forEach(ccResult -> {
+            if (ccResult instanceof CcPrevalenceStat) {
+                analysisMap.putIfAbsent(ccResult.getAnalysisId(), new AnalysisItem());
+                AnalysisItem analysisItem = analysisMap.get(ccResult.getAnalysisId());
+                analysisItem.setType(ccResult.getResultType());
+                analysisItem.setName(ccResult.getAnalysisName());
+                analysisItem.setFaType(ccResult.getFaType());
+                List<CcResult> results = analysisItem.getOrCreateCovariateItem(
+                        ((CcPrevalenceStat) ccResult).getCovariateId(), ccResult.getStrataId());
+                results.add(ccResult);
+            }
+        });
+
+        CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findById(id).orElse(null);
+        List<Report> reports = prepareReportData(analysisMap,
+                new HashSet<CohortDefinitionEntity>(Arrays.asList(cohortDefinition)), featureAnalyses);
+
+        return reports;
+    }
+
+    private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, 
+					Set<CohortDefinitionEntity> cohortDefs,
+        	Set<FeAnalysisEntity> featureAnalyses) {
+        // Create map to get cohort name by its id
+        final Map<Integer, CohortDefinitionEntity> definitionMap = cohortDefs.stream()
+                .collect(Collectors.toMap(CohortDefinitionEntity::getId, Function.identity()));
+        // Create map to get feature analyses by its name
+        final Map<String, String> feAnalysisMap = featureAnalyses.stream()
+                .collect(Collectors.toMap(this::mapFeatureName, entity -> entity.getDomain().toString()));
+
+        List<Report> reports = new ArrayList<>();
+        try {
+            // list to accumulate results from simple reports
+            List<AnalysisResultItem> simpleResultSummary = new ArrayList<>();
+            // list to accumulate results from comparative reports
+            List<AnalysisResultItem> comparativeResultSummary = new ArrayList<>();
+            // do not create summary reports when only one analyses is present
+            boolean ignoreSummary = analysisMap.keySet().size() == 1;
+            for (Integer analysisId : analysisMap.keySet()) {
+                analysisMap.putIfAbsent(analysisId, new AnalysisItem());
+                AnalysisItem analysisItem = analysisMap.get(analysisId);
+                AnalysisResultItem resultItem = analysisItem.getSimpleItems(definitionMap, feAnalysisMap);
+                Report simpleReport = new Report(analysisItem.getName(), analysisId, resultItem);
+                simpleReport.faType = analysisItem.getFaType();
+                simpleReport.domainId = feAnalysisMap.get(analysisItem.getName());
+
+                if (PREVALENCE.equals(analysisItem.getType())) {
+                    simpleReport.header = executionPrevalenceHeaderLines;
+                    simpleReport.resultType = PREVALENCE;
+                    // Summary comparative reports are only available for
+                    // prevalence type
+                    simpleResultSummary.add(resultItem);
+                } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                    simpleReport.header = executionDistributionHeaderLines;
+                    simpleReport.resultType = DISTRIBUTION;
+                }
+                reports.add(simpleReport);
+
+                // comparative mode
+                if (definitionMap.size() == 2) {
+                    Iterator<CohortDefinitionEntity> iter = definitionMap.values().iterator();
+                    CohortDefinitionEntity firstCohortDef = iter.next();
+                    CohortDefinitionEntity secondCohortDef = iter.next();
+                    AnalysisResultItem comparativeResultItem = analysisItem.getComparativeItems(firstCohortDef,
+                            secondCohortDef, feAnalysisMap);
+                    Report comparativeReport = new Report(analysisItem.getName(), analysisId, comparativeResultItem);
+                    comparativeReport.header = executionComparativeHeaderLines;
+                    comparativeReport.isComparative = true;
+                    comparativeReport.faType = analysisItem.getFaType();
+                    comparativeReport.domainId = feAnalysisMap.get(analysisItem.getName());
+                    if (PREVALENCE.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = PREVALENCE;
+                        // Summary comparative reports are only available for
+                        // prevalence type
+                        comparativeResultSummary.add(comparativeResultItem);
+                    } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = DISTRIBUTION;
+                    }
+                    reports.add(comparativeReport);
+                }
+            }
+            if (!ignoreSummary) {
+                // summary comparative reports are only available for prevalence
+                // type
+                if (!simpleResultSummary.isEmpty()) {
+                    Report simpleSummaryData = new Report("All prevalence covariates", simpleResultSummary);
+                    simpleSummaryData.header = executionPrevalenceHeaderLines;
+                    simpleSummaryData.isSummary = true;
+                    simpleSummaryData.resultType = PREVALENCE;
+                    reports.add(simpleSummaryData);
+                }
+                // comparative mode
+                if (!comparativeResultSummary.isEmpty()) {
+                    Report comparativeSummaryData = new Report("All prevalence covariates", comparativeResultSummary);
+                    comparativeSummaryData.header = executionComparativeHeaderLines;
+                    comparativeSummaryData.isSummary = true;
+                    comparativeSummaryData.isComparative = true;
+                    comparativeSummaryData.resultType = PREVALENCE;
+                    reports.add(comparativeSummaryData);
+                }
+            }
+
+            return reports;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private String mapFeatureName(FeAnalysisEntity entity) {
+
+        if (StandardFeatureAnalysisType.PRESET == entity.getType()) {
+            return entity.getDesign().toString();
+        }
+        return entity.getName();
+    }
+
+    private List<CcResult> findResults(final Long generationId, ExecutionResultRequest params, Source source) {
+        return executeFindResults(generationId, params, QUERY_RESULTS, getGenerationResults(source), source);
+    }
+
+    private <T> List<T> executeFindResults(final Long generationId, ExecutionResultRequest params, String query,
+            RowMapper<T> rowMapper, Source source) {
+        String analysis = params.getAnalysisIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+        String cohorts = params.getCohortIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), query,
+                PARAMETERS_RESULTS_FILTERED,
+                new String[] { String.valueOf(generationId), String.valueOf(params.getThresholdValuePct()), analysis,
+                                cohorts, SourceUtils.getVocabularyQualifier(source) });
+        final String tempSchema = SourceUtils.getTempQualifier(source);
+        String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(),
+                SessionUtils.sessionId(), tempSchema);
+        return this.getSourceJdbcTemplate(source).query(translatedSql, rowMapper);
+    }
+
+    private RowMapper<CcResult> getGenerationResults(Source source) {
+        return (rs, rowNum) -> {
+            final String type = rs.getString("type");
+            if (StringUtils.equals(type, DISTRIBUTION.toString())) {
+                final CcDistributionStat distributionStat = new CcDistributionStat();
+                gatherForPrevalence(distributionStat, rs, source);
+                gatherForDistribution(distributionStat, rs);
+                return distributionStat;
+            } else if (StringUtils.equals(type, PREVALENCE.toString())) {
+                final CcPrevalenceStat prevalenceStat = new CcPrevalenceStat();
+                gatherForPrevalence(prevalenceStat, rs, source);
+                return prevalenceStat;
+            }
+            return null;
+        };
+    }
+
+    private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs, Source source)
+            throws SQLException {
+        stat.setFaType(rs.getString("fa_type"));
+        stat.setSourceKey(source.getSourceKey());
+        stat.setCohortId(rs.getInt("cohort_definition_id"));
+        stat.setAnalysisId(rs.getInt("analysis_id"));
+        stat.setAnalysisName(rs.getString("analysis_name"));
+        stat.setResultType(PREVALENCE);
+        stat.setCovariateId(rs.getLong("covariate_id"));
+        stat.setCovariateName(rs.getString("covariate_name"));
+        stat.setConceptName(rs.getString("concept_name"));
+        stat.setConceptId(rs.getLong("concept_id"));
+        stat.setAvg(rs.getDouble("avg_value"));
+        stat.setCount(rs.getLong("count_value"));
+        stat.setStrataId(rs.getLong("strata_id"));
+        stat.setStrataName(rs.getString("strata_name"));
+    }
+
+    private void gatherForDistribution(final CcDistributionStat stat, final ResultSet rs) throws SQLException {
+        stat.setResultType(DISTRIBUTION);
+        stat.setAvg(rs.getDouble("avg_value"));
+        stat.setStdDev(rs.getDouble("stdev_value"));
+        stat.setMin(rs.getDouble("min_value"));
+        stat.setP10(rs.getDouble("p10_value"));
+        stat.setP25(rs.getDouble("p25_value"));
+        stat.setMedian(rs.getDouble("median_value"));
+        stat.setP75(rs.getDouble("p75_value"));
+        stat.setP90(rs.getDouble("p90_value"));
+        stat.setMax(rs.getDouble("max_value"));
+        stat.setAggregateId(rs.getInt("aggregate_id"));
+        stat.setAggregateName(rs.getString("aggregate_name"));
+        stat.setMissingMeansZero(rs.getInt("missing_means_zero") == 1);
+    }
+
+    private Integer mapFeatureAnalysisId(FeAnalysisEntity feAnalysis) {
+
+        if (feAnalysis.isPreset()) {
+            return prespecAnalysisMap.values().stream()
+                    .filter(p -> Objects.equals(p.analysisName, feAnalysis.getDesign())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Preset analysis with id=%s does not exist", feAnalysis.getId()))).analysisId;
+        } else {
+            return feAnalysis.getId();
+        }
+    }
+
+	private int countSetBits(long n) {
+		int count = 0;
+		while (n > 0) {
+			n &= (n - 1);
+			count++;
+		}
+		return count;
+	}
+
+	private String formatBitMask(Long n, int size) {
+		return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
+	}
+
+	private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source, int modeId) {
+
+		String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id and mode_id = @modeId";
+		String tqName = "tableQualifier";
+		String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};
+		PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
+
+		// [0] is the inclusion rule bitmask, [1] is the count of the match
+		List<Long[]> items = this.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleResultItemMapper);
+		Map<Integer, List<Long[]>> groups = new HashMap<>();
+		for (Long[] item : items) {
+			int bitsSet = countSetBits(item[0]);
+			if (!groups.containsKey(bitsSet)) {
+				groups.put(bitsSet, new ArrayList<Long[]>());
+			}
+			groups.get(bitsSet).add(item);
+		}
+
+		StringBuilder treemapData = new StringBuilder("{\"name\" : \"Everyone\", \"children\" : [");
+
+		List<Integer> groupKeys = new ArrayList<>(groups.keySet());
+		Collections.sort(groupKeys);
+		Collections.reverse(groupKeys);
+
+		int groupCount = 0;
+		// create a nested treemap data where more matches (more bits set in string) appear higher in the hierarchy)
+		for (Integer groupKey : groupKeys) {
+			if (groupCount > 0) {
+				treemapData.append(",");
+			}
+
+			treemapData.append(String.format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
+
+			int groupItemCount = 0;
+			for (Long[] groupItem : groups.get(groupKey)) {
+				if (groupItemCount > 0) {
+					treemapData.append(",");
+				}
+
+				//sb_treemap.Append("{\"name\": \"" + cohort_identifer + "\", \"size\": " + cohorts[cohort_identifer].ToString() + "}");
+				treemapData.append(String.format("{\"name\": \"%s\", \"size\": %d}", formatBitMask(groupItem[0], inclusionRuleCount), groupItem[1]));
+				groupItemCount++;
+			}
+			groupCount++;
+		}
+
+		treemapData.append(StringUtils.repeat("]}", groupCount + 1));
+
+		return treemapData.toString();
+	}
+
+	public static class GenerateSqlRequest {
+
+		public GenerateSqlRequest() {
+		}
+
+		@JsonProperty("expression")
+		public CohortExpression expression;
+
+		@JsonProperty("options")
+		public CohortExpressionQueryBuilder.BuildExpressionQueryOptions options;
+
+	}
+	ServletContext context;
+
+	/**
+	 * Returns OHDSI template SQL for a given cohort definition
+	 *
+	 * @summary Generate Sql
+	 * @param request A GenerateSqlRequest containing the cohort expression and options.
+	 * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
+	 */
+	@PostMapping(value = "/sql", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public GenerateSqlResult generateSql(@RequestBody GenerateSqlRequest request) {
+		CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
+		GenerateSqlResult result = new GenerateSqlResult();
+		if (options == null) {
+			options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
+		}
+		String expressionSql = queryBuilder.buildExpressionQuery(request.expression, options);
+		result.templateSql = SqlRender.renderSql(expressionSql, null, null);
+
+		return result;
+	}
+
+	/**
+	 * Returns metadata about all cohort definitions in the WebAPI database
+	 *
+	 * @summary List Cohort Definitions
+	 * @return List of metadata about all cohort definitions in WebAPI
+	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
+	 */
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@UseEtag
+	public List<CohortMetadataDTO> getCohortDefinitionList() {
+		UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+		boolean globalRead = authorizationService.isPermitted("read:cohort-definition");
+		boolean globalWrite = authorizationService.isPermitted("write:cohort-definition");
+
+		List<CohortDefinitionEntity> definitions = cohortDefinitionRepository.list();
+		Map<Integer, List<TagDTO>> cohortTagMap = cohortDefinitionRepository.getCohortTagMap();
+		return definitions.stream()
+				.map(cd -> {
+					CohortMetadataImplDTO dto = new CohortMetadataImplDTO();
+					dto.setId(cd.getId());
+					dto.setName(cd.getName());
+					dto.setDescription(cd.getDescription());
+					dto.setCreatedBy(User.fromEntity(cd.getCreatedBy()));
+					dto.setModifiedBy(User.fromEntity(cd.getModifiedBy()));
+					dto.setCreatedDate(cd.getCreatedDate());
+					dto.setModifiedDate(cd.getModifiedDate());
+					List<TagDTO> tags = cohortTagMap.getOrDefault(cd.getId(), Collections.emptyList());
+					if (!tags.isEmpty()) dto.setTags(new java.util.HashSet<>(tags));
+					EntityGrant grant = authz.cohortDefinitionAccess.getOrDefault(Long.valueOf(cd.getId()), EntityGrant.NONE);
+					dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+					dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
+					return dto;
+				})
+				.filter(!defaultGlobalReadPermissions ? c -> c.isReadAccess() : entity -> true)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Creates a cohort definition in the WebAPI database.
+	 *
+	 * The values for createdBy and createdDate are automatically populated and
+	 * the function ignores parameter values for these fields.
+	 *
+	 * @summary Create Cohort Definition
+	 * @param dto The cohort definition to create.
+	 * @return The newly created cohort definition
+	 */
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true),
+			@CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})
+	@PreAuthorize("isPermitted('create:cohort-definition')")
+	public CohortDTO createCohortDefinition(@RequestBody CohortDTO dto) {
+
+		Date currentTime = Calendar.getInstance().getTime();
+
+		UserEntity user = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
+		//create definition in 2 saves, first to get the generated ID for the new dto
+		// then to associate the details with the definition
+		CohortDefinitionEntity newDef = new CohortDefinitionEntity();
+		newDef.setName(StringUtils.trim(dto.getName()))
+						.setDescription(dto.getDescription())
+						.setExpressionType(dto.getExpressionType());
+		newDef.setCreatedBy(user);
+		newDef.setCreatedDate(currentTime);
+
+		newDef = this.cohortDefinitionRepository.save(newDef);
+
+		// associate details
+		CohortDefinitionDetailsEntity details = new CohortDefinitionDetailsEntity();
+		details.setCohortDefinition(newDef)
+						.setExpression(Utils.serialize(dto.getExpression()));
+
+		newDef.setDetails(details);
+
+		CohortDefinitionEntity createdDefinition = this.cohortDefinitionRepository.save(newDef);
+		return conversionService.convert(createdDefinition, CohortDTO.class);
+	}
+
+	/**
+	 * Returns the 'raw' cohort definition for the given id.
+	 *
+	 * 'Raw' means that the cohort expression is returned as a string, and not as
+	 * a concrete CohortExpression class. This method is maintained for legacy
+	 * comparability.
+	 *
+	 *
+	 * @summary Get Raw Cohort Definition
+	 * @param id The cohort definition id
+	 * @return The cohort definition JSON expression
+	 */
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	public CohortRawDTO getCohortDefinitionRaw(@PathVariable("id") final int id) {
+		return getTransactionTemplate().execute(transactionStatus -> {
+			CohortDefinitionEntity d = this.cohortDefinitionRepository.findOneWithDetail(id);
+			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+			return conversionService.convert(d, CohortRawDTO.class);
+		});
+	}
+
+	/**
+	 * Returns the cohort definition containing the circe cohort expression
+	 *
+	 * @Summary Get Cohort Definition
+	 * @param id The cohort definition id
+	 * @return The cohort definition containing a Circe CohortExpression object.
+	 */
+	public CohortDTO getCohortDefinition(final int id) {
+		return getTransactionTemplate().execute(transactionStatus -> {
+			CohortDefinitionEntity d = this.cohortDefinitionRepository.findOneWithDetail(id);
+			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+			return conversionService.convert(d, CohortDTO.class);
+		});
+	}
+
+	/**
+	 * Check that a cohort exists.
+	 *
+	 * This method checks to see if a cohort definition name exists. The id
+	 * parameter is used to 'ignore' a cohort definition from checking. This is
+	 * used when you have an existing cohort definition which should be ignored
+	 * when checking if the name already exists.
+	 *
+	 * @Summary Check Cohort Definition Name
+	 * @param id The cohort definition id
+	 * @param name The cohort definition name
+	 * @return 1 if the a cohort with the given name and id exist in WebAPI and 0
+	 * otherwise
+	 */
+	@GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	public int getCountCDefWithSameName(@PathVariable("id") final int id, @RequestParam("name") String name) {
+
+		return cohortDefinitionRepository.getCountCDefWithSameName(id, name);
+	}
+
+	/**
+	 * Saves the cohort definition for the given id.
+	 *
+	 * The modifiedBy and modifiedDate are set automatically, and those values
+	 * submitted in CohortDTO will be ignored. * @summary Save Cohort Definition
+	 *
+	 * @summary Save Cohort Definition
+	 * @param id The cohort definition id
+	 * @return The updated CohortDefinition
+	 */
+	@PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public CohortDTO saveCohortDefinition(@PathVariable("id") final int id, @RequestBody CohortDTO def) {
+		Date currentTime = Calendar.getInstance().getTime();
+
+		saveVersion(id);
+
+		CohortDefinitionEntity currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+		UserEntity modifier = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
+
+		currentDefinition.setName(def.getName())
+				.setDescription(def.getDescription())
+				.setExpressionType(def.getExpressionType())
+				.getDetails().setExpression(Utils.serialize(def.getExpression()));
+		currentDefinition.setModifiedBy(modifier);
+		currentDefinition.setModifiedDate(currentTime);
+
+		currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
+		eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
+
+		return getCohortDefinition(id);
+	}
+
+	/**
+	 * Queues up a generate cohort task for the specified cohort definition id.
+	 *
+	 * @param id	the Cohort Definition ID to generate
+	 * @param sourceKey	The source to execute the cohort generation
+	 * @return	the job info for the cohort generation
+	 */
+	@GetMapping(value = "/{id}/generate/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("""
+		(isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('write:cohort-definition','read:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
+	""")
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public JobExecutionResource generateCohort(@PathVariable("id") final int id,
+			@PathVariable("sourceKey") final String sourceKey,
+			@RequestParam(value = "demographic", defaultValue = "false") boolean demographicStat) {
+		// Let the generation service control all transaction boundaries
+		return cohortGenerationService.generateCohortViaJob(
+			authorizationService.getAuthenticatedPrincipal().getUserId(),
+			id, 
+			sourceKey, 
+			demographicStat);
+	}
+
+	/**
+	 * Cancel a cohort generation task
+	 *
+	 * This method updates the generation info to 'Canceled' and invalidates the
+	 * job execution on the server.
+	 *
+	 * Note: invalidating the job is performed by indicating that the job
+	 * execution should stop at the next SQL step in the analysis query. This
+	 * means that the execution will not physically cancel until the current step
+	 * in the SQL query completes.
+	 *
+	 * @summary Cancel Cohort Generation.
+	 * @param id the id of the cohort definition being generated
+	 * @param sourceKey the sourceKey for the target database for generation
+	 * @return
+	 */
+	@GetMapping(value = "/{id}/cancel/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("""
+		(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or isPermitted('read:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))
+	""")	
+	public ResponseEntity cancelGenerateCohort(@PathVariable("id") final int id, @PathVariable("sourceKey") final String sourceKey) {
+
+		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
+						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+								String.format("Source with key '%s' not found", sourceKey)));
+		getTransactionTemplateRequiresNew().execute(status -> {
+			CohortDefinitionEntity currentDefinition = cohortDefinitionRepository.findById(id)
+					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+							String.format("Cohort Definition with id = %d not found", id)));
+			CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
+			if (Objects.nonNull(info)) {
+				invalidateExecution(info);
+				cohortDefinitionRepository.save(currentDefinition);
+			}
+			return null;
+		});
+
+		jobService.cancelJobExecution(e -> {
+			JobParameters parameters = e.getJobParameters();
+			String jobName = e.getJobInstance().getJobName();
+			return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+							&& Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
+							&& Objects.equals(Constants.GENERATE_COHORT, jobName);
+		});
+		return ResponseEntity.status(HttpStatus.OK).build();
+	}
+
+	/**
+	 * Returns a list of cohort generation info objects.
+	 *
+	 * Cohort generation info objects refers to the information related to the
+	 * generation on a source. This includes information about the starting time,
+	 * duration, and execution status. This method returns the generation
+	 * information for any source the user has access to.
+	 *
+	 * @summary Get cohort generation info
+	 * @param id - the Cohort Definition ID to generate
+	 * @return information about the Cohort Analysis Job for each source
+	 */
+	@GetMapping(value = "/{id}/info", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public List<CohortGenerationInfoDTO> getInfo(@PathVariable("id") final int id) {
+		CohortDefinitionEntity def = this.cohortDefinitionRepository.findById(id).orElse(null);
+		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
+
+		Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
+
+		List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> true).collect(Collectors.toList());
+
+		Map<Integer, Source> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+		List<CohortGenerationInfo> filteredResult = sensitiveInfoService.filterSensitiveInfo(result,
+						gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+		return filteredResult.stream()
+						.map(t -> conversionService.convert(t, CohortGenerationInfoDTO.class))
+						.collect(Collectors.toList());
+	}
+
+	/**
+	 * Copies the specified cohort definition.
+	 *
+	 * This method takes a cohort definition id, and creates a copy. This copy has
+	 * no tags and the owner is set to the user who made the copy.
+	 *
+	 * @summary Copy Cohort Definition
+	 * @param id - the Cohort Definition ID to copy
+	 * @return the copied cohort definition as a CohortDTO
+	 */
+	@GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true),
+			@CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})
+	@PreAuthorize("""
+		(isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and isPermitted('create:cohort-definition')
+	""")
+	public CohortDTO copy(@PathVariable("id") final int id) {
+		CohortDTO sourceDef = getCohortDefinition(id);
+		sourceDef.setId(null); // clear the ID
+		sourceDef.setTags(null);
+		sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
+		CohortDTO copyDef = createCohortDefinition(sourceDef);
+
+		return copyDef;
+	}
+
+	public List<String> getNamesLike(String copyName) {
+		return cohortDefinitionRepository.findAllByNameStartsWith(copyName).stream().map(CohortDefinitionEntity::getName).collect(Collectors.toList());
+	}
+
+	/**
+	 * Deletes the specified cohort definition
+	 *
+	 * When a cohort definition is deleted, any generation job is canceled, and
+	 * any generated sample is removed from the sources.
+	 *
+	 * @summary Delete Cohort Definition
+	 * @param id - the Cohort Definition ID to delete
+	 */
+	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void delete(@PathVariable("id") final int id) {
+		// perform the JPA update in a separate transaction
+		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+			@Override
+			public void doInTransactionWithoutResult(final TransactionStatus status) {
+				CohortDefinitionEntity def = cohortDefinitionRepository.findById(id).orElse(null);
+				if (!Objects.isNull(def)) {
+					def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
+						Integer sourceId = cohortGenerationInfo.getId().getSourceId();
+
+						jobService.cancelJobExecution(e -> {
+							JobParameters parameters = e.getJobParameters();
+							String jobName = e.getJobInstance().getJobName();
+							return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+										&& Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId))
+										&& Objects.equals(Constants.GENERATE_COHORT, jobName);
+						});
+					});
+					cohortDefinitionRepository.delete(def);
+				} else {
+					log.warn("Failed to delete Cohort Definition with ID = {}", id);
+				}
+			}
+		});
+
+		// Launch cleanup job outside of transaction to avoid conflict with batch transaction manager
+		samplingService.launchDeleteSamplesTasklet(id);
+
+		JobParametersBuilder builder = new JobParametersBuilder();
+		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.", id));
+		builder.addString(COHORT_DEFINITION_ID, ("" + id));
+
+		final JobParameters jobParameters = builder.toJobParameters();
+
+		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
+
+		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(), this.getSourceRepository());
+
+		Step cleanupStep = new StepBuilder("cohortDefinition.cleanupCohort", jobRepository)
+						.tasklet(cleanupTasklet, transactionManager)
+						.build();
+
+		CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
+
+		Step cleanupSamplesStep = new StepBuilder("cohortDefinition.cleanupSamples", jobRepository)
+						.tasklet(cleanupSamplesTasklet, transactionManager)
+						.build();
+
+		SimpleJobBuilder cleanupJobBuilder = new JobBuilder("cleanupCohort", jobRepository)
+						.start(cleanupStep)
+						.next(cleanupSamplesStep);
+
+		Job cleanupCohortJob = cleanupJobBuilder.build();
+
+		this.jobTemplate.launch(cleanupCohortJob, jobParameters);
+	}
+
+	private List<ConceptSetExport> getConceptSetExports(CohortDefinitionEntity def, SourceInfo vocabSource) throws RuntimeException {
+
+		CohortExpression expression;
+		try {
+			expression = objectMapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		return Arrays.stream(expression.conceptSets)
+						.map(cs -> vocabularyService.exportConceptSet(cs, vocabSource))
+						.collect(Collectors.toList());
+	}
+
+	/**
+	 * Return concept sets used in a cohort definition as a zip file.
+	 *
+	 * This method extracts the concept set from the specified cohort definition
+	 * and serializes the elements as a CSV and zips the results into a file with
+	 * from 'cohortdefinition_{id}_export.zip".
+	 *
+	 * @summary Export Concept Sets as ZIP
+	 * @param id a cohort definition id
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
+	@GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportConceptSets(@PathVariable("id") final int id) {
+
+		Source source = sourceService.getPriorityVocabularySource();
+		if (Objects.isNull(source)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+		}
+		CohortDefinitionEntity def = this.cohortDefinitionRepository.findOneWithDetail(id);
+		if (Objects.isNull(def)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+
+		List<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
+		ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
+
+		return HttpUtils.respondBinary(exportStream, String.format("cohortdefinition_%d_export.zip", def.getId()));
+	}
+
+	/**
+	 * Get the Inclusion Rule report for the specified source and mode
+	 *
+	 * The mode refers to the results for either 'all events' (0) or 'best event'
+	 * (1). The best event report limits the selected entry event to
+	 * one-per-person, and therefore this result can be considered a 'by person'
+	 * report.
+	 *
+	 * @summary Get Inclusion Rule Report
+	 * @param id a cohort definition id
+	 * @param sourceKey the source to fetch results from
+	 * @param modeId the mode of the report: 0 = all events, 1 = best event
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
+@GetMapping(value = "/{id}/report/{sourceKey}/inclusion", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("""
+		(isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))
+	""")
+	public InclusionRuleReport getInclusionRuleReport(
+				@PathVariable("id") final int id,
+				@PathVariable("sourceKey") final String sourceKey,
+				@RequestParam(value = "mode", defaultValue = "0") int modeId) {
+
+		Source source = this.getSourceRepository().findBySourceKey(sourceKey);
+
+		InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source, modeId);
+		List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source, modeId);
+		String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source, modeId);
+
+		InclusionRuleReport report = new InclusionRuleReport();
+		report.summary = summary;
+		report.inclusionRuleStats = inclusionRuleStats;
+		report.treemapData = treemapData;
+
+		return report;
+	}
+
+	@GetMapping(value = "/{id}/report/{sourceKey}/demographics", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("""
+		(isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ))
+		and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))
+	""")
+	public List<Report> getDemographicsReport(
+				@PathVariable("id") final int id,
+				@PathVariable("sourceKey") final String sourceKey,
+				@RequestParam(value = "ccGenerateId") String ccGenerateId) {
+
+		Source source = this.getSourceRepository().findBySourceKey(sourceKey);
+		return getDemographicStatistics(whitelist(id), source, Long.valueOf(ccGenerateId));
+	}
+
+	/**
+	 * Checks the cohort definition for logic issues
+	 *
+	 * This method runs a series of logical checks on a cohort definition and
+	 * returns the set of warning, info and error messages.
+	 *
+	 * @summary Check Cohort Definition
+	 * @param expression
+	 *            The cohort definition expression
+	 * @return The cohort check result
+	 */
+	@PostMapping(value = "/check", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public CheckResultDTO runDiagnostics(@RequestBody CohortExpression expression) {
+		Checker checker = new Checker();
+		return new CheckResultDTO(checker.check(expression));
+	}
+	
+	/**
+	 * Checks the cohort definition for logic issues
+	 *
+	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
+	 *
+	 * This method is similar to /check except this method accepts a ChortDTO which includes tags.
+	 *
+	 * @summary Check Cohort Definition
+	 * @param cohortDTO The cohort definition expression
+	 * @return The cohort check result
+	 */
+	@PostMapping(value = "/checkV2", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public CheckResult runDiagnosticsWithTags(@RequestBody CohortDTO cohortDTO) {
+		Checker checker = new Checker();
+		CheckResultDTO checkResultDTO = new CheckResultDTO(checker.check(cohortDTO.getExpression()));
+		List<Warning> circeWarnings = checkResultDTO.getWarnings().stream()
+				.map(WarningUtils::convertCirceWarning)
+				.collect(Collectors.toList());
+		CheckResult checkResult = new CheckResult(cohortChecker.check(cohortDTO));
+		checkResult.getWarnings().addAll(circeWarnings);
+		return checkResult;
+	}
+	
+
+	/**
+	 * Render a cohort expression in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer for CIRCE cohort
+	 * expressions, and then converts to HTML if required. The response will
+	 * contain the media type as TEXT_PLAIN or markdown, or TEXT_HTML for html.
+	 * The body of the response is the print friendly content.
+	 *
+	 * @summary Cohort Print Friendly
+	 * @param expression The CIRCE cohort expression to render
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
+	@PostMapping(value = "/printfriendly/cohort", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity cohortPrintFriendly(@RequestBody CohortExpression expression, @RequestParam(value = "format", defaultValue = "html") String format) {
+		String markdown = convertCohortExpressionToMarkdown(expression);
+		return printFrindly(markdown, format);
+	}
+
+	/**
+	 * Render a list of concept sets in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer concept set expressions, and
+	 * then converts to HTML if required. The response will contain the media type
+	 * as TEXT_PLAIN or markdown, or TEXT_HTML for html. The body of the response
+	 * is the print friendly content.
+	 *
+	 * @summary Concept Set Print Friendly
+	 * @param conceptSetList A List of concept set expressions
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
+	@PostMapping(value = "/printfriendly/conceptsets", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity conceptSetListPrintFriendly(@RequestBody List<ConceptSet> conceptSetList, @RequestParam(value = "format", defaultValue = "html") String format) {
+		String markdown = markdownPF.renderConceptSetList(conceptSetList.toArray(new ConceptSet[0]));
+		return printFrindly(markdown, format);
+	}
+
+	public String convertCohortExpressionToMarkdown(CohortExpression expression) {
+		return markdownPF.renderCohort(expression);
+	}
+
+	public String convertMarkdownToHTML(String markdown) {
+		Parser parser = Parser.builder().extensions(extensions).build();
+		Node document = parser.parse(markdown);
+		HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+		return renderer.render(document);
+	}
+
+	private ResponseEntity printFrindly(String markdown, String format) {
+		if ("html".equalsIgnoreCase(format)) {
+			String html = convertMarkdownToHTML(markdown);
+			return ResponseEntity.ok().contentType(org.springframework.http.MediaType.TEXT_HTML).body(html);
+		} else if ("markdown".equals(format)) {
+			return ResponseEntity.ok().contentType(org.springframework.http.MediaType.TEXT_PLAIN).body(markdown);
+		} else {
+			return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+		}
+	}
+
+	/**
+	 * Assign tag to Cohort Definition
+	 *
+	 * @summary Assign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
+	 */
+	@PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public void assignTag(@PathVariable("id") final Integer id, @RequestBody final int tagId) {
+		CohortDefinitionEntity entity = cohortDefinitionRepository.findById(id).orElse(null);
+		assignTag(entity, tagId);
+	}
+
+	/**
+	 * Unassign tag from Cohort Definition
+	 *
+	 * @summary Unassign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
+	 */
+	@DeleteMapping(value = "/{id}/tag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('admin:tags') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public void unassignTag(@PathVariable("id") final Integer id, @PathVariable("tagId") final int tagId) {
+		CohortDefinitionEntity entity = cohortDefinitionRepository.findById(id).orElse(null);
+		unassignTag(entity, tagId);
+	}
+
+	/**
+	 * Assign protected tag to Cohort Definition. This method passes through to
+	 * assignTag(), but permissions to access this endpoint is determined by the
+	 * path /{id}/protectedtag
+	 *
+	 * @summary Assign Protected Tag
+	 * @param id
+	 * @param tagId
+	 */
+	@PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
+	public void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
+		assignTag(id, tagId);
+	}
+
+	/**
+	 * Unassign protected tag from Cohort Definition
+	 *
+	 * @summary Unassign Protected Tag
+	 * @param id
+	 * @param tagId
+	 */
+	@DeleteMapping(value = "/{id}/protectedtag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("""
+			(isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE))
+			and isPermitted('admin:tags')
+	""")
+	public void unassignPermissionProtectedTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
+		unassignTag(id, tagId);
+	}
+
+	/**
+	 * Get list of versions of Cohort Definition
+	 *
+	 * @summary Get Cohort Definition Versions
+	 * @param id the cohort definition id
+	 * @return the list of VersionDTO containing version info for the cohort
+	 * definition
+	 */
+	@GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
+		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
+		return versions.stream()
+				.map(v -> conversionService.convert(v, VersionDTO.class))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get version of Cohort Definition
+	 *
+	 * @summary Get Cohort Definition Version
+	 * @param id The cohort definition id
+	 * @param version The version to fetch
+	 * @return
+	 */
+	@GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('read:cohort-definition') or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
+	public CohortVersionFullDTO getVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
+		checkVersion(id, version);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+
+		return conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
+	}
+
+	/**
+	 * Updates version of Cohort Definition.
+	 *
+	 * The specified version is checked for permission and if it exists, and if
+	 * this check passes, the version is updated.
+	 *
+	 * @summary Update Version
+	 * @param id The cohort definition id
+	 * @param version the id of the version
+	 * @param updateDTO the new version data
+	 * @return the updated version state as VersionDTO
+	 */
+	@PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public VersionDTO updateVersion(@PathVariable("id") final int id, @PathVariable("version") final int version,
+									@RequestBody VersionUpdateDTO updateDTO) {
+		checkVersion(id, version);
+		updateDTO.setAssetId(id);
+		updateDTO.setVersion(version);
+		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
+
+		return conversionService.convert(updated, VersionDTO.class);
+	}
+
+	/**
+	 * Delete version of Cohort Definition
+	 *
+	 * @summary Delete Cohort Definition Version
+	 * @param id the cohort definition id
+	 * @param version the version id
+	 */
+	@DeleteMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public void deleteVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
+		checkVersion(id, version);
+		versionService.delete(VersionType.COHORT, id, version);
+	}
+
+	/**
+	 * Create a new asset from version of Cohort Definition.
+	 *
+	 * This method fetches the cohort definition version based on the id and
+	 * version parameter, and creates a new cohort definition (without tags) and
+	 * an automatically generated name.
+	 *
+	 * @summary Create Cohort from Version
+	 * @param id the cohort definition id
+	 * @param version the version id
+	 * @return
+	 */
+	@PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true),
+			@CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	})
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isPermitted('write:cohort-definition') or hasEntityAccess(#id, COHORT_DEFINITION, WRITE)")
+	public CohortDTO copyAssetFromVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
+		checkVersion(id, version);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		CohortVersionFullDTO fullDTO = conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
+		CohortDTO dto = conversionService.convert(fullDTO.getEntityDTO(), CohortDTO.class);
+		dto.setId(null);
+		dto.setTags(null);
+		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
+				cohortDefinitionRepository.findByName(dto.getName())));
+		return createCohortDefinition(dto);
+	}
+
+	/**
+	 * Get list of cohort definitions with assigned tags.
+	 *
+	 * This method accepts a TagNameListRequestDTO that contains the list of tag names
+	 * to find cohort definitions with.
+	 *
+	 * @summary List Cohorts By Tag
+	 * @param requestDTO contains a list of tag names
+	 * @return the set of cohort definitions that match one of the included tag names.
+	 */
+	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
+		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<String> names = requestDTO.getNames().stream()
+				.map(name -> name.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toList());
+		List<CohortDefinitionEntity> entities = cohortDefinitionRepository.findByTags(names);
+		return listByTags(entities, names, CohortDTO.class);
+	}
+
+	private void checkVersion(int id, int version) {
+		Version cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
+				String.format("There is no cohort version with id = %d.", version));
+	}
+
+	private CohortVersion saveVersion(int id) {
+		CohortDefinitionEntity def = this.cohortDefinitionRepository.findOneWithDetail(id);
+		CohortVersion version = conversionService.convert(def, CohortVersion.class);
+
+		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+		Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+		version.setCreatedBy(user);
+		version.setCreatedDate(versionDate);
+		return versionService.create(VersionType.COHORT, version);
+	}
+
+	public List<CohortDTO> getCohortDTOs(List<Integer> ids) {
+		return getCohorts(ids).stream()
+				.map(def -> conversionService.convert(def, CohortDTO.class))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	public List<CohortDefinitionEntity> getCohorts(List<Integer> ids) {
+		return ids.stream()
+				.map(id -> cohortDefinitionRepository.findById(id).orElse(null))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+}

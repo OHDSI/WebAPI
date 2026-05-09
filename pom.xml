@@ -23,19 +23,17 @@
     <jna.version>5.5.0</jna.version>
     <hibernate.version>6.5.3.Final</hibernate.version>
     <postgresql.version>42.7.4</postgresql.version>
-    <shiro.version>2.0.2</shiro.version>
+    <bouncycastle.version>1.83</bouncycastle.version>
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
-
-    <circe.version>1.12.1</circe.version>
+    <circe.version>1.13.0</circe.version>
+    <featureExtraction.version>3.8.0</featureExtraction.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>6.0.5</pac4j.version>
     <jackson.version>2.18.2</jackson.version>
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.release>21</maven.compiler.release>
-    <arachne.version>1.17.4</arachne.version>
 
     <!-- Build info -->
     <buildinfo.webapi.milestone.id>49</buildinfo.webapi.milestone.id>
@@ -215,6 +213,17 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <version>3.2.7</version>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals><goal>jandex</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
         <version>2.4.0</version>
@@ -268,6 +277,10 @@
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
     </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -303,12 +316,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>11.13</version>
-    </dependency>
-
     <!-- Handlebars template engine (for TemplateUtils) -->
     <dependency>
       <groupId>com.github.jknack</groupId>
@@ -331,8 +338,6 @@
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
-    <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -371,16 +376,69 @@
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+		<!-- Spring Security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- For OIDC / OAuth2 providers like Google -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+
+		<!-- Spring Security JWT Support-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+
+		<!-- Spring Dependencies for LDAP -->
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-data-ldap</artifactId>
+		</dependency>
+
+		<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-ldap</artifactId>
+		</dependency>
+
+		<!-- Waffle for Windows Auth in Spring Security -->
+		<dependency>
+			<groupId>com.github.waffle</groupId>
+			<artifactId>waffle-spring-security6</artifactId>
+			<version>3.5.1</version>
+		</dependency>
+    
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+
+    <!-- Actuator + Micrometer for metrics and monitoring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
     <!-- Embedded Tomcat dependencies for executable JAR -->
     <!-- Note: WAR packaging is available via 'mvn package -Pwar' profile -->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
       <!-- Version 10.1.48 managed by Spring Boot 3.5.6 BOM -->
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
@@ -390,14 +448,6 @@
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-juli</artifactId>
       <version>10.1.48</version><!-- Not managed by Spring Boot, must match tomcat-embed version -->
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
     <dependency>
       <!-- Hibernate 6.x uses groupId org.hibernate.orm -->
@@ -417,28 +467,6 @@
       <artifactId>hibernate-validator</artifactId>
       <version>8.0.1.Final</version>
     </dependency>
-    <!-- Hibernate 6.x: hibernate-entitymanager is merged into hibernate-core -->
-    <!-- This dependency is no longer needed with Hibernate 6+ -->
-    <!-- <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>${hibernate.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency> -->
-    <!-- javax.servlet-api is now provided by spring-boot-starter-tomcat (Jakarta Servlet API) -->
-    <!-- This old javax.servlet dependency can be removed for JAR packaging -->
-    <!--
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-    </dependency>
-    -->
     <dependency>
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
@@ -449,6 +477,11 @@
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
       <version>${SqlRender.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>featureExtraction</artifactId>
+      <version>${featureExtraction.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -495,43 +528,7 @@
       <artifactId>flyway-database-postgresql</artifactId>
       <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
     </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-sqlserver</artifactId>
-      <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-database-oracle</artifactId>
-      <!-- Version 11.7.0 managed by Spring Boot 3.5.6 BOM -->
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-admin-manager</artifactId>
-      <version>2.0.0.M1</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>freemarker</artifactId>
-          <groupId>org.freemarker</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-dbcp</artifactId>
-          <groupId>commons-dbcp</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+    <!-- removed non-supported versions of flyway RDBMS (SqlServer and Oracle)-->
     <dependency>
       <groupId>com.cronutils</groupId>
       <artifactId>cron-utils</artifactId>
@@ -568,135 +565,7 @@
       <artifactId>commons-csv</artifactId>
       <version>1.8</version>
     </dependency>
-    <!-- dom4j removed - not used in codebase -->
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <classifier>jakarta</classifier>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-      <classifier>jakarta</classifier>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-spring</artifactId>
-      <classifier>jakarta</classifier>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-shiro</artifactId>
-      <version>2.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-jna</artifactId>
-      <version>${waffle.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna-platform</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>0.12.6</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>0.12.6</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>0.12.6</version>
-      <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- Jakarta EE pac4j implementation (not javaee-pac4j) -->
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-jakartaee</artifactId>
-      <version>6.0.5</version>
-    </dependency>
-    <dependency>
-      <groupId>io.buji</groupId>
-      <artifactId>buji-pac4j</artifactId>
-      <version>9.1.0</version>
-      <exclusions>
-        <!-- Exclude wrong javaee module, use jakarta instead -->
-        <exclusion>
-          <groupId>org.pac4j</groupId>
-          <artifactId>pac4j-javaee</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-oauth</artifactId>
-      <version>${pac4j.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-oidc</artifactId>
-      <version>${pac4j.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-http</artifactId>
-      <version>${pac4j.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- pac4j 5.x: renamed from pac4j-saml-opensamlv3 to pac4j-saml -->
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml</artifactId>
-      <version>${pac4j.version}</version>
-    </dependency>
+    <!-- Removed JNA dependencies because they are incldued via waffle-spring-security6 -->
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
@@ -712,7 +581,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
+    <dependency> <!-- TODO: get rid of external JSON libraries -->
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20231013</version>
@@ -720,11 +589,6 @@
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
@@ -736,7 +600,11 @@
       <artifactId>jasypt</artifactId>
       <version>1.9.3</version>
     </dependency>
-    <!-- JAX-RS API removed - all Jersey code migrated to Spring MVC -->
+    <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>    
     <!-- JAXB API - needed by some legacy code -->
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
@@ -747,11 +615,6 @@
       <groupId>org.glassfish</groupId>
       <artifactId>jakarta.el</artifactId>
       <version>4.0.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.ldap</groupId>
-      <artifactId>spring-ldap-core</artifactId>
-      <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -784,20 +647,32 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>SkeletonCohortCharacterization</artifactId>
+      <version>2.0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>featureExtraction</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>    
+    <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>
       <version>3.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-cas</artifactId>
-      <version>${pac4j.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.atlassian.commonmark</groupId>
@@ -809,7 +684,6 @@
       <artifactId>freemarker</artifactId>
       <!-- Version managed by Spring Boot 3.5.6 BOM (2.3.33 with Jakarta EE 10 support) -->
     </dependency>
-    
     <dependency>
       <groupId>com.atlassian.commonmark</groupId>
       <artifactId>commonmark-ext-gfm-tables</artifactId>
@@ -837,7 +711,8 @@
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>3.0.2</version><!-- Jakarta EE 9 compatible -->
-    </dependency>    <dependency>
+    </dependency>    
+    <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
       <version>0.13.1</version>
@@ -1374,8 +1249,6 @@
       <id>webapi-solr</id>
       <properties>
         <!-- Full Text Search With SOLR Settings -->
-        <solr.endpoint></solr.endpoint>
-        <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
         <solr.version>8.11.2</solr.version>
       </properties>
       <dependencies>

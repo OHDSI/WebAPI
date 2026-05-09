@@ -21,6 +21,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
+import org.ohdsi.webapi.conceptset.ConceptSetService;
 import org.ohdsi.webapi.evidence.CohortStudyMapping;
 import org.ohdsi.webapi.evidence.CohortStudyMappingRepository;
 import org.ohdsi.webapi.evidence.ConceptCohortMapping;
@@ -667,7 +668,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
         log.info("Beginning run for negative controls analysis task: {}", taskString);
 
         NegativeControlTasklet tasklet = new NegativeControlTasklet(task, getSourceJdbcTemplate(task.getSource()), task.getJdbcTemplate(),
-                getTransactionTemplate(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());
+                getBatchTransactionTemplate(), getBatchTransactionTemplateRequiresNew(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());
 
         return this.jobTemplate.launchTasklet(NAME, "negativeControlsAnalysisStep", tasklet, jobParameters);
     }

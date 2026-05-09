@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.tool.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import java.util.Objects;
+
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ToolDTO {

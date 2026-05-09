@@ -5,37 +5,44 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
-import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
-import org.ohdsi.webapi.common.generation.CancelJobListener;
+import org.ohdsi.webapi.job.JdbcSearchableJobExecutionDao;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.job.SearchableJobExecutionDao;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.admin.service.*;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Spring Batch 5.x configuration for Java 21 / Spring Boot 3.2
+ *
+ * IMPORTANT: Spring Batch and JPA share the same DataSource, so they MUST use
+ * the same PlatformTransactionManager (the primary JpaTransactionManager).
+ * Using a separate DataSourceTransactionManager for batch would cause
+ * "Already value [ConnectionHolder] bound to thread" errors whenever a
+ * batch step touches JPA repositories.
  */
 @Configuration
+@Lazy(false)
 @EnableBatchProcessing
 public class JobConfig {
     
@@ -60,7 +67,7 @@ public class JobConfig {
     private DataSource dataSource;
     
     @Autowired
-    private Security security;
+    private AuthorizationService authorizationService;
     
     @Autowired
     private AuditTrailJobListener auditTrailJobListener;
@@ -73,21 +80,28 @@ public class JobConfig {
         log.info("Batch table prefix: {}", this.tablePrefix);
     }
     
-    // Spring Batch transaction manager (separate from JPA)
-    @Bean("batchTransactionManager")
-    public DataSourceTransactionManager batchTransactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-    
     // JobRepository configuration for Spring Batch 5
+    // Uses the primary JpaTransactionManager (shared DataSource rule)
     @Bean
     public JobRepository jobRepository(DataSource dataSource, 
-                                       @Qualifier("batchTransactionManager") DataSourceTransactionManager batchTransactionManager) throws Exception {
+                                       PlatformTransactionManager transactionManager) throws Exception {
         JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
         factory.setDataSource(dataSource);
-        factory.setTransactionManager(batchTransactionManager);
+        factory.setTransactionManager(transactionManager);
         factory.setTablePrefix(this.tablePrefix);
         factory.setIsolationLevelForCreate(isolationLevelForCreate);
+        factory.afterPropertiesSet();
+        return factory.getObject();
+    }
+    
+    // JobExplorer configuration for Spring Batch 5 - CRITICAL: Must use same table prefix as JobRepository
+    @Bean
+    public JobExplorer jobExplorer(DataSource dataSource,
+                                   PlatformTransactionManager transactionManager) throws Exception {
+        JobExplorerFactoryBean factory = new JobExplorerFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setTransactionManager(transactionManager);
+        factory.setTablePrefix(this.tablePrefix);
         factory.afterPropertiesSet();
         return factory.getObject();
     }
@@ -122,23 +136,43 @@ public class JobConfig {
     }
     
     @Bean
-    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, Security security,
-                                   @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
-        return new JobTemplate(jobLauncher, jobRepository, security, batchTransactionManager);
+    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, AuthorizationService authorizationService,
+                                   PlatformTransactionManager transactionManager) {
+        return new JobTemplate(jobLauncher, jobRepository, authorizationService, transactionManager);
+    }
+    
+    /**
+     * TransactionTemplate for batch tasklets.
+     * Uses the same JpaTransactionManager as the step transaction,
+     * so nested PROPAGATION_REQUIRED calls participate in the existing transaction.
+     */
+    @Bean("batchTransactionTemplate")
+    public TransactionTemplate batchTransactionTemplate(
+            PlatformTransactionManager transactionManager) {
+        TransactionTemplate template = new TransactionTemplate();
+        template.setTransactionManager(transactionManager);
+        return template;
+    }
+    
+    /**
+     * TransactionTemplate with PROPAGATION_REQUIRES_NEW for batch tasklets.
+     * Used when tasklets need to commit data immediately (e.g., status updates)
+     * independent of the step's transaction. JpaTransactionManager properly
+     * suspends the outer transaction (including its ConnectionHolder).
+     */
+    @Bean("batchTransactionTemplateRequiresNew")
+    public TransactionTemplate batchTransactionTemplateRequiresNew(
+            PlatformTransactionManager transactionManager) {
+        TransactionTemplate template = new TransactionTemplate();
+        template.setTransactionManager(transactionManager);
+        template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return template;
     }
     
     @Bean
     public SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
         JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
         dao.setDataSource(dataSource);
-        dao.setTablePrefix(this.tablePrefix); 
-        return dao;
-    }
-    
-    @Bean
-    public SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
-        JdbcSearchableJobInstanceDao dao = new JdbcSearchableJobInstanceDao();
-        dao.setJdbcTemplate(jdbcTemplate);
         dao.setTablePrefix(this.tablePrefix); 
         return dao;
     }

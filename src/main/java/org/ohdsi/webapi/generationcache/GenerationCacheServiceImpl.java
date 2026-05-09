@@ -86,6 +86,8 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     @Override
     public void removeCache(CacheableGenerationType type, Source source, Integer designHash) {
 
+        if (source == null) return; // source could be null with deleted sources.
+
         // Cleanup cached results
         getProvider(type).remove(source, designHash);
         // Cleanup cache record

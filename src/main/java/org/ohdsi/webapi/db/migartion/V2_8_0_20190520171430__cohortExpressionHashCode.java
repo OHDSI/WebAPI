@@ -3,7 +3,7 @@ package org.ohdsi.webapi.db.migartion;
 import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 
 import java.util.List;
@@ -22,8 +22,8 @@ public class V2_8_0_20190520171430__cohortExpressionHashCode extends Application
         CohortDefinitionDetailsRepository detailsRepository =
             applicationContext.getBean(CohortDefinitionDetailsRepository.class);
 
-        List<CohortDefinitionDetails> allDetails = detailsRepository.findAll();
-        for (CohortDefinitionDetails details: allDetails) {
+        List<CohortDefinitionDetailsEntity> allDetails = detailsRepository.findAll();
+        for (CohortDefinitionDetailsEntity details: allDetails) {
             //after deserialization the field "cdmVersionRange" is added and default value for it is set
             CohortExpression expression = Utils.deserialize(details.getExpression(), CohortExpression.class);
             details.setExpression(Utils.serialize(expression));

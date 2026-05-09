@@ -1,5 +1,10 @@
 package org.ohdsi.webapi.versioning.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.versioning.domain.Version;
@@ -7,8 +12,11 @@ import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionPK;
 import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ConceptSetVersionRepository;
+import org.ohdsi.webapi.versioning.repository.IrVersionRepository;
+import org.ohdsi.webapi.versioning.repository.PathwayVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ReusableVersionRepository;
 import org.ohdsi.webapi.versioning.repository.VersionRepository;
 import org.slf4j.Logger;
@@ -16,19 +24,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -47,15 +50,22 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     @Autowired
     public VersionService(
             EntityManager entityManager,
-            CohortVersionRepository cohortRepository,
             ConceptSetVersionRepository conceptSetVersionRepository,
-            ReusableVersionRepository reusableRepository) {
+            CohortVersionRepository cohortRepository,
+            ReusableVersionRepository reusableRepository,
+            CharacterizationVersionRepository characterizationRepository,
+            IrVersionRepository irVersionRepository,
+            PathwayVersionRepository pathwayVersionRepository
+    ) {
         this.entityManager = entityManager;
 
         this.repositoryMap = new HashMap<>();
-        this.repositoryMap.put(VersionType.COHORT, (VersionRepository<T>) cohortRepository);
         this.repositoryMap.put(VersionType.CONCEPT_SET, (VersionRepository<T>) conceptSetVersionRepository);
+        this.repositoryMap.put(VersionType.COHORT, (VersionRepository<T>) cohortRepository);
         this.repositoryMap.put(VersionType.REUSABLE, (VersionRepository<T>) reusableRepository);
+        this.repositoryMap.put(VersionType.CHARACTERIZATION, (VersionRepository<T>) characterizationRepository);
+        this.repositoryMap.put(VersionType.INCIDENCE_RATE, (VersionRepository<T>) irVersionRepository);
+        this.repositoryMap.put(VersionType.PATHWAY, (VersionRepository<T>) pathwayVersionRepository);
     }
 
     private VersionRepository<T> getRepository(VersionType type) {

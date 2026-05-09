@@ -970,29 +970,6 @@
     "exportSql": {
       "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
     },
-    "feasibilityAttritionReport": {
-      "attritionVisualization": "축소 시각화",
-      "inclusionRule": "포함 규칙",
-      "percentRemain": "% 잔류",
-      "precentDiff": "% 차이"
-    },
-    "feasibilityIntersectReport": {
-      "inclusionRule": "포함 규칙",
-      "percentSatisfied": "% 만족",
-      "percentToGain": "% 증가 (To-Gain)",
-      "populationVisualization": "인구 시각화",
-      "rectSummary": "<%=size%> 명 (<%=percentage%>%), <%=passCount%> 기준 통과, <%=failCount%> 기준 미달."
-    },
-    "feasibilityReportViewer": {
-      "feasibilityReportViewerText_1": "일치 비율",
-      "feasibilityReportViewerText_2": "일치된 건 수",
-      "feasibilityReportViewerText_3": "센서링(censoring)으로부터 잃어버림(lost)",
-      "feasibilityReportViewerText_4": "총 이벤트",
-      "feasibilityReportViewerText_5": "통계 요약:",
-      "feasibilityReportViewerText_6": "축소 시각화 화면으로 전환",
-      "feasibilityReportViewerText_7": "교차 보기로 전환",
-      "feasibilityReportViewerText_8": "이 코호트 정의에는 지정된 포함 규칙(rules)이 없습니다."
-    },
     "featureextraction": {
       "covariateSettingsEditor": {
         "age": "나이",

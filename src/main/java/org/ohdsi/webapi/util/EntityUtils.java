@@ -10,7 +10,10 @@ public class EntityUtils {
     }
     
     public static EntityGraph fromAttributePaths(final String... strings) {
-
-        return DynamicEntityGraph.loading().addPath(strings).build();
+        DynamicEntityGraph.Builder builder = DynamicEntityGraph.loading();
+        for (String path : strings) {
+            builder = builder.addPath(path);
+        }
+        return builder.build();
     }
 }

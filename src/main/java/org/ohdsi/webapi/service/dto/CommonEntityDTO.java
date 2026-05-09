@@ -3,38 +3,38 @@ package org.ohdsi.webapi.service.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 import org.ohdsi.webapi.CommonDTO;
+import org.ohdsi.webapi.security.authz.User;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class CommonEntityDTO implements CommonDTO, Serializable {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private UserDTO createdBy;
+  private User createdBy;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private UserDTO modifiedBy;
+  private User modifiedBy;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Date createdDate;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Date modifiedDate;
 
-  private boolean hasWriteAccess;
-  private boolean hasReadAccess;
+  private boolean writeAccess;
+  private boolean readAccess;
 
-  public UserDTO getCreatedBy() {
+  public User getCreatedBy() {
     return createdBy;
   }
 
-  public void setCreatedBy(UserDTO createdBy) {
+  public void setCreatedBy(User createdBy) {
     this.createdBy = createdBy;
   }
 
-  public UserDTO getModifiedBy() {
+  public User getModifiedBy() {
     return modifiedBy;
   }
 
-  public void setModifiedBy(UserDTO modifiedBy) {
+  public void setModifiedBy(User modifiedBy) {
     this.modifiedBy = modifiedBy;
   }
 
@@ -54,19 +54,19 @@ public abstract class CommonEntityDTO implements CommonDTO, Serializable {
     this.modifiedDate = modifiedDate;
   }
 
-  public boolean isHasWriteAccess() {
-    return hasWriteAccess;
+  public boolean isWriteAccess() {
+    return writeAccess;
   }
 
-  public void setHasWriteAccess(boolean hasWriteAccess) {
-    this.hasWriteAccess = hasWriteAccess;
+  public void setWriteAccess(boolean hasWriteAccess) {
+    this.writeAccess = hasWriteAccess;
   }
 
-  public boolean isHasReadAccess() {
-    return hasReadAccess;
+  public boolean isReadAccess() {
+    return readAccess;
   }
 
-  public void setHasReadAccess(boolean hasReadAccess) {
-    this.hasReadAccess = hasReadAccess;
+  public void setReadAccess(boolean hasReadAccess) {
+    this.readAccess = hasReadAccess;
   }
 }

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.model;
 
 import org.ohdsi.analysis.WithId;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -1,27 +1,8 @@
 package org.ohdsi.webapi.cohortsample;
 
-import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
-import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
-import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
-import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.user.dto.UserDTO;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionCallback;
+import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_FEMALE_CONCEPT_ID;
+import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_MALE_CONCEPT_ID;
 
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,11 +15,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.ohdsi.sql.SqlTranslate;
 
-import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_FEMALE_CONCEPT_ID;
-import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_MALE_CONCEPT_ID;
-import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
+import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
+import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.security.authz.User;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service to do manage samples of a cohort definition.
@@ -238,11 +235,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		sampleDTO.setCreatedDate(sample.getCreatedDate());
 		UserEntity createdBy = sample.getCreatedBy();
 		if (createdBy != null) {
-			UserDTO userDto = new UserDTO();
-			userDto.setId(createdBy.getId());
-			userDto.setLogin(createdBy.getLogin());
-			userDto.setName(createdBy.getName());
-			sampleDTO.setCreatedBy(userDto);
+			sampleDTO.setCreatedBy(User.fromEntity(createdBy));
 		}
 
 		SampleParametersDTO.AgeMode ageMode = SampleParametersDTO.AgeMode.fromSerialName(sample.getAgeMode());
@@ -485,7 +478,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	}
 
 	public CleanupCohortSamplesTasklet createDeleteSamplesTasklet() {
-		return new CleanupCohortSamplesTasklet(getTransactionTemplate(), getSourceRepository(), this, sampleRepository);
+		return new CleanupCohortSamplesTasklet(getBatchTransactionTemplate(), getSourceRepository(), this, sampleRepository);
 	}
 
 	/** Maps a SQL result to a sample element. */

@@ -43,7 +43,15 @@ public class LocaleInterceptor implements HandlerInterceptor {
             return Locale.forLanguageTag(langParam);
         }
 
-        // Priority 3: Accept-Language header
+        // Priority 3: Cookie set by CookieLocaleResolver (webapi_locale)
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("webapi_locale".equals(cookie.getName()) && StringUtils.isNotBlank(cookie.getValue())) {
+                    return Locale.forLanguageTag(cookie.getValue());
+                }
+            }
+        }
+        // Priority 4: Accept-Language header
         String acceptLanguage = request.getHeader(ACCEPT_LANGUAGE_HEADER);
         if (StringUtils.isNotBlank(acceptLanguage)) {
             return Locale.forLanguageTag(acceptLanguage);

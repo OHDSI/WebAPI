@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;

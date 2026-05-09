@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.mvc;
 
-import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.arachne.logging.event.FailedDbConnectEvent;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
@@ -15,7 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.messaging.support.ErrorMessage;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,8 +23,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Objects;
@@ -39,6 +36,13 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final String DETAIL = "Detail: ";
+
+    /** Simple error body for REST responses (replaces spring-messaging ErrorMessage). */
+    public record ErrorMessage(String message) {
+        public ErrorMessage(Throwable t) {
+            this(t.getMessage());
+        }
+    }
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -71,7 +75,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle authorization/permission exceptions
      */
-    @ExceptionHandler(UnauthorizedException.class)
+    @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorMessage> handleAuthorizationException(Exception ex) {
         logException(ex);
         ex.setStackTrace(new StackTraceElement[0]);
@@ -138,7 +142,7 @@ public class GlobalExceptionHandler {
         Throwable responseException;
 
         if (Objects.nonNull(throwable)) {
-            if (throwable instanceof UnauthorizedException) {
+            if (throwable instanceof AccessDeniedException) {
                 status = HttpStatus.FORBIDDEN;
                 responseException = throwable;
             } else if (throwable instanceof BadRequestAtlasException || throwable instanceof ConceptNotExistException) {
@@ -201,11 +205,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Log exception with full stack trace
+     * Log exception with stack trace (formatted by Logback)
      */
     private void logException(Throwable ex) {
-        StringWriter errorStackTrace = new StringWriter();
-        ex.printStackTrace(new PrintWriter(errorStackTrace));
-        LOGGER.error(errorStackTrace.toString());
+        LOGGER.error(ex.toString(), ex);
     }
 }

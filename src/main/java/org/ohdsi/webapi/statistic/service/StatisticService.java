@@ -109,12 +109,6 @@ public class StatisticService {
     private static final Pattern IR_GENERATION_REGEXP =
             Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
-    private static final Pattern PLE_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
-
-    private static final Pattern PLP_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
-
     private static final String ENDPOINT_REGEXP =
             "^.*(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}).*-\\s-\\s-\\s([\\w-]+)\\s.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
 
@@ -137,8 +131,6 @@ public class StatisticService {
         patternMap.put(CHARACTERIZATION_GENERATION_NAME, CHARACTERIZATION_GENERATION_REGEXP);
         patternMap.put(PATHWAY_GENERATION_NAME, PATHWAY_GENERATION_REGEXP);
         patternMap.put(IR_GENERATION_NAME, IR_GENERATION_REGEXP);
-        patternMap.put(PLE_GENERATION_NAME, PLE_GENERATION_REGEXP);
-        patternMap.put(PLP_GENERATION_NAME, PLP_GENERATION_REGEXP);
     }
 
     public StatisticService() {

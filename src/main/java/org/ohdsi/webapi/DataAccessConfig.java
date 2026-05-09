@@ -4,6 +4,8 @@ import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpa
 import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
 import org.ohdsi.webapi.arachne.encryption.NotEncrypted;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.orm.hibernate5.SpringBeanContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -36,6 +39,7 @@ import java.util.Properties;
  *
  */
 @Configuration
+@Lazy(false)
 @EnableTransactionManagement
 @EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
 public class DataAccessConfig {
@@ -66,7 +70,7 @@ public class DataAccessConfig {
     }
       
     @Bean({"primaryDataSource", "dataSource"})
-		@DependsOn("defaultStringEncryptor")
+	@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
         logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
@@ -128,14 +132,12 @@ public class DataAccessConfig {
                 EncryptorUtils.buildStringEncryptor(env) :
                 new NotEncrypted();
 
-        // Note: HibernatePBEEncryptorRegistry registration removed - no longer needed
-        // with Hibernate 6 AttributeConverter approach (see EncryptedStringConverter)
-
         return stringEncryptor;
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource,
+            ConfigurableListableBeanFactory beanFactory) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -145,7 +147,18 @@ public class DataAccessConfig {
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setJpaProperties(getJPAProperties());
+
+        Properties props = getJPAProperties();
+        // Spring/Hibernate integration: register SpringBeanContainer so that Hibernate
+        // resolves @Converter and other managed beans from the Spring ApplicationContext
+        // instead of instantiating them via reflection. This allows @Autowired injection
+        // to work on EncryptedStringConverter (and any other JPA AttributeConverters),
+        // which is how the Jasypt PBEStringEncryptor gets wired into the converter.
+        // Without this, Hibernate calls new EncryptedStringConverter() directly and the
+        // encryptor field remains null.
+        props.put(org.hibernate.cfg.AvailableSettings.BEAN_CONTAINER, new SpringBeanContainer(beanFactory));
+        factory.setJpaProperties(props);
+
         factory.setPackagesToScan("org.ohdsi.webapi");
         factory.setDataSource(dataSource);
         factory.afterPropertiesSet();

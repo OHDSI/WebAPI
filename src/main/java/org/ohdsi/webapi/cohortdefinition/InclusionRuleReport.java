@@ -42,9 +42,5 @@ public class InclusionRuleReport {
   public Summary summary;
   public List<InclusionRuleStatistic> inclusionRuleStats;
   public String treemapData;
-
-  public Float prevalenceThreshold = 0.01f;
-  public Boolean showEmptyResults = false;
-  public int count = 0;
   
 }

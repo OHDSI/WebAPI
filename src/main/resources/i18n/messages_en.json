@@ -122,6 +122,33 @@
     "apply": "Apply",
     "tools": "Tools"
   },
+  "cohortAgent": {
+    "title": "Pythia AI Agent",
+    "subtitle": "Cohort design advisor",
+    "send": "Send",
+    "streaming": "streaming…",
+    "stop": "Stop",
+    "history": "Chat history",
+    "newChat": "New chat",
+    "deleteChat": "Delete chat",
+    "clear": "Clear chat",
+    "inputPlaceholder": "Ask Pythia about your cohort…",
+    "starters": {
+      "label": "Try a starter",
+      "t2dm": "Define a Type 2 Diabetes cohort",
+      "ckd": "What phenotype should I use for chronic kidney disease?",
+      "statins": "Add patients on statins over age 65",
+      "renal": "Exclude patients with renal failure"
+    },
+    "proposal": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "added": "Added to cohort",
+      "applied": "Applied",
+      "rejected": "Rejected",
+      "includingDescendants": "Including descendant concepts"
+    }
+  },
   "tool":{
     "name": "* Name",
     "url": "* URL",

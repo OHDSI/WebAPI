@@ -15,7 +15,8 @@ public class PluginsConfigurationInfo extends ConfigurationInfo {
 
     public PluginsConfigurationInfo(
             @Autowired(required = false) List<WebApiPlugin> plugins,
-            @Value("${atlasgis.enabled}") Boolean atlasgisEnabled) {
+            @Value("${atlasgis.enabled}") Boolean atlasgisEnabled,
+            @Value("${trexsql.enabled:false}") Boolean trexsqlEnabled) {
         if (plugins == null) {
             plugins = Collections.emptyList();
         }
@@ -23,6 +24,7 @@ public class PluginsConfigurationInfo extends ConfigurationInfo {
             properties.put(plugin.getId() + "Enabled", plugin.isActive());
         }
         properties.put("atlasgisEnabled", atlasgisEnabled);
+        properties.putIfAbsent("trexsqlEnabled", trexsqlEnabled);
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.security.authz;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
@@ -138,6 +139,16 @@ public class AuthorizationService {
 
   public User getCurrentUser() {
     return getAuthenticatedPrincipal().getUser();
+  }
+
+  /**
+   * Look up a user by login.
+   * @param login the login to search for
+   * @return the User if found, or empty
+   */
+  @Transactional(readOnly = true)
+  public Optional<User> getUserByLogin(String login) {
+    return userService.getUserByLogin(login).map(User::fromEntity);
   }
 
   @Transactional(readOnly = true)

@@ -20,6 +20,7 @@ specs/
 docs
 .claude
 *.bak
+**/test-results/
 logs
 
 ### Developer's personal properties ###

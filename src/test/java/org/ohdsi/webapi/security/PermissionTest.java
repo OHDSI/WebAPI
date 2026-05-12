@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.security.authc.WebApiAuthenticationToken;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class PermissionTest extends AbstractDatabaseTest {
   @Before
   public void setup() {
     // Set the Principal for the current thread
-    WebApiPrincipal principal = new WebApiPrincipal(100001, "permsTest");
+    WebApiPrincipal principal = new WebApiPrincipal(new User(100001L, "permsTest", "Permission Test"));
     Authentication auth = WebApiAuthenticationToken.authenticated(principal, UUID.randomUUID(), Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
   }

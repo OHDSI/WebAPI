@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.security.session.SessionProperties;
 import org.ohdsi.webapi.security.session.SessionService;
 import org.slf4j.Logger;
@@ -71,6 +72,29 @@ public class LoginService {
     String jwt = jwtService.generateToken(login, sessionId.toString(), Date.from(expiresAt));
 
     return new Result(login, jwt, roles, "Login successful");
+  }
+
+  /**
+   * Impersonate another user. Creates a new session for the target user
+   * and mints a JWT as that user.
+   *
+   * @param targetLogin the login of the user to impersonate
+   * @return Result with JWT for the target user
+   * @throws IllegalArgumentException if the target user does not exist
+   */
+  public Result runAs(String targetLogin) {
+    final String login = targetLogin.toLowerCase();
+
+    User targetUser = authorizationService.getUserByLogin(login)
+        .orElseThrow(() -> new IllegalArgumentException("User not found: " + login));
+
+    UUID sessionId = sessionService.createSession(login);
+    Instant expiresAt = Instant.now().plus(sessionProps.getExpiration());
+    String jwt = jwtService.generateToken(login, sessionId.toString(), Date.from(expiresAt));
+
+    log.info("LoginService: runAs: impersonating {}", login);
+
+    return new Result(login, jwt, new String[]{}, "Run-as successful");
   }
 
   /**

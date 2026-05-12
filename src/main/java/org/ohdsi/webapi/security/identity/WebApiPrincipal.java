@@ -2,33 +2,37 @@ package org.ohdsi.webapi.security.identity;
 
 import java.security.Principal;
 import java.util.Objects;
+import org.ohdsi.webapi.security.authz.User;
 
 public final class WebApiPrincipal implements Principal {
 
   public static final long ANONYMOUS_USER_ID = -1L;
   public static final String ANONYMOUS_LOGIN = "anonymous";
 
-  public static final WebApiPrincipal ANONYMOUS = new WebApiPrincipal(ANONYMOUS_USER_ID, ANONYMOUS_LOGIN);
+  public static final WebApiPrincipal ANONYMOUS =
+      new WebApiPrincipal(new User(ANONYMOUS_USER_ID, ANONYMOUS_LOGIN, "Anonymous"));
 
-  private final long userId;
-  private final String login;
+  private final User user;
 
-  public WebApiPrincipal(long userId, String login) {
-    this.userId = userId;
-    this.login = Objects.requireNonNull(login, "login");
+  public WebApiPrincipal(User user) {
+    this.user = Objects.requireNonNull(user, "user");
   }
 
   public long getUserId() {
-    return userId;
+    return user.id();
+  }
+
+  public User getUser() {
+    return user;
   }
 
   @Override
   public String getName() {
-    return login;
+    return user.login();
   }
 
   public boolean isAnonymous() {
-    return this == ANONYMOUS || userId == ANONYMOUS_USER_ID;
+    return this == ANONYMOUS || user.id() == ANONYMOUS_USER_ID;
   }
 
   @Override
@@ -38,16 +42,16 @@ public final class WebApiPrincipal implements Principal {
     if (!(o instanceof WebApiPrincipal))
       return false;
     WebApiPrincipal that = (WebApiPrincipal) o;
-    return userId == that.userId;
+    return user.id().equals(that.user.id());
   }
 
   @Override
   public int hashCode() {
-    return Long.hashCode(userId);
+    return Long.hashCode(user.id());
   }
 
   @Override
   public String toString() {
-    return "WebApiPrincipal[userId=" + userId + ", login=" + login + "]";
+    return "WebApiPrincipal[userId=" + user.id() + ", login=" + user.login() + "]";
   }
 }

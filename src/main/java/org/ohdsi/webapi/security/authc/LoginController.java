@@ -14,7 +14,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The LoginController class groups the different auth controller endpoints, and
@@ -49,7 +52,26 @@ public class LoginController {
   @GetMapping("/user/logout")
   public LoginService.Result logout(Authentication authentication) {
     return loginSvc.logout(authentication);
-  }  
+  }
+
+  /**
+   * Run-as (impersonation) endpoint. Allows a user with admin:run-as permission
+   * to log in as another user.
+   */
+  @PostMapping("/user/runas")
+  @PreAuthorize("isPermitted('admin:run-as')")
+  public ResponseEntity<LoginService.Result> runAs(
+      @RequestParam String login,
+      HttpServletResponse response) {
+    try {
+      LoginService.Result result = loginSvc.runAs(login);
+      return ResponseEntity.ok(result);
+    } catch (IllegalArgumentException e) {
+      response.setHeader("x-auth-error", "User not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(new LoginService.Result(null, null, null, "User not found"));
+    }
+  }
 
   /**
    * Windows Authentication controller which responds with JWT and login results.

@@ -51,9 +51,9 @@ public class GlobalExceptionHandler {
      * Handle database connection failures.
      */
     @ExceptionHandler(CannotGetJdbcConnectionException.class)
-    public ResponseEntity<Void> handleDatabaseConnectionException(CannotGetJdbcConnectionException exception) {
+    public ResponseEntity<String> handleDatabaseConnectionException(CannotGetJdbcConnectionException exception) {
         eventPublisher.publishEvent(new FailedDbConnectEvent(this, exception.getMessage()));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
     }
 
     /**

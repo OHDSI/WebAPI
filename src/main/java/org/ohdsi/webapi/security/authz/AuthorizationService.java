@@ -78,6 +78,7 @@ public class AuthorizationService {
    * (SYSTEM, LDAP, …) are left untouched. Per-role failures are logged and
    * swallowed so a single bad row can't break the whole sync.
    */
+  @Transactional
   public void syncOidcRoles(String login, List<String> targetRoleNames) {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthorizationService.class);
     List<String> currentOidcRoleNames;

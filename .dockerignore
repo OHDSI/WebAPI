@@ -1,4 +1,3 @@
-/target
-/.idea
-/src/test
-.git
+node_modules
+.env
+*.db

@@ -1,2 +1,0 @@
-INSERT INTO @results_schema.pathway_analysis_codes (pathway_analysis_generation_id, code, name, is_combo)
-SELECT ? as pathway_analysis_generation_id,? as code, CAST(? AS VARCHAR(2000)) as name,? as is_combo;

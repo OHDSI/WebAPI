@@ -1,0 +1,1 @@
+ALTER TABLE cohort_definition ADD COLUMN expression_type TEXT NOT NULL DEFAULT 'SIMPLE_EXPRESSION';

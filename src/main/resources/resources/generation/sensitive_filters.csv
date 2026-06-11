@@ -1,3 +1,0 @@
-jdbc:\S+,"T(String).format('[%s connection string]', #source?.sourceName?:'Datasource')"
-(?i)(user|username)\s*(=|:)\s*["']?[^"']+["']?,"T(String).format('[%s username]', #source?.sourceName?:'Datasource')"
-(?i)password\s*(=|:)\s*["']?[^"']+["']?,"T(String).format('[%s password]', #source?.sourceName?:'Datasource')"

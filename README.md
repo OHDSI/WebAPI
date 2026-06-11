@@ -1,101 +1,191 @@
-# OHDSI WebAPI
+# WebAPI-node
 
-OHDSI WebAPI contains all OHDSI RESTful services that can be called from OHDSI applications.
+A Node.js drop-in replacement for [OHDSI WebAPI](https://github.com/OHDSI/WebAPI) — the backend REST API that powers [Atlas](https://github.com/OHDSI/Atlas).
 
-## Features
+It is Atlas-compatible: the JSON response shapes match the Java WebAPI exactly, so Atlas works without modification. CDM access is SQL Server only. Application state is stored in SQLite. Authentication is handled upstream by an nginx reverse proxy.
 
-- Provides a centralized API for working with 1 or more databases converted to the [Common Data Model](https://github.com/OHDSI/CommonDataModel) (CDM) v5.
-- Searching the OMOP standardized vocabularies for medical concepts and constructing concept sets.
-- Defining cohort definitions for use in identifying patient populations.
-- Characterizing cohorts
-- Computing incidence rates
-- Retrieve patient profiles
-- Design population level estimation and patient level prediction studies
+## Differences from Java WebAPI
 
-## Technology
+| Feature | Java WebAPI | WebAPI-node |
+|---|---|---|
+| Runtime | Java 8 / Spring Boot | Node.js LTS |
+| App database | PostgreSQL / SQL Server | SQLite |
+| CDM databases | Any OHDSI dialect | SQL Server only |
+| Auth | Shiro (JDBC, LDAP, OAuth, SAML) | External (nginx header) |
+| Source config | Admin UI + database | Environment variable |
+| Cohort generation | CIRCE → SQL | **Not implemented** (returns 501) |
+| Analysis execution | Spring Batch + Arachne | **Not implemented** (returns 501) |
 
-OHDSI WebAPI is a Java 8 web application that utilizes a PostgreSQL database for storage.
+Vocabulary search, concept sets, CDM Results (Achilles), Cohort Results (Heracles), and all CRUD for cohort definitions, IR analyses, cohort characterizations, pathway analyses, estimation, and prediction are fully implemented.
 
-## API Documentation
+## Quick Start
 
-The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc.ohdsi.org/)
+### Docker
 
-## System Requirements & Installation
+```bash
+docker compose up
+```
 
-Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
+Edit `docker-compose.yml` to point `WEBAPI_SOURCES` at your SQL Server CDM. Then point Atlas at `http://localhost:8080`.
 
-## SAML Auth support
+### Local development
 
-The following parameters are used:
+```bash
+npm install
+DB_PATH=/tmp/webapi.db WEBAPI_SOURCES='[...]' npm run dev
+```
 
-- `security.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
-- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
-- `security.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
-- `security.saml.keyManager.storePassword=nalle123` - keystore password
-- `security.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
-- `security.saml.keyManager.defaultKey=apollo` - keystore alias
-- `security.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
-- `security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
+## Configuration
 
-Sample idp metadata and sp metadata config files for okta:
-- `saml/dev/idp-metadata-okta.xml`
-- `saml/dev/sp-metadata-okta.xml`
+All configuration is through environment variables. No config files.
 
-## Managing auth providers
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8080` | HTTP listen port |
+| `HOST` | `0.0.0.0` | HTTP listen address |
+| `DB_PATH` | `/data/webapi.db` | Path to the SQLite database file. The directory must exist. |
+| `WEBAPI_SOURCES` | `[]` | JSON array of CDM source objects (see below) |
+| `WEBAPI_AUTH_HEADER` | `x-forwarded-user` | Request header containing the authenticated username, set by the upstream proxy |
+| `WEBAPI_VERSION` | `2.15.1` | Version string reported by `GET /info` |
 
-The following parameters are used to enable/disable certain provider:
+### CDM Sources
 
-- `security.auth.windows.enabled`
-- `security.auth.kerberos.enabled`
-- `security.auth.openid.enabled`
-- `security.auth.facebook.enabled`
-- `security.auth.github.enabled`
-- `security.auth.google.enabled`
-- `security.auth.jdbc.enabled`
-- `security.auth.ldap.enabled`
-- `security.auth.ad.enabled`
-- `security.auth.cas.enabled`
+`WEBAPI_SOURCES` is a JSON array. Each entry defines one CDM database connection:
 
-Acceptable values are `true` and `false`
+```json
+[
+  {
+    "sourceKey":        "my_cdm",
+    "sourceName":       "My CDM",
+    "connectionString": "Server=db.example.com,1433;Database=cdm;Encrypt=true;TrustServerCertificate=true;",
+    "username":         "sa",
+    "password":         "secret",
+    "cdmSchema":        "dbo",
+    "vocabSchema":      "dbo",
+    "resultsSchema":    "results",
+    "tempSchema":       "temp"
+  }
+]
+```
 
-## Geospatial support
+Multiple sources are supported. Atlas will show all of them in its source picker.
 
-Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatial)
+`vocabSchema` and `cdmSchema` can point to the same schema if the vocabulary tables are co-located with the CDM tables. `resultsSchema` is where Achilles and Heracles pre-computed results are stored.
 
-## Testing
+## Authentication
 
-It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't support window functions, `md5` function, HEX to BIT conversion, `setval`, `set datestyle`, CTAS + CTE.
+WebAPI-node does **not** implement authentication itself. It reads a single HTTP request header (configured via `WEBAPI_AUTH_HEADER`) and treats its value as the authenticated username. All requests are granted full access.
 
-## Support
+In production, place an nginx reverse proxy in front that authenticates users and injects the header:
 
-- Developer questions/comments/feedback: [OHDSI forum](http://forums.ohdsi.org/c/developers)
-- We use the [GitHub issue tracker](https://github.com/OHDSI/WebAPI/issues) for all bugs/issues/enhancements.
+```nginx
+location /WebAPI/ {
+    proxy_pass http://webapi:8080/;
+    proxy_set_header x-forwarded-user $remote_user;
+}
+```
 
-## Contribution
+Without a proxy (e.g. in development), every request runs as `anonymous`.
 
-### Versioning
+## Docker
 
-- WebAPI follows [Semantic versioning](https://semver.org/);
-- Only Non-SNAPSHOT dependencies should be presented in POM.xml on release branches/tags.
+```dockerfile
+FROM node:lts-slim
+```
 
-### Development Quick Start Guide
+The image mounts a single volume at `/data` for the SQLite database. The database schema is created automatically on first startup via numbered migration files.
 
-To start the application locally, the following quick steps (all commands are executed from repository root directory)
+```bash
+# Build
+docker build -t webapi-node .
 
-1. Ensure that you have the following tools installed: Java 1.8, maven (check via `mvn -v`), docker-ce (check via `docker -v`), psql command line client 
-(check via psql --version) or other tool that allows to connect to postgres DB.
-2. Run `mvn clean install` and make sure it completes successfully, resolve dependency issues if any.
-3. Create a new database in docker: `docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine`.
-4. Start DB container: `docker start postgres-webapi`.
-	 Verify that you can connect via psql console (`PGPASSWORD='ohdsi' psql -d postgresql://localhost:8432/?user=postgres`).
-5. If your default java version is too high (e.g. 17), set JAVA_HOME to point to 1.8 installaction, for example `export JAVA_HOME=/usr/lib/jvm/zulu8-ca-amd64` 
-6. Start WebAPI `mvn clean install spring-boot:run -Dmaven.test.skip=true -P webapi-postgresql -s src/dev/settings.xml -f pom.xml`
-7. Log in with the username of your liking
-8. Grant this newly created user admin privileges by running the following sql `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
-   and log in again.
+# Run
+docker run -p 8080:8080 \
+  -v $(pwd)/data:/data \
+  -e WEBAPI_SOURCES='[{"sourceKey":"cdm",...}]' \
+  webapi-node
+```
 
-At this point you have the application running and admin account operational. To actually use it, additional steps are required to set up privileges 
-and at least one CDM database. They are covered in the respective documentation sections. 
-	 
+## API Coverage
+
+### Fully implemented
+
+| Prefix | Description |
+|---|---|
+| `GET /info` | Version info |
+| `GET /source/sources` | CDM source list |
+| `GET /source/:key` | Single source |
+| `GET /user/me` | Current user |
+| `/vocabulary/:sourceKey/…` | Concept search, lookup, descendants, ancestors, domains, vocabularies |
+| `/conceptset/…` | Concept set CRUD + items + expression resolution |
+| `/cohortdefinition/…` | Cohort definition CRUD + generation info |
+| `/cdmresults/:sourceKey/…` | Achilles reports: dashboard, person, datadensity, death, observation period, domain treemaps + drilldowns |
+| `/cohortresults/:sourceKey/…` | Heracles cohort results: dashboard, person, domain treemaps + drilldowns, data completeness |
+| `/ir/…` | Incidence rate analysis CRUD + versioning |
+| `/cohort-characterization/…` | Cohort characterization CRUD + versioning |
+| `/pathway-analysis/…` | Pathway analysis CRUD + versioning |
+| `/estimation/…` | Estimation CRUD + versioning |
+| `/prediction/…` | Prediction CRUD + versioning |
+| `/tag/…` | Tag CRUD + multi-assign/unassign |
+| `/:sourceKey/person/:personId` | Patient profile (CDM query) |
+| `/notifications/…` | Job activity feed Atlas polls |
+| `/job/…` | Job execution status |
+
+### Not implemented (returns 501)
+
+| Endpoint | Reason |
+|---|---|
+| `POST /cohortdefinition/sql` | Requires [CIRCE](https://github.com/OHDSI/circe-be) Java library |
+| `GET /cohortdefinition/:id/generate/:sourceKey` | Requires CIRCE |
+| `GET /ir/:id/report/:sourceKey` | Requires pre-generated IR results |
+| `POST /:analysisType/:id/generation/:sourceKey` | Requires Arachne execution engine |
+
+## Project Structure
+
+```
+src/
+├── server.js          — entry point (bind port, start listening)
+├── app.js             — Express app (routes wired here)
+├── config.js          — env var parsing
+├── db.js              — SQLite setup + migrations
+├── sources.js         — CDM source pool management
+├── sqlrender.js       — @param substitution into SQL templates
+├── jobResource.js     — Spring Batch job shape Atlas expects
+├── conceptSetExpression.js — JS port of CIRCE concept set SQL builder
+├── middleware/
+│   ├── user.js        — populate req.user from auth header
+│   └── errors.js      — JSON error handler
+├── routes/            — one file per URL prefix
+└── sql/               — SQL templates (copied from Java WebAPI resources)
+    ├── cdmresults/    — Achilles report SQL (~129 files)
+    ├── cohortresults/ — Heracles result SQL (~114 files)
+    ├── vocabulary/    — concept search SQL
+    ├── cohortdefinition/
+    └── person/        — patient profile SQL
+
+migrations/            — numbered SQLite schema files (run on startup)
+```
+
+## Dependencies
+
+Three runtime packages:
+
+| Package | Purpose |
+|---|---|
+| `express` | HTTP server and routing |
+| `better-sqlite3` | Synchronous SQLite for application state |
+| `mssql` | SQL Server driver with connection pooling |
+
+Dev: `nodemon` (hot reload), `jest` (tests).
+
+## SQLite Schema
+
+The application database stores all Atlas-managed definitions. The schema is applied automatically from `migrations/` on first startup.
+
+Key tables: `cohort_definition`, `cohort_definition_details`, `concept_set`, `concept_set_item`, `ir_analysis`, `cc_analysis`, `pathway_analysis`, `estimation`, `prediction`, `tag`, `entity_tag`, `version`, `job`, `notifications_viewed`.
+
+The database file persists across container restarts via the `/data` volume mount. To reset all application state, delete the `.db` file — it will be recreated on next startup.
+
 ## License
-OHDSI WebAPI is licensed under Apache License 2.0
+
+Apache 2.0

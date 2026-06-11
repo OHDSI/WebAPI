@@ -1,0 +1,25 @@
+{
+  "name": "webapi-node",
+  "version": "1.0.0",
+  "description": "Node.js drop-in replacement for OHDSI WebAPI",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "express": "^4.19.0",
+    "mssql": "^11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.10.0": true
+  }
+}

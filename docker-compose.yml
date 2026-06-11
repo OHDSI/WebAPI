@@ -1,0 +1,28 @@
+services:
+  webapi:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_PATH: /data/webapi.db
+      WEBAPI_VERSION: "2.15.1"
+      # WEBAPI_AUTH_HEADER: x-forwarded-user
+      WEBAPI_SOURCES: |
+        [
+          {
+            "sourceKey": "example",
+            "sourceName": "Example CDM",
+            "connectionString": "Server=localhost,1433;Database=cdm;Encrypt=true;TrustServerCertificate=true;",
+            "username": "sa",
+            "password": "your_password",
+            "cdmSchema": "dbo",
+            "vocabSchema": "dbo",
+            "resultsSchema": "results",
+            "tempSchema": "temp"
+          }
+        ]
+    volumes:
+      - webapi_data:/data
+
+volumes:
+  webapi_data:

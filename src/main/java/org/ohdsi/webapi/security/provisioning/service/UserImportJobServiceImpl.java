@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -56,6 +57,7 @@ import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 @RestController
 @RequestMapping("/user/import/job")
 @Transactional
+@PreAuthorize("isPermitted('admin:security')")
 public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> implements UserImportJobService {
 
   private final UserImportService userImportService;

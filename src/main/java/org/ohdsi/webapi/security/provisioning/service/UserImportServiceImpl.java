@@ -63,12 +63,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/user")
 @Transactional(readOnly = true)
+@PreAuthorize("isPermitted('admin:security')")
 public class UserImportServiceImpl implements UserImportService {
 
   // Note: @RestController already includes @Component, so @Service is not needed

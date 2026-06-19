@@ -19,6 +19,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityManager;
@@ -61,6 +62,7 @@ public class TagService extends AbstractDaoService {
      * @param dto
      * @return
      */
+    @PreAuthorize("isPermitted('admin:tags')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public TagDTO create(@RequestBody TagDTO dto) {
         Tag tag = conversionService.convert(dto, Tag.class);
@@ -153,6 +155,7 @@ public class TagService extends AbstractDaoService {
      * @param entity
      * @return
      */
+    @PreAuthorize("isPermitted('admin:tags')")
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public TagDTO update(@PathVariable("id") Integer id, @RequestBody TagDTO entity) {
         Tag existing = tagRepository.findById(id).orElse(null);
@@ -179,6 +182,7 @@ public class TagService extends AbstractDaoService {
      *
      * @param id
      */
+    @PreAuthorize("isPermitted('admin:tags')")
     @DeleteMapping(value = "/{id}")
     public void delete(@PathVariable("id") Integer id) {
         Tag existing = tagRepository.findById(id).orElseThrow();
@@ -274,6 +278,7 @@ public class TagService extends AbstractDaoService {
      *
      * @param dto
      */
+    @PreAuthorize("isPermitted('admin:tags')")
     @PostMapping(value = "/multiAssign", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void assignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
         tagGroupService.assignGroup(dto);
@@ -284,6 +289,7 @@ public class TagService extends AbstractDaoService {
      *
      * @param dto
      */
+    @PreAuthorize("isPermitted('admin:tags')")
     @PostMapping(value = "/multiUnassign", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void unassignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
         tagGroupService.unassignGroup(dto);

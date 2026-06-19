@@ -306,4 +306,24 @@ public class SourceAccessIT extends WebApiIT {
             HttpStatus.valueOf(r.getStatusCode().value())
         );
     }
+
+    /**
+     * A limited user (authenticated, but with no source grant) must receive
+     * HTTP 403 Forbidden when accessing the source-scoped EvidenceService info
+     * endpoint ({@code GET /evidence/{sourceKey}/info}).
+     *
+     * <p>This test is RED until Task 5 adds
+     * {@code @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")}
+     * to {@code EvidenceService#getInfo} (and all other source-scoped evidence
+     * handlers) and GREEN once those annotations are in place.
+     */
+    @Test
+    public void limitedUserDeniedEvidenceSourceScopedInfo() {
+        ResponseEntity<String> r = getAsLimitedUser("/evidence/" + SOURCE_KEY + "/info");
+        assertEquals(
+            "Limited user (no source grant) should be denied with 403 Forbidden on source-scoped EvidenceService info endpoint",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
 }

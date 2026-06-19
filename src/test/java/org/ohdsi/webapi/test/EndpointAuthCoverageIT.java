@@ -11,11 +11,14 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -100,5 +103,37 @@ public class EndpointAuthCoverageIT extends WebApiIT {
         HttpHeaders h = new HttpHeaders();
         h.setContentType(MediaType.APPLICATION_JSON);
         return h;
+    }
+
+    @Test
+    public void everySourceScopedHandlerHasAuthorization() {
+        List<String> unguarded = new ArrayList<>();
+        for (HandlerMethod hm : handlerMapping.getHandlerMethods().values()) {
+            if (!hm.getBeanType().getName().startsWith("org.ohdsi.webapi")) {
+                continue;
+            }
+            if (!hasSourceKeyPathVariable(hm)) {
+                continue;
+            }
+            boolean guarded = hm.getMethod().isAnnotationPresent(PreAuthorize.class)
+                || hm.getBeanType().isAnnotationPresent(PreAuthorize.class);
+            if (!guarded) {
+                unguarded.add(hm.getBeanType().getSimpleName() + "#" + hm.getMethod().getName());
+            }
+        }
+        assertTrue(
+            "Source-scoped handlers (@PathVariable(\"sourceKey\")) missing @PreAuthorize:\n  "
+                + String.join("\n  ", unguarded),
+            unguarded.isEmpty());
+    }
+
+    private static boolean hasSourceKeyPathVariable(HandlerMethod hm) {
+        for (MethodParameter p : hm.getMethodParameters()) {
+            PathVariable pv = p.getParameterAnnotation(PathVariable.class);
+            if (pv != null && ("sourceKey".equals(pv.value()) || "sourceKey".equals(pv.name()))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

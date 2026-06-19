@@ -303,12 +303,11 @@ public class CDMResultsService extends AbstractDaoService {
      * Clear the cdm_cache and achilles_cache for all sources
      *
      * @summary Clear the cdm_cache and achilles_cache for all sources
-     * @throws ResponseStatusException if the user is not an admin
      */
     @PostMapping(value = "/clearCache")
     @Transactional()
+    @PreAuthorize("isPermitted('admin:cache')")
     public void clearCache() {
-        //TODO: Add admin permission check
         cacheService.clearCache();
         cdmCacheService.clearCache();
     }

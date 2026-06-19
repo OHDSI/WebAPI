@@ -8,6 +8,10 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.security.authc.JwtService;
@@ -168,6 +172,25 @@ public class SourceAccessIT extends WebApiIT {
         return limitedClient.getForEntity(getBaseUri() + path, String.class);
     }
 
+    /**
+     * Issues a POST request to {@code getBaseUri() + path} as the limited user
+     * (authenticated but with no source grant or admin permissions), with an
+     * empty body.
+     *
+     * @param path the path relative to the WebAPI base URI
+     * @return the raw HTTP response
+     */
+    protected ResponseEntity<String> postAsLimitedUser(String path) {
+        TestRestTemplate limitedClient = new TestRestTemplate();
+        limitedClient.getRestTemplate().getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().set("Authorization", "Bearer " + limitedUserJwt);
+            return execution.execute(request, body);
+        });
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
+        return limitedClient.exchange(getBaseUri() + path, HttpMethod.POST, requestEntity, String.class);
+    }
+
     // ---------------------------------------------------------------------------
     // Validating tests
     // ---------------------------------------------------------------------------
@@ -241,6 +264,26 @@ public class SourceAccessIT extends WebApiIT {
         ResponseEntity<String> r = getAsLimitedUser("/cdmresults/" + SOURCE_KEY + "/person");
         assertEquals(
             "Limited user (no source grant) should be denied with 403 Forbidden on CDMResultsService person endpoint",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
+
+    /**
+     * A limited user (authenticated, but without admin:cache permission) must
+     * receive HTTP 403 Forbidden on the global CDMResultsService cache-clear
+     * endpoint ({@code POST /cdmresults/clearCache}).
+     *
+     * <p>This test is RED until {@code CDMResultsService#clearCache} is
+     * annotated with
+     * {@code @PreAuthorize("isPermitted('admin:cache')")}
+     * and GREEN once that annotation is in place.
+     */
+    @Test
+    public void limitedUserDeniedGlobalCdmResultsCacheClear() {
+        ResponseEntity<String> r = postAsLimitedUser("/cdmresults/clearCache");
+        assertEquals(
+            "Limited user (no admin:cache permission) should be denied with 403 Forbidden on global CDMResults cache clear",
             HttpStatus.FORBIDDEN,
             HttpStatus.valueOf(r.getStatusCode().value())
         );

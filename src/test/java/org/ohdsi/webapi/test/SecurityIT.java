@@ -40,4 +40,9 @@ public class SecurityIT extends WebApiIT {
         assertEquals(HttpStatus.OK, statusOf("/info"));
         assertEquals(HttpStatus.OK, statusOf("/auth/providers"));
     }
+
+    @Test
+    public void cacheClearRejectsAnonymous() {
+        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/cache/clear"));
+    }
 }

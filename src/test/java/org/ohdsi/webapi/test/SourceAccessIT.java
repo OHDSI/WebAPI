@@ -270,6 +270,24 @@ public class SourceAccessIT extends WebApiIT {
     }
 
     /**
+     * A limited user (authenticated, but with no source grant) must receive
+     * HTTP 403 Forbidden when accessing a source-scoped VocabularyService endpoint.
+     *
+     * <p>This test is RED until Task 4 adds
+     * {@code @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")}
+     * to source-scoped handlers in {@code VocabularyService}.
+     */
+    @Test
+    public void limitedUserDeniedVocabularySourceScopedConcept() {
+        ResponseEntity<String> r = getAsLimitedUser("/vocabulary/" + SOURCE_KEY + "/concept/1");
+        assertEquals(
+            "Limited user (no source grant) should be denied with 403 Forbidden on source-scoped VocabularyService endpoint",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
+
+    /**
      * A limited user (authenticated, but without admin:cache permission) must
      * receive HTTP 403 Forbidden on the global CDMResultsService cache-clear
      * endpoint ({@code POST /cdmresults/clearCache}).

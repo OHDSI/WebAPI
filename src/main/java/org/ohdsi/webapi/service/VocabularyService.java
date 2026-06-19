@@ -69,6 +69,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
@@ -195,6 +196,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param ids Concepts identifiers from concept set
    * @return A map of the form: {id -> List<ascendant id>}
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/lookup/identifiers/ancestors",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -270,6 +272,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param identifiers an array of concept identifiers
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/lookup/identifiers",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -353,6 +356,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourcecodes array of source codes
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/lookup/sourcecodes",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -409,6 +413,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param identifiers an array of concept identifiers
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/lookup/mapped",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -492,6 +497,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param search The ConceptSearch parameters
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/search",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -673,6 +679,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param query The query to use to search for concepts
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/search/{query}",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public Collection<Concept> executeSearch(
@@ -691,6 +698,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param rows The number of rows to return.
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/search",
               produces = MediaType.APPLICATION_JSON_VALUE,
               params = "query")
@@ -758,6 +766,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param id The concept ID to find
    * @return The concept details
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/concept/{id}",
               produces = MediaType.APPLICATION_JSON_VALUE)
   @Cacheable(cacheNames = CachingSetup.CONCEPT_DETAIL_CACHE, key = "#sourceKey.concat('/').concat(#id)")
@@ -810,6 +819,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param id The concept ID to find
    * @return A collection of related concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/concept/{id}/related",
               produces = MediaType.APPLICATION_JSON_VALUE)
   @Cacheable(cacheNames = CachingSetup.CONCEPT_RELATED_CACHE, key = "#sourceKey.concat('/').concat(#id)")
@@ -829,6 +839,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
+   @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
    @PostMapping(value = "/{sourceKey}/related-standard",
                 produces = MediaType.APPLICATION_JSON_VALUE)
    public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(
@@ -907,6 +918,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param id The concept ID
    * @return A collection of related concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/concept/{id}/ancestorAndDescendant",
               produces = MediaType.APPLICATION_JSON_VALUE)
   @Cacheable(cacheNames = CachingSetup.CONCEPT_HIERARCHY_CACHE, key = "#sourceKey.concat('/').concat(#id)")
@@ -955,6 +967,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param identifiers An array of concept identifiers
    * @return A collection of related concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/commonAncestors",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1015,6 +1028,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptSetExpression A concept set expression
    * @return A collection of concept identifiers
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/resolveConceptSetExpression",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1063,6 +1077,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptSetExpression A concept set expression
    * @return A count of included concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/included-concepts/count",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1123,6 +1138,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param id The concept identifier
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/concept/{id}/descendants",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public Collection<RelatedConcept> getDescendantConcepts(
@@ -1171,6 +1187,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourceKey The source containing the vocabulary
    * @return A collection of domains
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/domains",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public Collection<Domain> getDomains(@PathVariable("sourceKey") String sourceKey) {
@@ -1217,6 +1234,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourceKey The source containing the vocabulary
    * @return A collection of vocabularies
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/vocabularies",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public Collection<Vocabulary> getVocabularies(@PathVariable("sourceKey") String sourceKey) {
@@ -1294,6 +1312,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourceKey The source containing the vocabulary
    * @return The vocabulary info
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/info",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public VocabularyInfo getInfo(@PathVariable("sourceKey") String sourceKey) {
@@ -1345,6 +1364,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param search The descendant of ancestor search object
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/descendantofancestor",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1399,6 +1419,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param search The concept identifiers of interest
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/relatedconcepts",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1464,6 +1485,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptList The list of concept identifiers
    * @return A collection of concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/conceptlist/descendants",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1520,6 +1542,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptList The list of concept identifiers
    * @return A collection of recommended concepts
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/lookup/recommended",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1580,6 +1603,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
    * @return A collection of concept set comparisons
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/compare",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1611,6 +1635,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return returnVal;
   }
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/compare-arbitrary",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -1693,6 +1718,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param conceptSetExpression The concept set expression to optimize
    * @return A concept set optimization
    */
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @PostMapping(value = "/{sourceKey}/optimize",
                produces = MediaType.APPLICATION_JSON_VALUE,
                consumes = MediaType.APPLICATION_JSON_VALUE)

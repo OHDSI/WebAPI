@@ -258,21 +258,29 @@ public class JwtAuthConfig {
   public SecurityFilterChain apiChain(HttpSecurity http,
       org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint) throws Exception {
 
-    httpSecurityShared.configureDefaults(http); 
- 
+    httpSecurityShared.configureDefaults(http);
+
     http
         .httpBasic(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
-            .anyRequest().permitAll())
+            // Endpoints that must stay reachable before login (used by the login page):
+            //   /info            – server/version banner
+            //   /auth/providers  – list of enabled auth methods
+            //   /i18n/**         – localization bundles
+            .requestMatchers("/info", "/auth/providers", "/i18n/**").permitAll()
+            // Everything else now requires an authenticated principal.
+            .anyRequest().authenticated())
         // Configure JWT authentication
         .oauth2ResourceServer(oauth -> oauth
             .authenticationEntryPoint(unauthorizedEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(
                 new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
-        // Fallback to anonymous if JWT not present
+        // Token-less requests become anonymous (rejected by authenticated()).
         .anonymous(anon -> anon
             .principal(WebApiPrincipal.ANONYMOUS)
-            .authorities("ROLE_ANONYMOUS"));
+            .authorities("ROLE_ANONYMOUS"))
+        // Return 401 (not 403) when an anonymous request hits a protected endpoint.
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint));
 
     return http.build();
   }

@@ -283,6 +283,12 @@ public class VocabularyService extends AbstractDaoService {
     return executeIdentifierLookup(source, identifiers);
   }
 
+  // Ungated variant for internal (non-HTTP) callers; HTTP access goes through the @PreAuthorize-gated overload.
+  public Collection<Concept> executeIdentifierLookupInternal(String sourceKey, long[] identifiers) {
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      return executeIdentifierLookup(source, identifiers);
+  }
+
   protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
     Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {

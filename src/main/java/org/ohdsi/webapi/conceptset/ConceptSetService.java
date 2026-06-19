@@ -333,7 +333,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             sourceKey = sourceInfo.sourceKey;
         }
 
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
+        Collection<Concept> concepts = vocabService.executeIdentifierLookupInternal(sourceKey, identifiers);
         if (concepts.size() != identifiers.length) {
             String ids = Arrays.stream(identifiers).boxed()
                     .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))

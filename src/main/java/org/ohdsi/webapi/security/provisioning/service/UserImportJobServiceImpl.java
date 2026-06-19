@@ -57,7 +57,6 @@ import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 @RestController
 @RequestMapping("/user/import/job")
 @Transactional
-@PreAuthorize("isPermitted('admin:security')")
 public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> implements UserImportJobService {
 
   private final UserImportService userImportService;
@@ -175,6 +174,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public UserImportJobDTO createJobEndpoint(@RequestBody UserImportJobDTO jobDTO) {
     UserImportJob job = conversionService.convert(jobDTO, UserImportJob.class);
     try {
@@ -194,6 +194,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public UserImportJobDTO updateJobEndpoint(
           @PathVariable("id") Long jobId,
           @RequestBody UserImportJobDTO jobDTO) {
@@ -214,6 +215,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       produces = MediaType.APPLICATION_JSON_VALUE
   )
   @Transactional
+  @PreAuthorize("isPermitted('admin:security')")
   public List<UserImportJobDTO> listJobsEndpoint() {
     return getJobs().stream()
             .map(job -> conversionService.convert(job, UserImportJobDTO.class))
@@ -229,6 +231,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       value = "/{id}",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public UserImportJobDTO getJobEndpoint(@PathVariable("id") Long id) {
     return getJob(id)
             .map(job -> conversionService.convert(job, UserImportJobDTO.class))
@@ -241,6 +244,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @DeleteMapping(
       value = "/{id}"
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public void deleteJobEndpoint(@PathVariable("id") Long id) {
     UserImportJob job = getJob(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -254,6 +258,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       value = "/{id}/history",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public List<JobHistoryItemDTO> getImportHistoryEndpoint(@PathVariable("id") Long id) {
     return getJobHistoryItems(id)
             .map(item -> conversionService.convert(item, JobHistoryItemDTO.class))

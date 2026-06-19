@@ -191,6 +191,28 @@ public class SourceAccessIT extends WebApiIT {
         return limitedClient.exchange(getBaseUri() + path, HttpMethod.POST, requestEntity, String.class);
     }
 
+    /**
+     * Issues a POST request with {@code Content-Type: application/json} and an
+     * empty JSON object body ({@code {}}) as the limited user.  Use this variant
+     * for endpoints that require a JSON content type so that Spring's dispatcher
+     * routes the request to the handler method — allowing {@code @PreAuthorize}
+     * to fire — rather than rejecting it with 415 before security runs.
+     *
+     * @param path the path relative to the WebAPI base URI
+     * @return the raw HTTP response
+     */
+    protected ResponseEntity<String> postAsLimitedUserJson(String path) {
+        TestRestTemplate limitedClient = new TestRestTemplate();
+        limitedClient.getRestTemplate().getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().set("Authorization", "Bearer " + limitedUserJwt);
+            return execution.execute(request, body);
+        });
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestEntity = new HttpEntity<>("{}", headers);
+        return limitedClient.exchange(getBaseUri() + path, HttpMethod.POST, requestEntity, String.class);
+    }
+
     // ---------------------------------------------------------------------------
     // Validating tests
     // ---------------------------------------------------------------------------
@@ -322,6 +344,29 @@ public class SourceAccessIT extends WebApiIT {
         ResponseEntity<String> r = getAsLimitedUser("/evidence/" + SOURCE_KEY + "/info");
         assertEquals(
             "Limited user (no source grant) should be denied with 403 Forbidden on source-scoped EvidenceService info endpoint",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
+
+    /**
+     * A limited user (authenticated, but without admin permission) must receive
+     * HTTP 403 Forbidden on the StatisticService executions endpoint
+     * ({@code POST /statistic/executions}).
+     *
+     * <p>This test is RED until Task 6 adds
+     * {@code @PreAuthorize("isPermitted('admin')")} to all 3 handlers in
+     * {@code StatisticService} and GREEN once those annotations are in place.
+     *
+     * <p>Note: an empty POST body may yield 400 before annotation (body binding
+     * runs before security); after annotation it must be 403 because the
+     * security gate runs first.
+     */
+    @Test
+    public void limitedUserDeniedStatisticExecutions() {
+        ResponseEntity<String> r = postAsLimitedUserJson("/statistic/executions");
+        assertEquals(
+            "Limited user (no admin permission) should be denied with 403 Forbidden on StatisticService executions endpoint",
             HttpStatus.FORBIDDEN,
             HttpStatus.valueOf(r.getStatusCode().value())
         );

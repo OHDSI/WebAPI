@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -44,6 +45,7 @@ public class CohortSampleService {
 	 * @param sourceKey
 	 * @return JSON containing information about cohort samples
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
 	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleListDTO listCohortSamples(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
@@ -73,6 +75,7 @@ public class CohortSampleService {
 	 * @param fields
 	 * @return personId, gender, age of each person in the cohort sample
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
 	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}/{sampleId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO getCohortSample(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
@@ -94,6 +97,7 @@ public class CohortSampleService {
 	 * @param fields
 	 * @return A sample of persons from a cohort
 	 */
+	@PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
 	@PostMapping(value = "/{cohortDefinitionId}/{sourceKey}/{sampleId}/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO refreshCohortSample(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
@@ -126,6 +130,7 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return true or false
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
 	@GetMapping(value = "/has-samples/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map<String, Boolean> hasSamplesForSource(
 			@PathVariable("sourceKey") String sourceKey,
@@ -143,6 +148,7 @@ public class CohortSampleService {
 	 * @param sampleParameters
 	 * @return
 	 */
+	@PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
 	@PostMapping(value = "/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO createCohortSample(
 			@PathVariable("sourceKey") String sourceKey,
@@ -169,6 +175,7 @@ public class CohortSampleService {
 	 * @param sampleId
 	 * @return
 	 */
+	@PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
 	@DeleteMapping("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
 	public ResponseEntity<Void> deleteCohortSample(
 			@PathVariable("sourceKey") String sourceKey,
@@ -189,6 +196,7 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return
 	 */
+	@PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
 	@DeleteMapping("/{cohortDefinitionId}/{sourceKey}")
 	public ResponseEntity<Void> deleteCohortSamples(
 			@PathVariable("sourceKey") String sourceKey,

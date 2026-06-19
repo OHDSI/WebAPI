@@ -208,4 +208,23 @@ public class SourceAccessIT extends WebApiIT {
             HttpStatus.valueOf(r.getStatusCode().value())
         );
     }
+
+    /**
+     * A limited user (authenticated, but with no source grant) must receive
+     * HTTP 403 Forbidden on the source-scoped CohortSampleService
+     * {@code hasSamplesForSource} endpoint.
+     *
+     * <p>This test is RED until Task 2 adds
+     * {@code @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")}
+     * to {@code CohortSampleService#hasSamplesForSource}.
+     */
+    @Test
+    public void limitedUserDeniedCohortSampleSourceScopedRead() {
+        ResponseEntity<String> r = getAsLimitedUser("/cohortsample/has-samples/1/" + SOURCE_KEY);
+        assertEquals(
+            "Limited user (no source grant) should be denied with 403 Forbidden on source-scoped CohortSampleService read",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
 }

@@ -11,6 +11,7 @@ import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tool.dto.ToolDTO;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,6 +41,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
+    @PreAuthorize("isPermitted('admin:tools')")
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ToolDTO saveTool(@RequestBody ToolDTO toolDTO) {
         Tool tool = saveToolFromDTO(toolDTO, getCurrentUser());
@@ -62,11 +64,13 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
+    @PreAuthorize("isPermitted('admin:tools')")
     @DeleteMapping(value = "/{id}")
     public void delete(@PathVariable("id") Integer id) {
         toolRepository.deleteById(id);
     }
 
+    @PreAuthorize("isPermitted('admin:tools')")
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ToolDTO updateTool(@RequestBody ToolDTO toolDTO) {
         return saveTool(toolDTO);

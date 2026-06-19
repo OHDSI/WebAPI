@@ -251,8 +251,10 @@ security:
     enabled: true
     allowed-origins: http://localhost
     
-  # If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.
-  # If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have read permissions to
+  # defaultGlobalReadPermissions: when true (default), the built-in "public" role grants every
+  # authenticated user read access to all artifacts (cohorts, concept sets, analyses, etc.).
+  # Set to false to enforce per-asset access control, where users must be explicitly granted
+  # read permission on each artifact before they can see it.
   defaultGlobalReadPermissions: true
 
   defaultRoles: ""

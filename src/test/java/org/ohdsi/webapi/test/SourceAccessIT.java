@@ -227,4 +227,22 @@ public class SourceAccessIT extends WebApiIT {
             HttpStatus.valueOf(r.getStatusCode().value())
         );
     }
+
+    /**
+     * A limited user (authenticated, but with no source grant) must receive
+     * HTTP 403 Forbidden when accessing the CDMResultsService person endpoint.
+     *
+     * <p>This test is RED until Task 3 adds
+     * {@code @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")}
+     * to {@code CDMResultsService#getPerson}.
+     */
+    @Test
+    public void limitedUserDeniedCdmResultsPerson() {
+        ResponseEntity<String> r = getAsLimitedUser("/cdmresults/" + SOURCE_KEY + "/person");
+        assertEquals(
+            "Limited user (no source grant) should be denied with 403 Forbidden on CDMResultsService person endpoint",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
 }

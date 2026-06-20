@@ -354,7 +354,9 @@ public class PathwayController {
 	 * @return a CommonGenerationDTO for the given generation id
 	 */
 	@GetMapping(value = "/generation/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
+	@PreAuthorize("isAuthenticated()")
 	public CommonGenerationDTO getPathwayGenerations(
 					@PathVariable("generationId") final Long generationId
 	) {
@@ -377,7 +379,9 @@ public class PathwayController {
 	 * @return a JSON representation of the pathway analysis design.
 	 */
 	@GetMapping(value = "/generation/{generationId}/design", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
+	@PreAuthorize("isAuthenticated()")
 	public String getGenerationDesign(
 					@PathVariable("generationId") final Long generationId
 	) {
@@ -395,7 +399,9 @@ public class PathwayController {
 	 * @return the pathway analysis results
 	 */
 	@GetMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
+	@PreAuthorize("isAuthenticated()")
 	public PathwayPopulationResultsDTO getGenerationResults(
 					@PathVariable("generationId") final Long generationId
 	) {

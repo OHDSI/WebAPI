@@ -63,6 +63,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -131,6 +132,7 @@ public class UserImportServiceImpl implements UserImportService {
       value = "/providers",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public AuthenticationProviders getAuthenticationProviders() {
     AuthenticationProviders providers = new AuthenticationProviders();
     providers.setAdUrl(adUrl);
@@ -145,6 +147,7 @@ public class UserImportServiceImpl implements UserImportService {
       value = "/import/{type}/test",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public ConnectionInfo testConnectionEndpoint(@PathVariable("type") String type) {
     LdapProviderType provider = LdapProviderType.fromValue(type);
     ConnectionInfo result = new ConnectionInfo();
@@ -161,6 +164,7 @@ public class UserImportServiceImpl implements UserImportService {
       value = "/import/{type}/groups",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public List<LdapGroup> findGroupsEndpoint(
           @PathVariable("type") String type,
           @RequestParam(value = "search", required = false) String searchStr) {
@@ -176,6 +180,7 @@ public class UserImportServiceImpl implements UserImportService {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public List<AtlasUserRoles> findDirectoryUsers(
           @PathVariable("type") String type,
           @RequestBody RoleGroupMapping mapping) {
@@ -191,6 +196,7 @@ public class UserImportServiceImpl implements UserImportService {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public UserImportJobDTO importUsersEndpoint(
           @RequestBody List<AtlasUserRoles> users,
           @RequestParam(value = "provider") String provider,
@@ -225,6 +231,7 @@ public class UserImportServiceImpl implements UserImportService {
       value = "/import/{type}/mapping",
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public void saveMappingEndpoint(@PathVariable("type") String type, @RequestBody RoleGroupMapping mapping) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
     List<RoleGroupEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
@@ -238,6 +245,7 @@ public class UserImportServiceImpl implements UserImportService {
       value = "/import/{type}/mapping",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
+  @PreAuthorize("isPermitted('admin:security')")
   public RoleGroupMapping getMappingEndpoint(@PathVariable("type") String type) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
     List<RoleGroupEntity> mappingEntities = getRoleGroupMapping(providerType);

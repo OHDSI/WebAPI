@@ -41,6 +41,7 @@ public class PermissionController {
      * @return A list of permissions
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:security')")
     public List<Permission> getPermissions() {
         return this.authorizationService.getPermissions();
     }
@@ -53,6 +54,7 @@ public class PermissionController {
      * @return The list of matching roles
      */
     @GetMapping(value = "/access/suggest", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:security')")
     public List<Role> suggestRoles(@RequestParam(value = "roleSearch", required = false) String roleSearch) {
         return this.authorizationService.searchRoles(roleSearch);
     }
@@ -67,6 +69,7 @@ public class PermissionController {
      * @return The list of roles with the specified access
      */
     @GetMapping(value = "/access/{entityType}/{entityId}/{accessType}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:security')")
     public List<Role> getRolesForEntityByAccessType(
             @PathVariable("entityType") EntityType entityType,
             @PathVariable("entityId") Long entityId,
@@ -84,6 +87,7 @@ public class PermissionController {
      * @return The list of roles with WRITE access
      */
     @GetMapping(value = "/access/{entityType}/{entityId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:security')")
     public List<Role> getRolesForEntity(
             @PathVariable("entityType") EntityType entityType,
             @PathVariable("entityId") Long entityId

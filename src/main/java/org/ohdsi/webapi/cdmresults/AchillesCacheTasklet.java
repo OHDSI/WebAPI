@@ -145,7 +145,8 @@ public class AchillesCacheTasklet implements Tasklet {
     }
 
     private List<Integer> getConceptIds(String domain) {
-        ArrayNode treeMap = service.getTreemap(domain, source.getSourceKey());
+        // call ungated raw method: this runs in a batch job with no security context
+        ArrayNode treeMap = service.getRawTreeMap(domain, source.getSourceKey());
         Stream<JsonNode> nodes = IntStream.range(0, treeMap.size()).mapToObj(treeMap::get);
         return nodes.map(node -> node.get("conceptId").intValue())
                 .distinct()

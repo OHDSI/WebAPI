@@ -6,6 +6,7 @@ import org.ohdsi.webapi.util.CacheHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +43,7 @@ public class CacheMvcController extends AbstractMvcController {
     /**
      * Get list of all caches with statistics.
      */
+    @PreAuthorize("isPermitted('admin:cache')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CacheInfo>> getCacheInfoList() {
         List<CacheInfo> caches = new ArrayList<>();
@@ -64,6 +66,7 @@ public class CacheMvcController extends AbstractMvcController {
     /**
      * Clear all caches.
      */
+    @PreAuthorize("isPermitted('admin:cache')")
     @GetMapping(value = "/clear", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ClearCacheResult> clearAll() {
         ClearCacheResult result = new ClearCacheResult();

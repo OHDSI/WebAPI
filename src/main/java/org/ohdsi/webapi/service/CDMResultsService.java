@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.annotation.PostConstruct;
@@ -184,6 +185,7 @@ public class CDMResultsService extends AbstractDaoService {
     @PostMapping(value = "/{sourceKey}/conceptRecordCount",
                  consumes = MediaType.APPLICATION_JSON_VALUE,
                  produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public List<SimpleEntry<Integer, List<Long>>> getConceptRecordCount(
             @PathVariable("sourceKey") String sourceKey,
             @RequestBody List<Integer> identifiers) {
@@ -218,6 +220,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(DASHBOARD)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public CDMDashboard getDashboard(@PathVariable("sourceKey") final String sourceKey) {
         return getRawDashboard(sourceKey);
     }
@@ -235,6 +238,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/person", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(PERSON)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public CDMPersonSummary getPerson(@PathVariable("sourceKey") final String sourceKey) {
         return getRawPerson(sourceKey);
     }
@@ -252,6 +256,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return The job execution information
      */
     @GetMapping(value = "/{sourceKey}/warmCache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
     public JobExecutionResource warmCache(@PathVariable("sourceKey") final String sourceKey) {
         return this.warmCacheByKey(sourceKey);
     }
@@ -264,8 +269,8 @@ public class CDMResultsService extends AbstractDaoService {
      * @return The job execution resource
      */
     @GetMapping(value = "/{sourceKey}/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
     public JobExecutionResource refreshCache(@PathVariable("sourceKey") final String sourceKey) {
-        // TODO: Add Source Permission Check
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
         if (jobExecutionResource == null) {
@@ -287,8 +292,8 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @PostMapping(value = "/{sourceKey}/clearCache")
     @Transactional()
+    @PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
     public void clearCacheForSource(@PathVariable("sourceKey") final String sourceKey) {
-      // TODO: Add admin:source permission check
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       cacheService.clearCache(source);
       cdmCacheService.clearCache(source);
@@ -298,12 +303,11 @@ public class CDMResultsService extends AbstractDaoService {
      * Clear the cdm_cache and achilles_cache for all sources
      *
      * @summary Clear the cdm_cache and achilles_cache for all sources
-     * @throws ResponseStatusException if the user is not an admin
      */
     @PostMapping(value = "/clearCache")
     @Transactional()
+    @PreAuthorize("isPermitted('admin:cache')")
     public void clearCache() {
-        //TODO: Add admin permission check
         cacheService.clearCache();
         cdmCacheService.clearCache();
     }
@@ -316,6 +320,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/datadensity", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(DATA_DENSITY)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public CDMDataDensity getDataDensity(@PathVariable("sourceKey") final String sourceKey) {
         return getRawDataDesity(sourceKey);
     }
@@ -333,6 +338,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/death", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(DEATH)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public CDMDeath getDeath(@PathVariable("sourceKey") final String sourceKey) {
         return getRawDeath(sourceKey);
     }
@@ -350,6 +356,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/observationPeriod", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(OBSERVATION_PERIOD)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public CDMObservationPeriod getObservationPeriod(@PathVariable("sourceKey") final String sourceKey) {
         return getRawObservationPeriod(sourceKey);
     }
@@ -368,6 +375,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/{domain}", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(TREEMAP)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public ArrayNode getTreemap(
             @PathVariable("sourceKey") final String sourceKey,
             @PathVariable("domain") final String domain) {
@@ -391,6 +399,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @GetMapping(value = "/{sourceKey}/{domain}/{conceptId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @AchillesCache(DRILLDOWN)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
     public JsonNode getDrilldown(
             @PathVariable("sourceKey") final String sourceKey,
             @PathVariable("domain") final String domain,

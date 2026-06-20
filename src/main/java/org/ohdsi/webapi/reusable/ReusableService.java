@@ -112,6 +112,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:reusable','write:reusable'))")
     public Page<ReusableDTO> page(@Pagination Pageable pageable) {
         return reusableRepository.findAll(pageable)
                 .map(reusable -> {
@@ -245,6 +246,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:reusable','write:reusable'))")
     public List<ReusableDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
         if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
             return Collections.emptyList();
@@ -280,6 +282,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isAnyPermitted(anyOf('read:reusable','write:reusable')) or hasEntityAccess(#id, REUSABLE, READ)")
     public boolean exists(@PathVariable("id") int id, @RequestParam(value = "name", required = false) String name) {
         return reusableRepository.existsCount(id, name) > 0;
     }

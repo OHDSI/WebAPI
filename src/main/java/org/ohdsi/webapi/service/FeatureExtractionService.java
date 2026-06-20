@@ -7,6 +7,7 @@ package org.ohdsi.webapi.service;
 
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.MediaType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 
@@ -24,6 +25,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 	 * @return JSON with default covariate settings object
 	 */
 	@GetMapping(value = "/defaultcovariatesettings", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
 	public String getDefaultCovariateSettings(@RequestParam(value = "temporal", required = false) final String temporal) {
 		boolean getTemporal = false;
 		try {

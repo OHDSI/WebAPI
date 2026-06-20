@@ -255,9 +255,24 @@ security:
     enabled: true
     allowed-origins: http://localhost
     
-  # If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.
-  # If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have read permissions to
+  # defaultGlobalReadPermissions: when true (default), the built-in "public" role grants every
+  # authenticated user read access to all artifacts (cohorts, concept sets, analyses, etc.).
+  # Set to false to enforce per-asset access control, where users must be explicitly granted
+  # read permission on each artifact before they can see it.
   defaultGlobalReadPermissions: true
+
+  # anonymousAccess.enabled controls whether requests without a valid token are
+  # served as the built-in 'anonymous' user instead of being rejected with 401.
+  #   true (default) – token-less requests proceed as the anonymous user, so
+  #                    WebAPI works without an auth provider configured.
+  #                    Per-endpoint @PreAuthorize still applies, so anonymous gets
+  #                    only what its role (plus defaultGlobalReadPermissions)
+  #                    grants. Set defaultGlobalReadPermissions=false to stop
+  #                    anonymous from reading every artifact.
+  #   false          – default-deny: every endpoint outside the login allow-list
+  #                    requires authentication. Use when every client logs in.
+  anonymousAccess:
+    enabled: true
 
   defaultRoles: ""
 

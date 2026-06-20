@@ -694,6 +694,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param request A GenerateSqlRequest containing the cohort expression and options.
 	 * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/sql", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public GenerateSqlResult generateSql(@RequestBody GenerateSqlRequest request) {
 		CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
@@ -714,6 +715,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return List of metadata about all cohort definitions in WebAPI
 	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
@@ -967,6 +969,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param id - the Cohort Definition ID to generate
 	 * @return information about the Cohort Analysis Job for each source
 	 */
+	@PreAuthorize("isOwner(#id, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#id, COHORT_DEFINITION, READ)")
 	@GetMapping(value = "/{id}/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public List<CohortGenerationInfoDTO> getInfo(@PathVariable("id") final int id) {
@@ -1198,6 +1201,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 *            The cohort definition expression
 	 * @return The cohort check result
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/check", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public CheckResultDTO runDiagnostics(@RequestBody CohortExpression expression) {
@@ -1216,6 +1220,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param cohortDTO The cohort definition expression
 	 * @return The cohort check result
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/checkV2", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public CheckResult runDiagnosticsWithTags(@RequestBody CohortDTO cohortDTO) {
@@ -1244,6 +1249,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return an HTTP response with the content, with the appropriate MediaType
 	 * based on the format that was requested.
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/printfriendly/cohort", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity cohortPrintFriendly(@RequestBody CohortExpression expression, @RequestParam(value = "format", defaultValue = "html") String format) {
 		String markdown = convertCohortExpressionToMarkdown(expression);
@@ -1264,6 +1270,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return an HTTP response with the content, with the appropriate MediaType
 	 * based on the format that was requested.
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/printfriendly/conceptsets", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity conceptSetListPrintFriendly(@RequestBody List<ConceptSet> conceptSetList, @RequestParam(value = "format", defaultValue = "html") String format) {
 		String markdown = markdownPF.renderConceptSetList(conceptSetList.toArray(new ConceptSet[0]));
@@ -1477,6 +1484,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param requestDTO contains a list of tag names
 	 * @return the set of cohort definitions that match one of the included tag names.
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {

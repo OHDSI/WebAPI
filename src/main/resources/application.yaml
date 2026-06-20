@@ -19,6 +19,10 @@ cache:
     cleanupInterval: 3600000
     invalidAfterDays: 30
     useAsync: false
+  # JSR-107/Ehcache on-heap entry limits (see CacheConfig).
+  heap:
+    smallEntries: 50
+    mediumEntries: 500
   jobs:
     count: 3
 cdm:
@@ -354,8 +358,6 @@ spring:
       threadGroupName: ""
       threadNamePrefix: ""
   cache:
-    jcache:
-      config: classpath:appCache.xml
     type: jcache
   data:
     ldap:

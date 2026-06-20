@@ -324,6 +324,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return saveCc(entity);
     }
 
+    @Override
+    protected UserEntity getCurrentUser() {
+        org.ohdsi.webapi.security.identity.WebApiPrincipal principal = this.authorizationService.getAuthenticatedPrincipal();
+        return this.userRepository.findById(principal.getUserId()).orElseThrow();
+    }
+
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
         CohortCharacterizationEntity savedEntity = repository.save(entity);
 

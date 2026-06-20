@@ -6,11 +6,17 @@ import org.junit.Test;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Verifies the default-deny security model: every endpoint except the login
  * allow-list must reject unauthenticated (token-less) requests with 401.
+ *
+ * <p>Pins {@code security.anonymousAccess.enabled=false} so this exercises the
+ * default-deny mode regardless of the shipped default; the opt-in anonymous mode
+ * is covered by {@link AnonymousAccessIT}.
  */
+@TestPropertySource(properties = "security.anonymousAccess.enabled=false")
 public class SecurityIT extends WebApiIT {
 
     /** A template with NO Authorization interceptor — simulates an anonymous caller. */

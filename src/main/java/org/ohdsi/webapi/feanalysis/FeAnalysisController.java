@@ -56,6 +56,7 @@ public class FeAnalysisController {
      * @return
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
         return service.getPage(pageable).map(entity -> {
             FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
@@ -72,6 +73,7 @@ public class FeAnalysisController {
      * @return 1 if the name conflicts with an existing feature analysis name and 0 otherwise
      */
     @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, FE_ANALYSIS) or isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#id, FE_ANALYSIS, READ)")
     public int getCountFeWithSameName(@PathVariable(value = "id", required = false) final int id, @RequestParam("name") String name) {
         return service.getCountFeWithSameName(id, name);
     }
@@ -81,6 +83,7 @@ public class FeAnalysisController {
      * @return Feature analysis domains such as DRUG, DRUG_ERA, MEASUREMENT, etc.
      */
     @GetMapping(value = "/domains", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public List<OptionDTO> listDomains() {
 
         List<OptionDTO> options = new ArrayList<>();
@@ -239,6 +242,7 @@ public class FeAnalysisController {
      * @return
      */
     @GetMapping(value = "/aggregates", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public List<FeAnalysisAggregateDTO> listAggregates() {
         List<FeAnalysisAggregateDTO> result = service.findAggregates().stream()
                 .map(this::convertFeAnalysisAggregateToDto)

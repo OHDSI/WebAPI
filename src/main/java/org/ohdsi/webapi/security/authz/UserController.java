@@ -33,6 +33,7 @@ public class UserController {
 
 
   @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public ArrayList<User> getUsers() {
     Iterable<User> userDtos = this.authorizer.getUsers();
     ArrayList<User> users = new ArrayList<>();
@@ -44,6 +45,7 @@ public class UserController {
 
   @UseEtag
   @GetMapping(value = "/user/me", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isAuthenticated()")
   public UserInfo getCurrentUser() throws Exception {
     User currentUser = this.authorizer.getCurrentUser();
     UserAuthorizations authz = this.authorizer.getUserAuthorizations(currentUser.id());
@@ -51,12 +53,14 @@ public class UserController {
   }
 
   @GetMapping(value = "/user/{userId}/permissions", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public List<Permission> getUsersPermissions(@PathVariable("userId") Long userId) throws Exception {
     List<Permission> permissions = this.authorizer.getUserPermissions(userId);
     return permissions;
   }
 
   @GetMapping(value = "/user/{userId}/roles", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public ArrayList<Role> getUserRoles(@PathVariable("userId") Long userId) throws Exception {
     List<Role> roleList = this.authorizer.getUserRoles(userId);
     ArrayList<Role> roles = new ArrayList<>(roleList);
@@ -85,6 +89,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/role", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public ArrayList<Role> getRoles(
           @RequestParam(value = "include_personal", defaultValue = "false") boolean includePersonalRoles) {
     List<Role> roleList = this.authorizer.getRoles(includePersonalRoles);
@@ -93,6 +98,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/role/{roleId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public Role getRole(@PathVariable("roleId") Long id) {
     RoleEntity roleEntity = this.authorizer.getRole(id);
     Role role = Role.fromEntity(roleEntity);
@@ -106,6 +112,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/role/{roleId}/permissions", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public List<Permission> getRolePermissions(@PathVariable("roleId") Long roleId) throws Exception {
     List<Permission> permissions = this.authorizer.getRolePermissions(roleId);
     return permissions;
@@ -146,6 +153,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/role/{roleId}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("isPermitted('admin:security')")
   public ArrayList<User> getRoleUsers(@PathVariable("roleId") Long roleId) throws Exception {
     List<User> users = this.authorizer.getRoleUsers(roleId);
     return new ArrayList<>(users);

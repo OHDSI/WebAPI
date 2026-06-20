@@ -150,6 +150,7 @@ public class PathwayController {
 	 * @return the list of pathway analysis DTOs.
 	 */
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:pathway','write:pathway'))")
 	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
 		return pathwayService.getPage(pageable);
 	}
@@ -170,6 +171,7 @@ public class PathwayController {
 	 * name
 	 */
 	@GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
 	public int getCountPAWithSameName(@PathVariable(value = "id", required = false) final int id, @RequestParam("name") String name) {
 
 		return pathwayService.getCountPAWithSameName(id, name);
@@ -352,6 +354,7 @@ public class PathwayController {
 	 * @return a CommonGenerationDTO for the given generation id
 	 */
 	@GetMapping(value = "/generation/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
 	public CommonGenerationDTO getPathwayGenerations(
 					@PathVariable("generationId") final Long generationId
 	) {
@@ -374,6 +377,7 @@ public class PathwayController {
 	 * @return a JSON representation of the pathway analysis design.
 	 */
 	@GetMapping(value = "/generation/{generationId}/design", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
 	public String getGenerationDesign(
 					@PathVariable("generationId") final Long generationId
 	) {
@@ -391,6 +395,7 @@ public class PathwayController {
 	 * @return the pathway analysis results
 	 */
 	@GetMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#generationId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#generationId, PATHWAY_ANALYSIS, READ)")
 	public PathwayPopulationResultsDTO getGenerationResults(
 					@PathVariable("generationId") final Long generationId
 	) {
@@ -415,6 +420,7 @@ public class PathwayController {
 	 * @return the set of checks (warnings, info and errors)
 	 */
 	@PostMapping(value = "/check", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:pathway','write:pathway'))")
 	public CheckResult runDiagnostics(@RequestBody PathwayAnalysisDTO pathwayAnalysisDTO) {
 
 		return new CheckResult(checker.check(pathwayAnalysisDTO));
@@ -601,6 +607,7 @@ public class PathwayController {
 	 * @return
 	 */
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:pathway','write:pathway'))")
 	public List<PathwayAnalysisDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
 		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
 			return Collections.emptyList();

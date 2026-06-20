@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/ddl")
@@ -108,6 +109,7 @@ public class DDLService {
 	 * @param tempSchema
 	 * @return SQL to create tables in results schema
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
 	@GetMapping(value = "/results", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateResultSQL(
 			@RequestParam(value = "dialect", required = false) String dialect,
@@ -141,6 +143,7 @@ public class DDLService {
 	 * @param schema schema name
 	 * @return SQL
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
 	@GetMapping(value = "/cemresults", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateCemResultSQL(
 			@RequestParam(value = "dialect", required = false) String dialect,
@@ -160,6 +163,7 @@ public class DDLService {
 	 * @param resultSchema results schema
 	 * @return SQL
 	 */
+	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
 	@GetMapping(value = "/achilles", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateAchillesSQL(
 			@RequestParam(value = "dialect", required = false) String dialect,

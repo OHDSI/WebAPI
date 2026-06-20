@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  *
@@ -29,6 +30,7 @@ public class SqlRenderService {
      * @param sourceStatement JSON with parameters, source SQL, and target dialect
      * @return rendered and translated SQL
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @PostMapping(
         value = "/translate",
         produces = MediaType.APPLICATION_JSON_VALUE,

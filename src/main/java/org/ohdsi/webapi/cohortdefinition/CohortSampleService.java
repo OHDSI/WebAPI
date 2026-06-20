@@ -116,6 +116,7 @@ public class CohortSampleService {
 	 * @param cohortDefinitionId
 	 * @return true or false
 	 */
+	@PreAuthorize("isOwner(#cohortDefinitionId, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#cohortDefinitionId, COHORT_DEFINITION, READ)")
 	@GetMapping(value = "/has-samples/{cohortDefinitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map<String, Boolean> hasSamples(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId

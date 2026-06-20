@@ -143,6 +143,7 @@ public class SourceService extends AbstractDaoService {
      * identify CDMs.
      */
     @GetMapping(value = "/sources", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<Collection<SourceInfo>> getSourcesEndpoint() {
         return ResponseEntity.ok(getSources().stream().map(SourceInfo::new).collect(Collectors.toList()));
     }
@@ -156,6 +157,7 @@ public class SourceService extends AbstractDaoService {
      * for each source (same as the 'sources' endpoint) after refreshing the cached sourced data.
      */
     @GetMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('admin:source')")
     public ResponseEntity<Collection<SourceInfo>> refreshSources() {
         invalidateCache();
         vocabularyService.clearVocabularyInfoCache();
@@ -172,6 +174,7 @@ public class SourceService extends AbstractDaoService {
      * @return The CDM metadata for the priority vocabulary.
      */
     @GetMapping(value = "/priorityVocabulary", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<SourceInfo> getPriorityVocabularySourceInfoEndpoint() {
         return ResponseEntity.ok(getPriorityVocabularySourceInfo());
     }
@@ -183,6 +186,7 @@ public class SourceService extends AbstractDaoService {
      * @return  Metadata for a single Source that matches the <code>sourceKey</code>.
      */
     @GetMapping(value = "/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<SourceInfo> getSource(@PathVariable("key") final String sourceKey) {
         return ResponseEntity.ok(sourceRepository.findBySourceKey(sourceKey).getSourceInfo());
     }
@@ -369,6 +373,7 @@ public class SourceService extends AbstractDaoService {
      * @return
      */
     @GetMapping(value = "/daimon/priority", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<Map<SourceDaimon.DaimonType, SourceInfo>> getPriorityDaimonsEndpoint() {
         return ResponseEntity.ok(getPriorityDaimons()
                 .entrySet().stream()

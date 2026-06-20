@@ -16,6 +16,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.batch.core.scope.context.StepSynchronizationManager;
 import org.springframework.batch.core.step.StepLocator;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -78,6 +79,7 @@ public class JobService extends AbstractDaoService {
    * @param jobId The job ID
    * @return The job information
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(value = "/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public JobInstanceResource findJob(@PathVariable("jobId") final Long jobId) {
     final JobInstance job = this.jobExplorer.getJobInstance(jobId);
@@ -95,6 +97,7 @@ public class JobService extends AbstractDaoService {
    * @param jobType The job type
    * @return JobExecutionResource
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(value = "/type/{jobType}/name/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
   public JobExecutionResource findJobByName(
           @PathVariable("jobName") final String jobName,
@@ -113,6 +116,7 @@ public class JobService extends AbstractDaoService {
    * @param executionId The execution ID
    * @return JobExecutionResource
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(value = "/{jobId}/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public JobExecutionResource findJobExecution(
           @PathVariable("jobId") final Long jobId,
@@ -127,6 +131,7 @@ public class JobService extends AbstractDaoService {
    * @param executionId The job execution ID
    * @return JobExecutionResource
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(value = "/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public JobExecutionResource findJobExecutionById(@PathVariable("executionId") final Long executionId) {
     return service(null, executionId);
@@ -149,6 +154,7 @@ public class JobService extends AbstractDaoService {
    * @summary Get list of jobs
    * @return A list of jobs
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<String> findJobNames() {
     return this.jobExplorer.getJobNames();
@@ -170,6 +176,7 @@ public class JobService extends AbstractDaoService {
    * @return collection of JobExecutionInfo
    * @throws NoSuchJobException
    */
+  @PreAuthorize("isPermitted('read')")
   @GetMapping(value = "/execution", produces = MediaType.APPLICATION_JSON_VALUE)
   public Page<JobExecutionResource> list(
           @RequestParam(value = "jobName", required = false) final String jobName,

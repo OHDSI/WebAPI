@@ -147,6 +147,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param cohortId The cohort Id
      * @return A list of studies related to the cohort
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @GetMapping(value = "/study/{cohortId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<CohortStudyMapping> getCohortStudyMapping(@PathVariable("cohortId") int cohortId) {
         return cohortStudyMappingRepository.findByCohortDefinitionId(cohortId);
@@ -161,6 +162,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param conceptId The concept Id of interest
      * @return A list of cohorts for the specified conceptId
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @GetMapping(value = "/mapping/{conceptId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<ConceptCohortMapping> getConceptCohortMapping(@PathVariable("conceptId") int conceptId) {
         return mappingRepository.findByConceptId(conceptId);
@@ -177,6 +179,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param conceptId The conceptId of interest
      * @return A list of concepts based on the conceptId of interest
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @GetMapping(value = "/conceptofinterest/{conceptId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<ConceptOfInterestMapping> getConceptOfInterest(@PathVariable("conceptId") int conceptId) {
         return conceptOfInterestMappingRepository.findAllByConceptId(conceptId);
@@ -194,6 +197,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param setid The drug label setId
      * @return The set of drug labels that match the setId specified.
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @GetMapping(value = "/label/{setid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<DrugLabel> getDrugLabel(@PathVariable("setid") String setid) {
         return drugLabelRepository.findAllBySetid(setid);
@@ -208,6 +212,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
      * @param searchTerm The search term
      * @return A list of drug labels matching the search term
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     @GetMapping(value = "/labelsearch/{searchTerm}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<DrugLabel> searchDrugLabels(@PathVariable("searchTerm") String searchTerm) {
         return drugLabelRepository.searchNameContainsTerm(searchTerm);

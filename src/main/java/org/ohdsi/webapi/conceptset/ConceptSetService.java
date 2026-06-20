@@ -173,6 +173,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary Get all concept sets
      * @return A list of all concept sets in the WebAPI database
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @Transactional(readOnly = true)
@@ -372,6 +373,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @Deprecated
     @GetMapping(value = "/{id}/{name}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isAnyPermitted(anyOf('read:conceptset','write:conceptset')) or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public ResponseEntity<Collection<ConceptSet>> getConceptSetExistsDeprecated(
             @PathVariable("id") final int id,
             @PathVariable("name") String name) {
@@ -394,6 +396,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *         specified concept set ID.
      */
     @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isAnyPermitted(anyOf('read:conceptset','write:conceptset')) or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public int getCountCSetWithSameName(
             @PathVariable("id") final int id,
             @RequestParam(value = "name", required = false) String name) {
@@ -444,6 +447,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @throws Exception
      */
     @GetMapping(value = "/exportlist")
+    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
     public ResponseEntity<byte[]> exportConceptSetList(
             @RequestParam("conceptsets") final String conceptSetList) throws Exception {
         // TODO: Need to filter out the conceptsets that do not have read-access to.
@@ -538,6 +542,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      *         name
      */
     @GetMapping(value = "/{id}/copy-name", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, CONCEPT_SET) or isAnyPermitted(anyOf('read:conceptset','write:conceptset')) or hasEntityAccess(#id, CONCEPT_SET, READ)")
     public Map<String, String> getNameForCopy(@PathVariable("id") final int id) {
         ConceptSetDTO source = getConceptSet(id);
         String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike,
@@ -763,6 +768,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param conceptSetDTO The concept set
      * @return A check result
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
     @PostMapping(value = "/check", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public CheckResult runDiagnostics(@RequestBody ConceptSetDTO conceptSetDTO) {
@@ -894,6 +900,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param requestDTO The tagNameListRequest
      * @return A list of concept sets with their assigned tags
      */
+    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
     @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<ConceptSetDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
         if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {

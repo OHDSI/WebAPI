@@ -101,6 +101,7 @@ public class TagService extends AbstractDaoService {
      * @param id
      * @return
      */
+    @PreAuthorize("isPermitted('read')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public TagDTO getDTOById(@PathVariable("id") Integer id) {
         Tag tag = tagRepository.findById(id).orElse(null);
@@ -114,6 +115,7 @@ public class TagService extends AbstractDaoService {
      * @param namePart
      * @return
      */
+    @PreAuthorize("isPermitted('read')")
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TagDTO> listInfoDTO(@RequestParam("namePart") String namePart) {
         if (StringUtils.isBlank(namePart)) {
@@ -129,6 +131,7 @@ public class TagService extends AbstractDaoService {
      *
      * @return
      */
+    @PreAuthorize("isPermitted('read')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TagDTO> listInfoDTO() {
         return listInfo().stream()
@@ -263,6 +266,7 @@ public class TagService extends AbstractDaoService {
      *
      * @return
      */
+    @PreAuthorize("isPermitted('read')")
     @GetMapping(value = "/assignmentPermissions", produces = MediaType.APPLICATION_JSON_VALUE)
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         AuthorizationService authSvc = this.getAuthorizationService();

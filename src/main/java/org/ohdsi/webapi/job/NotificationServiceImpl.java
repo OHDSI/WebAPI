@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * REST Services related to working with the system notifications
@@ -79,6 +80,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param refreshJobs Boolean - when true, it will refresh the cache of notifications
      * @return List of job execution resources
      */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(
@@ -109,6 +111,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @summary Get notification last viewed date
      * @return The date when notifications were last viewed
      */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/viewed", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional(readOnly = true)
     public Date getLastViewedTimeEndpoint() {
@@ -125,6 +128,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @summary Set notification last viewed date
      * @param stamp The date to set
      */
+    @PreAuthorize("isAuthenticated()")
     @PostMapping(value = "/viewed", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void setLastViewedTimeEndpoint(@RequestBody Date stamp) {
         try {

@@ -72,11 +72,14 @@ public class AnonymousAccessIT extends WebApiIT {
     }
 
     @Test
-    public void anonymousReachesUngatedEndpointsWhenEnabled() {
-        // /cohortdefinition (list) has no @PreAuthorize. Under default-deny it is
-        // 401 (see SecurityIT); with the flag on the unprivileged anonymous user
-        // reaches the handler instead of being rejected at the authentication layer.
-        assertEquals(HttpStatus.OK, statusOf("/cohortdefinition"));
+    public void anonymousReachesMethodSecurityWhenEnabled() {
+        // With the flag on, a token-less request is admitted past the filter chain as
+        // the anonymous user and reaches method security, which denies it (403) because
+        // the demoted anonymous user lacks read:cohort-definition. The observable proof
+        // of "reachability" is that this is 403 (denied at method security), NOT the 401
+        // a token-less request gets under default-deny — SecurityIT asserts the same
+        // /cohortdefinition path returns 401 when the flag is off.
+        assertEquals(HttpStatus.FORBIDDEN, statusOf("/cohortdefinition"));
     }
 
     @Test

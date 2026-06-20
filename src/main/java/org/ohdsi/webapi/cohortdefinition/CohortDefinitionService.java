@@ -255,6 +255,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 	}
 
+	@Override
+	public TransactionTemplate getTransactionTemplate() {
+		if (this.transactionTemplate == null && this.transactionManager != null) {
+			this.transactionTemplate = new TransactionTemplate(this.transactionManager);
+		}
+		return this.transactionTemplate;
+	}
+
 	@Autowired
 	private JobTemplate jobTemplate;
 

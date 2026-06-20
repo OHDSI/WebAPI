@@ -37,7 +37,7 @@ import jakarta.persistence.PersistenceException;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import javax.cache.CacheManager;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.ObjectProvider;
 import javax.cache.configuration.MutableConfiguration;
 import java.io.IOException;
 import java.util.*;
@@ -84,7 +84,7 @@ public class SourceService extends AbstractDaoService {
     private final PBEStringEncryptor defaultStringEncryptor;
     
     private final GenericConversionService conversionService;
-    private final VocabularyService vocabularyService;
+    private final ObjectProvider<VocabularyService> vocabularyServiceProvider;
 
     public SourceService(SourceRepository sourceRepository,
                          SourceDaimonRepository sourceDaimonRepository,
@@ -92,14 +92,14 @@ public class SourceService extends AbstractDaoService {
                          JdbcTemplate jdbcTemplate,
                          PBEStringEncryptor defaultStringEncryptor,
                          GenericConversionService conversionService,
-                         @Lazy VocabularyService vocabularyService) {
+                         ObjectProvider<VocabularyService> vocabularyServiceProvider) {
         this.sourceRepository = sourceRepository;
         this.sourceDaimonRepository = sourceDaimonRepository;
         this.authorizationService = authorizationService;
         this.jdbcTemplate = jdbcTemplate;
         this.defaultStringEncryptor = defaultStringEncryptor;
         this.conversionService = conversionService;
-        this.vocabularyService = vocabularyService;
+        this.vocabularyServiceProvider = vocabularyServiceProvider;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -158,7 +158,7 @@ public class SourceService extends AbstractDaoService {
     @GetMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<SourceInfo>> refreshSources() {
         invalidateCache();
-        vocabularyService.clearVocabularyInfoCache();
+        vocabularyServiceProvider.getObject().clearVocabularyInfoCache();
         ensureSourceEncrypted();
         return getSourcesEndpoint();
     }

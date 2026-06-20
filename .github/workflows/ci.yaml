@@ -46,7 +46,7 @@ jobs:
       #  - EndpointAuthCoverageIT: every endpoint rejects anonymous (401/403) except the allow-list
       #  - SecurityIT / SourceAccessIT: default-deny + per-source authorization
       - name: Security integration tests
-        run: mvn -B -P webapi-postgresql -DskipUnitTests=true -Dit.test=EndpointAuthCoverageIT,SecurityIT,SourceAccessIT verify
+        run: mvn -B -P webapi-postgresql -DskipUnitTests=true -Dit.test=EndpointAuthCoverageIT,SecurityIT,SourceAccessIT,AuthorizationAccessIT,AuthorizationPermissionStringsIT verify
 
   # Check that the docker image builds correctly
   # Push to ghcr.io for commits on master or webapi-3.0.

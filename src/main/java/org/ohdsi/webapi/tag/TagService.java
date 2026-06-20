@@ -12,9 +12,9 @@ import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,7 +34,7 @@ public class TagService extends AbstractDaoService {
     private final TagRepository tagRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
-    private final TagGroupService tagGroupService;
+    private final ObjectProvider<TagGroupService> tagGroupServiceProvider;
 
     private final ArrayList<Supplier<List<TagInfo>>> infoProducers;
 
@@ -43,11 +43,11 @@ public class TagService extends AbstractDaoService {
             TagRepository tagRepository,
             EntityManager entityManager,
             @Qualifier("conversionService") ConversionService conversionService,
-            @Lazy TagGroupService tagGroupService) {
+            ObjectProvider<TagGroupService> tagGroupServiceProvider) {
         this.tagRepository = tagRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
-        this.tagGroupService = tagGroupService;
+        this.tagGroupServiceProvider = tagGroupServiceProvider;
 
         this.infoProducers = new ArrayList<>();
         this.infoProducers.add(tagRepository::findCohortTagInfo);
@@ -276,7 +276,7 @@ public class TagService extends AbstractDaoService {
      */
     @PostMapping(value = "/multiAssign", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void assignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
-        tagGroupService.assignGroup(dto);
+        tagGroupServiceProvider.getObject().assignGroup(dto);
     }
 
     /**
@@ -286,6 +286,6 @@ public class TagService extends AbstractDaoService {
      */
     @PostMapping(value = "/multiUnassign", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void unassignGroup(@RequestBody TagGroupSubscriptionDTO dto) {
-        tagGroupService.unassignGroup(dto);
+        tagGroupServiceProvider.getObject().unassignGroup(dto);
     }
 }

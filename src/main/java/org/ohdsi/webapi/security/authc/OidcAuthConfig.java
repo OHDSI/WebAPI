@@ -84,6 +84,9 @@ public class OidcAuthConfig {
   @Value("${security.defaultRoles:}")
   private List<String> defaultRoles;
 
+  @Value("${security.auth.oidc.enabled:false}")
+  private boolean oidcRuntimeEnabled;
+
   public OidcAuthConfig(HttpSecurityShared httpSecurityShared,
                         AuthorizationService authorizationService,
                         LoginService loginService) {
@@ -94,6 +97,11 @@ public class OidcAuthConfig {
 
   @Bean
   public ClientRegistrationRepository oidcClientRegistrationRepository() {
+    if (!oidcRuntimeEnabled || discoveryOrIssuerUrl == null || discoveryOrIssuerUrl.isBlank()) {
+      log.info("OIDC: baked into the native image but disabled at runtime — "
+          + "registering an empty client registration repository (no discovery fetch)");
+      return registrationId -> null;
+    }
     String issuer = stripDiscoverySuffix(discoveryOrIssuerUrl);
     log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
 
@@ -303,12 +311,21 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
     public OpenidDirect(
         AuthorizationService authorizationService,
         LoginService loginService,
+        @Value("${security.auth.oidc.enabled:false}") boolean enabled,
         @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
         @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
         @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase,
         @Value("${security.defaultRoles:}") List<String> defaultRoles) {
       this.authorizationService = authorizationService;
       this.loginService = loginService;
+      this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
+      this.rolesClaim = rolesClaim;
+      this.rolesToUpperCase = rolesToUpperCase;
+      if (!enabled || discoveryOrIssuerUrl == null || discoveryOrIssuerUrl.isBlank()) {
+        log.info("OIDC direct: disabled at runtime — /user/login/openidDirect inactive");
+        this.jwtDecoder = null;
+        return;
+      }
       String issuer = stripDiscoverySuffixStatic(discoveryOrIssuerUrl);
       log.info("OIDC direct: building JwtDecoder for issuer {}", issuer);
       // Accept both `JWT` and `at+jwt` (RFC 9068) header types — Logto and other
@@ -320,15 +337,16 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
                   new JOSEObjectType("at+jwt"),
                   null)))
           .build();
-      this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
-      this.rolesClaim = rolesClaim;
-      this.rolesToUpperCase = rolesToUpperCase;
     }
 
     @GetMapping("/user/login/openidDirect")
     public ResponseEntity<LoginService.Result> login(
         @RequestHeader(value = "Authorization", required = false) String auth) {
 
+      if (jwtDecoder == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new LoginService.Result(null, null, null, "OIDC is not enabled"));
+      }
       if (auth == null || !auth.regionMatches(true, 0, "Bearer ", 0, 7)) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new LoginService.Result(null, null, null, "Missing Bearer token"));

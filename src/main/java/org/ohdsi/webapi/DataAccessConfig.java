@@ -20,8 +20,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes;
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypesScanner;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -136,8 +139,14 @@ public class DataAccessConfig {
     }
 
     @Bean
+    public PersistenceManagedTypes persistenceManagedTypes(ResourceLoader resourceLoader) {
+        return new PersistenceManagedTypesScanner(resourceLoader).scan("org.ohdsi.webapi");
+    }
+
+    @Bean
     public EntityManagerFactory entityManagerFactory(DataSource dataSource,
-            ConfigurableListableBeanFactory beanFactory) {
+            ConfigurableListableBeanFactory beanFactory,
+            PersistenceManagedTypes persistenceManagedTypes) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -159,7 +168,7 @@ public class DataAccessConfig {
         props.put(org.hibernate.cfg.AvailableSettings.BEAN_CONTAINER, new SpringBeanContainer(beanFactory));
         factory.setJpaProperties(props);
 
-        factory.setPackagesToScan("org.ohdsi.webapi");
+        factory.setManagedTypes(persistenceManagedTypes);
         factory.setDataSource(dataSource);
         factory.afterPropertiesSet();
 

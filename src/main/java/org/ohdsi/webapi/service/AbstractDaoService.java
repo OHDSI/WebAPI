@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -62,7 +62,15 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-public abstract class AbstractDaoService extends AbstractAdminService {
+public abstract class AbstractDaoService extends AbstractAdminService
+    implements org.springframework.context.ApplicationContextAware {
+
+  private org.springframework.context.ApplicationContext daoApplicationContext;
+
+  @Override
+  public void setApplicationContext(org.springframework.context.ApplicationContext applicationContext) {
+    this.daoApplicationContext = applicationContext;
+  }
 
   private static final String ASSIGN_TAG_PERMISSION = "admin:tag:assign";
   private static final String UNASSIGN_TAG_PERMISSION = "admin:tag:unassign";
@@ -138,9 +146,8 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   @Autowired
   private SourceHelper sourceHelper;
 
-  @Lazy
   @Autowired
-  private TagService tagService;
+  private ObjectProvider<TagService> tagServiceProvider;
 
   @Autowired
   private AuthorizationService authorizationService;
@@ -282,6 +289,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
    * @return the transactionTemplate
    */
   public TransactionTemplate getTransactionTemplate() {
+    if (transactionTemplate == null && daoApplicationContext != null) {
+      return daoApplicationContext.getBean("transactionTemplate", TransactionTemplate.class);
+    }
     return transactionTemplate;
   }
 
@@ -332,21 +342,26 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected UserEntity getCurrentUser() {
-    WebApiPrincipal principal = authorizationService.getAuthenticatedPrincipal();
-    return userRepository.findById(principal.getUserId()).orElseThrow();
+    AuthorizationService as = (authorizationService != null) ? authorizationService
+        : daoApplicationContext.getBean(AuthorizationService.class);
+    UserRepository ur = (userRepository != null) ? userRepository
+        : daoApplicationContext.getBean(UserRepository.class);
+    WebApiPrincipal principal = as.getAuthenticatedPrincipal();
+    return ur.findById(principal.getUserId()).orElseThrow();
   }
 
   protected AuthorizationService getAuthorizationService() {
-    return this.authorizationService;
+    return (authorizationService != null) ? authorizationService
+        : daoApplicationContext.getBean(AuthorizationService.class);
   }
 
   protected TagService getTagService() {
-    return this.tagService;
+    return this.tagServiceProvider.getObject();
   }
   
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
-      Tag tag = tagService.getById(tagId);
+      Tag tag = tagServiceProvider.getObject().getById(tagId);
       if (Objects.nonNull(tag)) {
         if (tag.isPermissionProtected() && !authorizationService.isPermitted(ASSIGN_TAG_PERMISSION)) {
           throw new AccessDeniedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
@@ -371,7 +386,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
-      Tag tag = tagService.getById(tagId);
+      Tag tag = tagServiceProvider.getObject().getById(tagId);
       if (Objects.nonNull(tag)) {
         if (tag.isPermissionProtected() && !authorizationService.isPermitted(UNASSIGN_TAG_PERMISSION)) {
           throw new AccessDeniedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",

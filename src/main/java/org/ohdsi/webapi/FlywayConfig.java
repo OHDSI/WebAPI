@@ -1,5 +1,8 @@
 package org.ohdsi.webapi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +54,16 @@ public class FlywayConfig {
 
     @Value("${spring.flyway.driver-class-name:org.postgresql.Driver}")
     private String flywayDriverClassName;
+
+    @Bean
+    public FlywayConfigurationCustomizer ohdsiSchemaPlaceholderCustomizer(
+            @Value("${datasource.ohdsi.schema:webapi}") String ohdsiSchema) {
+        return configuration -> {
+            Map<String, String> placeholders = new HashMap<>(configuration.getPlaceholders());
+            placeholders.putIfAbsent("ohdsiSchema", ohdsiSchema);
+            configuration.placeholders(placeholders);
+        };
+    }
 
     /**
      * DataSource for Flyway migrations.

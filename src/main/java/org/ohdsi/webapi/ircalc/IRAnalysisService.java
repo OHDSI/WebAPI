@@ -321,6 +321,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
+  @PreAuthorize("isAnyPermitted(anyOf('read:incidence','write:incidence'))")
   public List<IRAnalysisShortDTO> getIRAnalysisList() {
     return getTransactionTemplate().execute(transactionStatus -> {
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
@@ -338,6 +339,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
+  @PreAuthorize("isOwner(#id, INCIDENCE_RATE) or isPermitted('read:incidence') or isPermitted('write:incidence') or hasEntityAccess(#id, INCIDENCE_RATE, READ)")
   public int getCountIRWithSameName(final int id, String name) {
     return irAnalysisRepository.getCountIRWithSameName(id, name);
   }
@@ -610,6 +612,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
+  @PreAuthorize("isAnyPermitted(anyOf('read:incidence','write:incidence'))")
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
     IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = request.options;
     GenerateSqlResult result = new GenerateSqlResult();
@@ -623,6 +626,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
     @Override
+    @PreAuthorize("isAnyPermitted(anyOf('read:incidence','write:incidence'))")
     public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
 
         return new CheckResult(checker.check(irAnalysisDTO));
@@ -876,6 +880,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
+  @PreAuthorize("isAnyPermitted(anyOf('read:incidence','write:incidence'))")
   public List<IRAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
     if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
       return Collections.emptyList();

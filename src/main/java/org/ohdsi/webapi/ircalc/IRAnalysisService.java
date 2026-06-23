@@ -44,6 +44,9 @@ import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
@@ -321,18 +324,22 @@ public class IRAnalysisService extends AbstractDaoService implements
   }
 
   @Override
-  @PreAuthorize("isAnyPermitted(anyOf('read:incidence','write:incidence'))")
+  // Listing is open; the returned list is filtered per-entity below (read:incidence / per-entity grants).
   public List<IRAnalysisShortDTO> getIRAnalysisList() {
     return getTransactionTemplate().execute(transactionStatus -> {
+      UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+      boolean globalRead = authorizationService.isPermitted("read:incidence");
+      boolean globalWrite = authorizationService.isPermitted("write:incidence");
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
       return StreamSupport.stream(analysisList.spliterator(), false)
-              //.filter(!defaultGlobalReadPermissions ? entity -> authorizationService.hasReadAccess(entity) : entity -> true)
               .map(analysis -> {
                 IRAnalysisShortDTO dto = conversionService.convert(analysis, IRAnalysisShortDTO.class);
-                // authorizationService.fillWriteAccess(analysis, dto);
-                // authorizationService.fillReadAccess(analysis, dto);
+                EntityGrant grant = authz.incidenceRateAccess.getOrDefault(Long.valueOf(analysis.getId()), EntityGrant.NONE);
+                dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+                dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
                 return dto;
               })
+              .filter(defaultGlobalReadPermissions ? dto -> true : IRAnalysisShortDTO::isReadAccess)
               .collect(Collectors.toList());
     });
   }

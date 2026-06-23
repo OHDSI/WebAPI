@@ -7,6 +7,9 @@ import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.ohdsi.webapi.security.authz.AuthorizationCacheService;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.HasTags;
@@ -21,11 +24,13 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -59,6 +65,9 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private final EntityManager entityManager;
     private final ConversionService conversionService;
     private final VersionService<ReusableVersion> versionService;
+
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
 
     @Autowired
     public ReusableService(
@@ -111,15 +120,37 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findAll();
     }
 
+    // Listing is open; the returned page is filtered per-entity here.
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:reusable','write:reusable'))")
     public Page<ReusableDTO> page(@Pagination Pageable pageable) {
-        return reusableRepository.findAll(pageable)
-                .map(reusable -> {
-                    final ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
-                    // permissionService.fillWriteAccess(reusable, dto);
-                    return dto;
-                });
+        UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+        boolean globalRead = authorizationService.isPermitted("read:reusable");
+        boolean globalWrite = authorizationService.isPermitted("write:reusable");
+        boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
+
+        java.util.function.Function<Reusable, ReusableDTO> toDto = reusable -> {
+            ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
+            EntityGrant grant = authz.reusableAccess.getOrDefault(Long.valueOf(reusable.getId()), EntityGrant.NONE);
+            dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+            dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
+            return dto;
+        };
+
+        if (!needsFiltering) {
+            return reusableRepository.findAll(pageable).map(toDto);
+        }
+        // Per-entity filtering required: load all, keep the readable ones, then re-paginate.
+        List<ReusableDTO> filtered = new ArrayList<>();
+        reusableRepository.findAll().forEach(reusable -> {
+            ReusableDTO dto = toDto.apply(reusable);
+            if (dto.isReadAccess()) {
+                filtered.add(dto);
+            }
+        });
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<ReusableDTO> content = start < filtered.size() ? filtered.subList(start, end) : new ArrayList<>();
+        return new PageImpl<>(content, pageable, filtered.size());
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

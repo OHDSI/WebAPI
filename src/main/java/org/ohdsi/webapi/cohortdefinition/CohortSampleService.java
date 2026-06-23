@@ -45,7 +45,7 @@ public class CohortSampleService {
 	 * @param sourceKey
 	 * @return JSON containing information about cohort samples
 	 */
-	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+	@PreAuthorize("(isOwner(#cohortDefinitionId, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#cohortDefinitionId, COHORT_DEFINITION, READ)) and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
 	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleListDTO listCohortSamples(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
@@ -75,7 +75,7 @@ public class CohortSampleService {
 	 * @param fields
 	 * @return personId, gender, age of each person in the cohort sample
 	 */
-	@PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+	@PreAuthorize("(isOwner(#cohortDefinitionId, COHORT_DEFINITION) or isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition')) or hasEntityAccess(#cohortDefinitionId, COHORT_DEFINITION, READ)) and (isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ))")
 	@GetMapping(value = "/{cohortDefinitionId}/{sourceKey}/{sampleId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public CohortSampleDTO getCohortSample(
 			@PathVariable("cohortDefinitionId") int cohortDefinitionId,
@@ -85,7 +85,17 @@ public class CohortSampleService {
 	) {
 		List<String> returnFields = Arrays.asList(fields.split(","));
 		boolean withRecordCounts = returnFields.contains("recordCount");
-		return this.samplingService.getSample(sampleId, withRecordCounts);
+		Source source = getSource(sourceKey);
+		CohortSampleDTO sample = this.samplingService.getSample(sampleId, withRecordCounts);
+		// Bind the requested sample to the cohort/source in the path, so a caller authorized for one
+		// cohort+source cannot read a sample belonging to another simply by guessing its id.
+		if (sample.getCohortDefinitionId() == null || sample.getSourceId() == null
+				|| sample.getCohortDefinitionId() != cohortDefinitionId
+				|| !sample.getSourceId().equals(source.getId())) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Cohort sample " + sampleId + " not found for this cohort and source");
+		}
+		return sample;
 	}
 
 	/**

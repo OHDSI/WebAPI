@@ -173,7 +173,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary Get all concept sets
      * @return A list of all concept sets in the WebAPI database
      */
-    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
+    // Listing is open; the returned list is filtered per-entity below (read:conceptset / per-entity grants).
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
     @Transactional(readOnly = true)
@@ -900,7 +900,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param requestDTO The tagNameListRequest
      * @return A list of concept sets with their assigned tags
      */
-    @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
     @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<ConceptSetDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
         if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {

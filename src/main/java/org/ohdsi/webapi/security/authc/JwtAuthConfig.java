@@ -92,10 +92,10 @@ public class JwtAuthConfig {
   @Value("${security.jwt.kid:}")
   private String configuredKid;
 
-  // Serve token-less requests as the anonymous user instead of 401 (default on).
-  // Set false to enforce default-deny (require authentication everywhere).
-  @Value("${security.anonymousAccess.enabled:true}")
-  private boolean anonymousAccessEnabled;
+  // When true (default), token-less requests are served as the built-in anonymous principal.
+  // When false, every endpoint outside the bootstrap allow-list requires a valid JWT.
+  @Value("${security.allowAnonymousAccess:true}")
+  private boolean allowAnonymousAccess;
 
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtAuthConfig.class);
 
@@ -268,18 +268,14 @@ public class JwtAuthConfig {
     http
         .httpBasic(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> {
-            // Endpoints that must stay reachable before login (used by the login page):
-            //   /info            – server/version banner
-            //   /auth/providers  – list of enabled auth methods
-            //   /i18n/**         – localization bundles
+            // Bootstrap endpoints the login page needs before authentication.
             auth.requestMatchers("/info", "/auth/providers", "/i18n/**").permitAll();
-            if (anonymousAccessEnabled) {
-              // Opt-in (public / no-auth-provider deployments): token-less requests
-              // proceed as the anonymous user. Per-endpoint @PreAuthorize still
-              // governs what anonymous may do, so this is not a blanket bypass.
+            if (allowAnonymousAccess) {
+              // Token-less requests proceed as the anonymous principal; what a principal may do
+              // is governed by per-endpoint @PreAuthorize and the permission grants it holds.
               auth.anyRequest().permitAll();
             } else {
-              // Default-deny: every other endpoint requires an authenticated principal.
+              // Anonymous access disabled: every other endpoint requires a valid JWT.
               auth.anyRequest().authenticated();
             }
           })
@@ -288,11 +284,12 @@ public class JwtAuthConfig {
             .authenticationEntryPoint(unauthorizedEntryPoint)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(
                 new JwtToWebApiAuthenticationConverter(sessionService, userRepository))))
-        // Token-less requests become anonymous (rejected by authenticated()).
+        // Token-less requests become the anonymous principal (rejected by authenticated()
+        // when anonymous access is disabled).
         .anonymous(anon -> anon
             .principal(WebApiPrincipal.ANONYMOUS)
             .authorities("ROLE_ANONYMOUS"))
-        // Return 401 (not 403) when an anonymous request hits a protected endpoint.
+        // Return 401 (not 403) when an unauthenticated request hits a protected endpoint.
         .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint));
 
     return http.build();

@@ -138,8 +138,8 @@ public class CcController {
      *
      * @return A json object with information about the characterization analyses in WebAPI.
      */
+    // Listing is open; the returned page is filtered per-entity in the service.
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization'))")
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
       return service.getPage(pageable);
     }
@@ -150,7 +150,6 @@ public class CcController {
      * @return A json object with all characterization design specifications.
      */
     @GetMapping(value = "/design", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization'))")
     public Page<CohortCharacterizationDTO> listDesign(@Pagination Pageable pageable) {
         return service.getPageWithLinkedEntities(pageable).map(entity -> {
           CohortCharacterizationDTO dto = convertCcToDto(entity);
@@ -341,7 +340,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public CommonGenerationDTO getGeneration(@PathVariable("generationId") final Long generationId) {
         checkGenerationReadAccess(generationId);
 
@@ -357,7 +355,6 @@ public class CcController {
     @DeleteMapping(value = "/generation/{generationId}")
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public void deleteGeneration(@PathVariable("generationId") final Long generationId) {
         checkGenerationWriteAccess(generationId);
         service.deleteCcGeneration(generationId);
@@ -371,7 +368,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/design", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public CcExportDTO getGenerationDesign(
             @PathVariable("generationId") final Long generationId) {
         checkGenerationReadAccess(generationId);
@@ -387,7 +383,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/result/count", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public Long getGenerationsResultsCount( @PathVariable("generationId") final Long generationId) {
         checkGenerationReadAccess(generationId);
         return service.getCCResultsTotalCount(generationId);
@@ -403,7 +398,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public List<CcResult> getGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestParam(value = "thresholdLevel", defaultValue = "0.01") final float thresholdLevel) {
         checkGenerationReadAccess(generationId);
@@ -413,7 +407,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/temporalresult", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public List<CcTemporalResult> getGenerationTemporalResults(@PathVariable("generationId") final Long generationId) {
         checkGenerationReadAccess(generationId);
         return service.findTemporalResultAsList(generationId);
@@ -422,7 +415,6 @@ public class CcController {
     @PostMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public GenerationResults getGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
         checkGenerationReadAccess(generationId);
@@ -432,7 +424,6 @@ public class CcController {
     @PostMapping(value = "/generation/{generationId}/result/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> exportGenerationsResults(
             @PathVariable("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
         checkGenerationReadAccess(generationId);
@@ -488,7 +479,6 @@ public class CcController {
     @GetMapping(value = "/generation/{generationId}/explore/prevalence/{analysisId}/{cohortId}/{covariateId}", produces = MediaType.APPLICATION_JSON_VALUE)
     // Per-generation entity + source access is enforced in-body by checkGeneration*Access
     // (which resolves the generation to its parent CC); this gate only blocks anonymous.
-    @PreAuthorize("isAuthenticated()")
     public List<CcPrevalenceStat> getPrevalenceStat(@PathVariable("generationId") Long generationId,
                                                     @PathVariable("analysisId") Long analysisId,
                                                     @PathVariable("cohortId") Long cohortId,
@@ -633,7 +623,6 @@ public class CcController {
      * @return
      */
     @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:cohort-characterization','write:cohort-characterization'))")
     public List<CcShortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
         if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
             return Collections.emptyList();

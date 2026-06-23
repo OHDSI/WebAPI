@@ -14,24 +14,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Verifies the opt-in anonymous-access mode
- * ({@code security.anonymousAccess.enabled=true}): token-less requests are
- * served as the built-in anonymous user instead of being rejected with 401,
- * while per-endpoint {@code @PreAuthorize} still governs what anonymous may do.
- *
- * <p>The flag only changes the web-layer catch-all (permitAll vs. authenticated);
- * method security is untouched. {@link SecurityIT} proves the same endpoints
- * return 401 under the default ({@code false}).
+ * Verifies the anonymous-principal model: token-less requests are served as the
+ * built-in anonymous user (never rejected with 401 by the filter chain), and
+ * per-endpoint {@code @PreAuthorize} alone governs what the anonymous principal
+ * may do. Open listing endpoints return 200; gated endpoints return 403.
  *
  * <p>{@link WebApiIT} grants the anonymous user the admin role for tests. This
  * class removes that grant in {@link #demoteAnonymous()} so it can assert an
- * <em>unprivileged</em> anonymous user is reachable but still denied at gated
- * endpoints — i.e. authorization is evaluated, not bypassed.
+ * <em>unprivileged</em> anonymous user lists open endpoints but is still denied
+ * at gated ones — i.e. authorization is evaluated, not bypassed.
  */
-@TestPropertySource(properties = {
-    "security.anonymousAccess.enabled=true",
-    "security.defaultGlobalReadPermissions=true"
-})
+@TestPropertySource(properties = "security.defaultGlobalReadPermissions=true")
 public class AnonymousAccessIT extends WebApiIT {
 
     /** A template with NO Authorization interceptor — simulates an anonymous caller. */
@@ -72,21 +65,22 @@ public class AnonymousAccessIT extends WebApiIT {
     }
 
     @Test
-    public void anonymousReachesMethodSecurityWhenEnabled() {
-        // With the flag on, a token-less request is admitted past the filter chain as
-        // the anonymous user and reaches method security, which denies it (403) because
-        // the demoted anonymous user lacks read:cohort-definition. The observable proof
-        // of "reachability" is that this is 403 (denied at method security), NOT the 401
-        // a token-less request gets under default-deny — SecurityIT asserts the same
-        // /cohortdefinition path returns 401 when the flag is off.
-        assertEquals(HttpStatus.FORBIDDEN, statusOf("/cohortdefinition"));
+    public void anonymousMayListOpenEndpoints() {
+        // Listing is open: a token-less request is served as the anonymous user and the
+        // list endpoint returns 200 (its contents are filtered per-entity). Anonymous
+        // needs neither a login nor a read grant to list.
+        assertEquals(HttpStatus.OK, statusOf("/cohortdefinition"));
     }
 
     @Test
     public void preAuthorizeStillDeniesUnprivilegedAnonymous() {
-        // /cache/clear is gated by isPermitted('admin:cache'). The demoted
-        // anonymous user lacks it, so method security denies the request with 403 —
-        // proving the flag opens reachability but does NOT bypass authorization.
+        // Gated endpoints still reach method security and deny the unprivileged anonymous
+        // user (403), proving authorization is evaluated, not bypassed:
+        //   - /cache/clear is gated by admin:cache
+        //   - /role/1 (a role definition) is gated by admin:security
+        //   - /user (the user registry) is gated by the list permission
         assertEquals(HttpStatus.FORBIDDEN, statusOf("/cache/clear"));
+        assertEquals(HttpStatus.FORBIDDEN, statusOf("/role/1"));
+        assertEquals(HttpStatus.FORBIDDEN, statusOf("/user"));
     }
 }

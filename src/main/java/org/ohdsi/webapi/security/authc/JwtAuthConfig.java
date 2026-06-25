@@ -65,7 +65,9 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFilter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.ohdsi.webapi.security.apikey.ApiKeyAuthFilter;
 
 @Configuration
 @EnableScheduling
@@ -76,6 +78,7 @@ public class JwtAuthConfig {
   private final SessionService sessionService;
   private final UserRepository userRepository;
   private final HttpSecurityShared httpSecurityShared;
+  private final ApiKeyAuthFilter apiKeyAuthFilter;
 
   @Value("${security.jwt.algorithm:HS256}")
   private String configuredAlgorithm;
@@ -111,10 +114,12 @@ public class JwtAuthConfig {
     }
   }
 
-  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository, HttpSecurityShared httpSecurityShared) {
+  public JwtAuthConfig(SessionService sessionService, UserRepository userRepository,
+      HttpSecurityShared httpSecurityShared, ApiKeyAuthFilter apiKeyAuthFilter) {
     this.sessionService = sessionService;
     this.userRepository = userRepository;
     this.httpSecurityShared = httpSecurityShared;
+    this.apiKeyAuthFilter = apiKeyAuthFilter;
   }
 
   /**
@@ -279,6 +284,9 @@ public class JwtAuthConfig {
               auth.anyRequest().authenticated();
             }
           })
+        // API key authentication runs before the authentication filter so that
+        // requests carrying X-API-KEY are resolved without touching the JWT path.
+        .addFilterBefore(apiKeyAuthFilter, AuthenticationFilter.class)
         // Configure JWT authentication
         .oauth2ResourceServer(oauth -> oauth
             .authenticationEntryPoint(unauthorizedEntryPoint)

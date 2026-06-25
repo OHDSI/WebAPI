@@ -1,0 +1,19 @@
+pom.xml
+  s_219e84a119a080::t_daf2fd83586409 1179-1182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.1",
+  "base_commit_sha": "1f0d01c4f794ceafc27c49914f7ef5fe9c68513c",
+  "prompts": {},
+  "sessions": {
+    "s_219e84a119a080": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "795a69a5-be11-49c4-8e07-35f8deafce5b",
+        "model": "default"
+      },
+      "human_author": "User <user@example.com>"
+    }
+  }
+}

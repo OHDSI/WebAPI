@@ -1,0 +1,23 @@
+src/main/resources/resources/cdmresults/sql/report/conditionera/drilldown/prevalenceByMonth.sql
+  s_219e84a119a080::t_8b430b46dfb9f6 14
+src/main/resources/resources/cdmresults/sql/report/measurement/drilldown/prevalenceByGenderAgeYear.sql
+  s_219e84a119a080::t_852ca87a7ae1cb 16
+src/main/resources/resources/cdmresults/sql/report/procedure/drilldown/prevalenceByMonth.sql
+  s_219e84a119a080::t_2c0569d3c6189c 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.1",
+  "base_commit_sha": "0099f86d9c14aa0978dd6a9a311bb5b966fb6418",
+  "prompts": {},
+  "sessions": {
+    "s_219e84a119a080": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "795a69a5-be11-49c4-8e07-35f8deafce5b",
+        "model": "default"
+      },
+      "human_author": "User <user@example.com>"
+    }
+  }
+}

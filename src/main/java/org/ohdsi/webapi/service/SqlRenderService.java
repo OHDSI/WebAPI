@@ -30,7 +30,7 @@ public class SqlRenderService {
      * @param sourceStatement JSON with parameters, source SQL, and target dialect
      * @return rendered and translated SQL
      */
-    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
+    @PreAuthorize("isPermitted('list')")
     @PostMapping(
         value = "/translate",
         produces = MediaType.APPLICATION_JSON_VALUE,

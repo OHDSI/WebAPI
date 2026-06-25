@@ -715,7 +715,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return List of metadata about all cohort definitions in WebAPI
 	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
-	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
+	// Listing is open; the returned list is filtered per-entity below (read:cohort-definition / per-entity grants).
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
@@ -1484,7 +1484,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @param requestDTO contains a list of tag names
 	 * @return the set of cohort definitions that match one of the included tag names.
 	 */
-	@PreAuthorize("isAnyPermitted(anyOf('read:cohort-definition','write:cohort-definition'))")
 	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public List<CohortDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {

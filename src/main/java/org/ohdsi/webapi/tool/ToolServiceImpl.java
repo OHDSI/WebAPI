@@ -33,7 +33,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
-    @PreAuthorize("isPermitted('read')")
+    @PreAuthorize("isPermitted('list')")
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ToolDTO> getTools() {
         List<Tool> tools = toolRepository.findAll();
@@ -59,7 +59,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     }
 
     @Override
-    @PreAuthorize("isPermitted('read')")
+    @PreAuthorize("isPermitted('list')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ToolDTO getById(@PathVariable("id") Integer id) {
         return toDTO(toolRepository.findById(id).orElse(null));

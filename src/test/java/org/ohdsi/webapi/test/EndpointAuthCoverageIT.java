@@ -23,22 +23,43 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * Codebase-wide authorization guards driven by the live handler set, so future
  * endpoints are covered automatically:
  *  - every org.ohdsi.webapi endpoint must carry method security (@PreAuthorize on
- *    the handler or its controller), except a pinned login/bootstrap allow-list;
+ *    the handler or its controller), unless it is explicitly allow-listed as an
+ *    intentionally-open endpoint (login/bootstrap, open listing/registry reads, or
+ *    an endpoint whose authorization is enforced in-body);
  *  - every source-scoped handler (@PathVariable("sourceKey")) must carry @PreAuthorize.
  *
- * <p>These are static annotation-presence checks rather than HTTP probes: with
- * {@code security.anonymousAccess.enabled=true} the filter chain admits token-less
- * requests and per-endpoint @PreAuthorize is the gate, so a missing annotation —
- * not the filter — is what would leave an endpoint open. (Runtime denial of
- * anonymous requests is exercised by {@link SecurityIT} and {@link SourceAccessIT}.)
+ * <p>These are static annotation-presence checks rather than HTTP probes: the
+ * filter chain serves token-less requests as the anonymous principal, so
+ * per-endpoint @PreAuthorize (or a deliberate allow-list entry) is what governs
+ * access. Runtime behaviour for the anonymous principal is exercised by
+ * {@link AnonymousAccessIT} and {@link SourceAccessIT}.
  */
 public class EndpointAuthCoverageIT extends WebApiIT {
 
-    // Reachable before login by design. Adding to this list is a deliberate,
-    // reviewable change — keep it minimal.
+    // Reachable before login by design (login/bootstrap). Prefix match. Adding to
+    // this list is a deliberate, reviewable change — keep it minimal.
     static final List<String> ANONYMOUS_ALLOW_LIST = List.of(
         "/info", "/auth/providers", "/i18n",
         "/user/login", "/user/refresh", "/user/logout", "/user/oauth/callback");
+
+    // Intentionally open under the anonymous-principal model (EXACT match): listing /
+    // registry / self-scoped reads. Their contents are filtered per-entity, or they are
+    // public registries (users/roles/permissions) needed to grant access to others.
+    // Opening an endpoint here is a deliberate, reviewable change — keep this tight.
+    static final List<String> OPEN_READ_EXACT = List.of(
+        "/cohortdefinition", "/conceptset",
+        "/cohort-characterization", "/cohort-characterization/design",
+        "/pathway-analysis", "/feature-analysis", "/ir", "/reusable",
+        "/cohortdefinition/byTags", "/conceptset/byTags",
+        "/cohort-characterization/byTags", "/pathway-analysis/byTags",
+        "/source/sources",
+        "/user/me",
+        "/notifications", "/notifications/viewed");
+
+    // Authorization enforced in-body (per-generation entity + source access via
+    // checkGeneration*Access), so these carry no @PreAuthorize. Prefix match.
+    static final List<String> IN_BODY_GUARDED_PREFIX = List.of(
+        "/cohort-characterization/generation", "/pathway-analysis/generation");
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")
@@ -103,6 +124,16 @@ public class EndpointAuthCoverageIT extends WebApiIT {
 
     static boolean isAllowListed(String pattern) {
         for (String p : ANONYMOUS_ALLOW_LIST) {
+            if (pattern.equals(p) || pattern.startsWith(p + "/")) {
+                return true;
+            }
+        }
+        for (String p : OPEN_READ_EXACT) {
+            if (pattern.equals(p)) {
+                return true;
+            }
+        }
+        for (String p : IN_BODY_GUARDED_PREFIX) {
             if (pattern.equals(p) || pattern.startsWith(p + "/")) {
                 return true;
             }

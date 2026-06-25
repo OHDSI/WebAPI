@@ -1908,7 +1908,8 @@ FROM (
 	('write:incidence', 'Update incidence designs'),
 	('write:pathway', 'Update pathway designs'),
 	('write:reusable', 'Update reusable components'),
-	('write:source', 'Generate source results')
+	('write:source', 'Generate source results'),
+	('list', 'List platform reference data (users, roles, permissions, jobs, tools) and use DDL/SqlRender utilities')
 ) p (value, description)
 ;
 
@@ -1931,7 +1932,7 @@ select nextval('${ohdsiSchema}.sec_role_permission_sequence'), 1, p.id
 from (
     select id
     from ${ohdsiSchema}.sec_permission
-    where value in ('read')
+    where value in ('read', 'list')
 ) p;
 
 INSERT INTO ${ohdsiSchema}.sec_role (id, name, system_role)

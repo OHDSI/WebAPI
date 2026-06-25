@@ -261,18 +261,10 @@ security:
   # read permission on each artifact before they can see it.
   defaultGlobalReadPermissions: true
 
-  # anonymousAccess.enabled controls whether requests without a valid token are
-  # served as the built-in 'anonymous' user instead of being rejected with 401.
-  #   true (default) – token-less requests proceed as the anonymous user, so
-  #                    WebAPI works without an auth provider configured.
-  #                    Per-endpoint @PreAuthorize still applies, so anonymous gets
-  #                    only what its role (plus defaultGlobalReadPermissions)
-  #                    grants. Set defaultGlobalReadPermissions=false to stop
-  #                    anonymous from reading every artifact.
-  #   false          – default-deny: every endpoint outside the login allow-list
-  #                    requires authentication. Use when every client logs in.
-  anonymousAccess:
-    enabled: true
+  # allowAnonymousAccess: when true (default), requests without a valid JWT are served as the
+  # built-in anonymous user; when false, every endpoint outside the bootstrap allow-list
+  # (/info, /auth/providers, /i18n, login) requires a valid JWT.
+  allowAnonymousAccess: true
 
   defaultRoles: ""
 

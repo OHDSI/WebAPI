@@ -13,6 +13,10 @@ import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.ohdsi.webapi.security.authz.access.EntityType;
 import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -40,6 +44,9 @@ public class FeAnalysisController {
     private ConversionService conversionService;
     private AuthorizationService authorizationService;
 
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
+
     FeAnalysisController(
             final FeAnalysisService service,
             final ConversionService conversionService,
@@ -55,15 +62,37 @@ public class FeAnalysisController {
      * @param pageable
      * @return
      */
+    // Listing is open; the returned page is filtered per-entity here (read:feature-analysis / per-entity grants).
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(entity -> {
+        UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+        boolean globalRead = authorizationService.isPermitted("read:feature-analysis");
+        boolean globalWrite = authorizationService.isPermitted("write:feature-analysis");
+        boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
+
+        java.util.function.Function<FeAnalysisEntity, FeAnalysisShortDTO> toDto = entity -> {
             FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
-            //TODO: figure out populating permissions on lists
-            // AuthorizationService.fillWriteAccess(entity, dto);
+            EntityGrant grant = authz.feAnalysisAccess.getOrDefault(Long.valueOf(entity.getId()), EntityGrant.NONE);
+            dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+            dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
             return dto;
+        };
+
+        if (!needsFiltering) {
+            return service.getPage(pageable).map(toDto);
+        }
+        // Per-entity filtering required: load all, keep the readable ones, then re-paginate.
+        List<FeAnalysisShortDTO> filtered = new ArrayList<>();
+        service.getPage(Pageable.unpaged()).forEach(entity -> {
+            FeAnalysisShortDTO dto = toDto.apply(entity);
+            if (dto.isReadAccess()) {
+                filtered.add(dto);
+            }
         });
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<FeAnalysisShortDTO> content = start < filtered.size() ? filtered.subList(start, end) : new ArrayList<>();
+        return new PageImpl<>(content, pageable, filtered.size());
     }
 
     /**

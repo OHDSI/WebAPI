@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.arachne.encryption;
 
+import java.security.Security;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -22,7 +23,9 @@ public class EncryptorUtils {
 	public static PBEStringEncryptor buildStringEncryptor(Environment env) {
 
 		StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-		encryptor.setProvider(new BouncyCastleProvider());
+		if (Security.getProvider("BC") == null) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
 		encryptor.setProviderName("BC");
 		encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
 		if (StringUtils.equals("PBEWithMD5AndDES", env.getRequiredProperty("jasypt.encryptor.algorithm"))) {

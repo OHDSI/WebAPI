@@ -1,0 +1,14 @@
+pom.xml
+  h_2cf7f46272c8c9 1500
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.1",
+  "base_commit_sha": "f30a322cc9bdc4af3ac168cb4fc9d6b47b613e16",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    }
+  }
+}

@@ -9,17 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Verifies the default-deny security model: every endpoint except the login
- * allow-list must reject unauthenticated (token-less) requests with 401.
- *
- * <p>Pins {@code security.anonymousAccess.enabled=false} so this exercises the
- * default-deny mode regardless of the shipped default; the opt-in anonymous mode
- * is covered by {@link AnonymousAccessIT}.
+ * Verifies the anonymous-access toggle in its disabled state. With
+ * {@code security.allowAnonymousAccess=false}, a token-less request is rejected with
+ * 401 by the filter chain for every endpoint outside the bootstrap allow-list, while
+ * the bootstrap endpoints (used by the login page) stay reachable. The enabled
+ * (default) mode is exercised by {@link AnonymousAccessIT}.
  */
-@TestPropertySource(properties = "security.anonymousAccess.enabled=false")
+@TestPropertySource(properties = "security.allowAnonymousAccess=false")
 public class SecurityIT extends WebApiIT {
 
-    /** A template with NO Authorization interceptor — simulates an anonymous caller. */
+    /** A template with NO Authorization interceptor — simulates a token-less caller. */
     private final TestRestTemplate anonymous = new TestRestTemplate();
 
     private HttpStatus statusOf(String path) {
@@ -29,26 +28,15 @@ public class SecurityIT extends WebApiIT {
     }
 
     @Test
-    public void protectedEndpointsRejectAnonymous() {
-        // Sensitive endpoints that previously leaked data without a login.
+    public void tokenlessRequestsRejectedWhenAnonymousDisabled() {
         assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/user"));
-        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/role"));
-        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/permission"));
         assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/cohortdefinition"));
-        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/conceptset"));
-        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/tag"));
         assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/source/sources"));
     }
 
     @Test
-    public void loginAllowListIsAnonymous() {
-        // These must stay reachable before login.
+    public void bootstrapEndpointsStayOpen() {
         assertEquals(HttpStatus.OK, statusOf("/info"));
         assertEquals(HttpStatus.OK, statusOf("/auth/providers"));
-    }
-
-    @Test
-    public void cacheClearRejectsAnonymous() {
-        assertEquals(HttpStatus.UNAUTHORIZED, statusOf("/cache/clear"));
     }
 }

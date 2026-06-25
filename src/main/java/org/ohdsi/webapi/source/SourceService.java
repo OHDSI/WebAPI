@@ -143,9 +143,14 @@ public class SourceService extends AbstractDaoService {
      * identify CDMs.
      */
     @GetMapping(value = "/sources", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<Collection<SourceInfo>> getSourcesEndpoint() {
-        return ResponseEntity.ok(getSources().stream().map(SourceInfo::new).collect(Collectors.toList()));
+        boolean globalRead = authorizationService.isPermitted("read:source")
+                || authorizationService.isPermitted("write:source");
+        Collection<SourceInfo> visible = getSources().stream()
+                .filter(s -> globalRead || authorizationService.hasSourceAccess(s.getSourceKey(), AccessType.READ))
+                .map(SourceInfo::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(visible);
     }
 
 

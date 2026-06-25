@@ -41,7 +41,7 @@ public class PermissionController {
      * @return A list of permissions
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isPermitted('admin:security')")
+    @PreAuthorize("isPermitted('list')")
     public List<Permission> getPermissions() {
         return this.authorizationService.getPermissions();
     }

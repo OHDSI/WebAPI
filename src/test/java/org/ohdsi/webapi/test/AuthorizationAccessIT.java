@@ -58,11 +58,12 @@ public class AuthorizationAccessIT extends WebApiIT {
             "INSERT INTO " + schema + ".sec_user_role (id, user_id, role_id, origin) " +
             "SELECT nextval('" + schema + ".sec_user_role_sequence'), " + READER_USER_ID + ", " + READER_ROLE_ID + ", 'SYSTEM' " +
             "WHERE NOT EXISTS (SELECT 1 FROM " + schema + ".sec_user_role WHERE user_id = " + READER_USER_ID + " AND role_id = " + READER_ROLE_ID + ")");
-        // Grant the generic 'read' permission to the reader's role.
+        // Grant the reader's role 'read' (read any asset) and 'list' (list platform reference data) —
+        // the permissions a normal authenticated user holds.
         jdbcTemplate.execute(
             "INSERT INTO " + schema + ".sec_role_permission (id, role_id, permission_id) " +
             "SELECT nextval('" + schema + ".sec_role_permission_sequence'), " + READER_ROLE_ID + ", p.id " +
-            "FROM " + schema + ".sec_permission p WHERE p.value = 'read' " +
+            "FROM " + schema + ".sec_permission p WHERE p.value IN ('read', 'list') " +
             "AND NOT EXISTS (SELECT 1 FROM " + schema + ".sec_role_permission rp WHERE rp.role_id = " + READER_ROLE_ID + " AND rp.permission_id = p.id)");
 
         authorizationService.clearCache();
@@ -108,9 +109,18 @@ public class AuthorizationAccessIT extends WebApiIT {
     }
 
     @Test
+    public void readerAllowedUserList() {
+        // The user registry is gated by the 'list' permission (held by the reader and the built-in
+        // public role), not admin:security, so the sharing workflow keeps working. Anonymous holds
+        // no 'list' and is denied.
+        assertReaderAllowed("/user");
+    }
+
+    @Test
     public void readerDeniedAdminRoleManagement() {
-        // 'read' must NOT grant admin:security — listing roles stays forbidden.
-        ResponseEntity<String> r = getAsReader("/role");
+        // Listing roles is open under the anonymous-principal model, but a role *definition*
+        // (GET /role/{id}) stays admin:security — 'read' must NOT grant it.
+        ResponseEntity<String> r = getAsReader("/role/1");
         assertEquals(
             "Reader (granted only 'read') must be denied admin role management",
             HttpStatus.FORBIDDEN,

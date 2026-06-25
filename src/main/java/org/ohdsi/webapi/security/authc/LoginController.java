@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,14 +79,29 @@ public class LoginController {
   @ConditionalOnProperty(prefix = "security.auth.windows", name = "enabled", havingValue = "true")
   public static class Windows {
     private final LoginService loginSvc;
+    private final org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper;
 
-    public Windows(LoginService loginSvc) {
+    public Windows(LoginService loginSvc,
+                   org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper) {
       this.loginSvc = loginSvc;
+      this.windowsGroupToRoleMapper = windowsGroupToRoleMapper;
     }
 
     @GetMapping("/user/login/windows")
     public LoginService.Result login(Authentication authentication) {
-      return loginSvc.onSuccess(authentication);
+      // Map Windows groups to WebAPI roles
+      java.util.Set<String> roles = windowsGroupToRoleMapper.mapGroupsToRoles(
+          authentication.getAuthorities());
+
+      AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+          .login(authentication.getName())
+          .name(authentication.getName())
+          .origin(UserOrigin.WINDOWS)
+          .roles(roles)
+          .originAuthentication(authentication)
+          .build();
+
+      return loginSvc.onSuccess(authenticatedLogin);
     }
   }
 
@@ -108,7 +122,14 @@ public class LoginController {
 
     @GetMapping("/user/login/db")
     public LoginService.Result login(Authentication authentication) {
-      return loginSvc.onSuccess(authentication);
+      AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+          .login(authentication.getName())
+          .name(authentication.getName())
+          .origin(UserOrigin.DATABASE)
+          .roles(java.util.Collections.emptySet())
+          .originAuthentication(authentication)
+          .build();
+      return loginSvc.onSuccess(authenticatedLogin);
     }
 
     @PostMapping(value = "/user/login/db", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -122,7 +143,14 @@ public class LoginController {
       try {
         Authentication auth = dbAuthenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(login, password));
-        return ResponseEntity.ok(loginSvc.onSuccess(auth));
+        AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+            .login(auth.getName())
+            .name(auth.getName())
+            .origin(UserOrigin.DATABASE)
+            .roles(java.util.Collections.emptySet())
+            .originAuthentication(auth)
+            .build();
+        return ResponseEntity.ok(loginSvc.onSuccess(authenticatedLogin));
       } catch (AuthenticationException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new LoginService.Result(null, null, null, "Invalid credentials"));
@@ -138,21 +166,38 @@ public class LoginController {
   public static class Ldap {
 
     private final LoginService loginSvc;
+    private final org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper;
     private static final Logger log = LoggerFactory.getLogger(Ldap.class);
     
-    public Ldap(LoginService loginSvc) {
+    public Ldap(LoginService loginSvc,
+               org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper) {
       this.loginSvc = loginSvc;
+      this.ldapGroupToRoleMapper = ldapGroupToRoleMapper;
     }
 
     @GetMapping("/user/login/ldap")
     public LoginService.Result login(Authentication authentication) {
 
-      List<String> roles = authentication.getAuthorities().stream()
-          .map(GrantedAuthority::getAuthority)
+      List<String> groupNames = authentication.getAuthorities().stream()
+          .map(org.springframework.security.core.GrantedAuthority::getAuthority)
           .toList();
 
-      log.info("User {} has roles {}", authentication.getName(), roles);
-      return loginSvc.onSuccess(authentication);
+      log.info("User {} has LDAP groups {}", authentication.getName(), groupNames);
+
+      // Map LDAP groups to WebAPI roles
+      java.util.Set<String> roles = ldapGroupToRoleMapper.mapGroupsToRoles(
+          authentication.getAuthorities(),
+          org.ohdsi.webapi.security.provisioning.model.LdapProviderType.LDAP);
+
+      AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+          .login(authentication.getName())
+          .name(authentication.getName())
+          .origin(UserOrigin.LDAP)
+          .roles(roles)
+          .originAuthentication(authentication)
+          .build();
+
+      return loginSvc.onSuccess(authenticatedLogin);
     }
   }
 

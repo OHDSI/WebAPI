@@ -7,8 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
@@ -51,8 +47,8 @@ public class OidcAuthConfig {
   private static final String DISCOVERY_SUFFIX = "/.well-known/openid-configuration";
 
   private final HttpSecurityShared httpSecurityShared;
-  private final AuthorizationService authorizationService;
   private final LoginService loginService;
+  private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
 
   @Value("${security.auth.oidc.clientId}")
   private String clientId;
@@ -81,18 +77,15 @@ public class OidcAuthConfig {
   @Value("${security.auth.oauth.callback.ui}")
   private String callbackUi;
 
-  @Value("${security.defaultRoles:}")
-  private List<String> defaultRoles;
-
   @Value("${security.auth.oidc.enabled:false}")
   private boolean oidcRuntimeEnabled;
 
   public OidcAuthConfig(HttpSecurityShared httpSecurityShared,
-                        AuthorizationService authorizationService,
-                        LoginService loginService) {
+                        LoginService loginService,
+                        org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper) {
     this.httpSecurityShared = httpSecurityShared;
-    this.authorizationService = authorizationService;
     this.loginService = loginService;
+    this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
   }
 
   @Bean
@@ -154,32 +147,26 @@ public class OidcAuthConfig {
                              HttpServletResponse response,
                              Authentication authentication) throws IOException {
     OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
-    // Lowercase so the DB row login matches mintSession's JWT subject (which lowercases via getName()).
     String login = oidcUser.getSubject().toLowerCase();
     String name = firstNonBlank(oidcUser.getFullName(), oidcUser.getEmail(), login);
 
     log.info("OIDC: Authenticated user sub={}", login);
 
-    List<String> filteredDefaults = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
-    authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, filteredDefaults);
+    // Extract and map roles from token claims
+    Set<String> roles = oidcGroupToRoleMapper.extractAndMapRoles(
+        oidcUser.getClaims(),
+        rolesClaim,
+        rolesToUpperCase);
 
-    List<String> rawRoles = extractRoles(oidcUser.getClaims(), rolesClaim, rolesToUpperCase);
-    List<String> idpRoles = authorizationService.filterToExistingRoles(rawRoles);
-    if (rawRoles.size() != idpRoles.size()) {
-      log.debug("OIDC: dropped {} unknown roles from token for user {}",
-          rawRoles.size() - idpRoles.size(), login);
-    }
-    if (!idpRoles.isEmpty()) {
-      log.info("OIDC: Syncing roles from token for user {}: {}", login, idpRoles);
-    }
-    authorizationService.syncOidcRoles(login, idpRoles);
+    AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+        .login(login)
+        .name(name)
+        .origin(UserOrigin.OIDC)
+        .roles(roles)
+        .originAuthentication(authentication)
+        .build();
 
-    List<SimpleGrantedAuthority> authorities = idpRoles.stream()
-        .map(SimpleGrantedAuthority::new)
-        .toList();
-Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, authorities);
-    // mintSession — not onSuccess — so onSuccess's ensureUserExists doesn't overwrite the display name.
-    LoginService.Result result = loginService.mintSession(wrapped);
+    LoginService.Result result = loginService.onSuccess(authenticatedLogin);
 
     response.sendRedirect(appendFragmentParam(callbackUi, "token", result.jwt()));
   }
@@ -301,24 +288,21 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
 
     private static final Logger log = LoggerFactory.getLogger(OpenidDirect.class);
 
-    private final AuthorizationService authorizationService;
     private final LoginService loginService;
+    private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
     private final JwtDecoder jwtDecoder;
-    private final List<String> defaultRoles;
     private final String rolesClaim;
     private final boolean rolesToUpperCase;
 
     public OpenidDirect(
-        AuthorizationService authorizationService,
         LoginService loginService,
+        org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper,
         @Value("${security.auth.oidc.enabled:false}") boolean enabled,
         @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
         @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
-        @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase,
-        @Value("${security.defaultRoles:}") List<String> defaultRoles) {
-      this.authorizationService = authorizationService;
+        @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase) {
       this.loginService = loginService;
-      this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
+      this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
       this.rolesClaim = rolesClaim;
       this.rolesToUpperCase = rolesToUpperCase;
       if (!enabled || discoveryOrIssuerUrl == null || discoveryOrIssuerUrl.isBlank()) {
@@ -370,17 +354,21 @@ Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, au
 
       log.info("OIDC direct: authenticated user sub={}", login);
 
-      authorizationService.ensureUserExists(login, name, UserOrigin.OIDC, defaultRoles);
+      // Extract and map roles from token claims
+      Set<String> roles = oidcGroupToRoleMapper.extractAndMapRoles(
+          jwt.getClaims(),
+          rolesClaim,
+          rolesToUpperCase);
 
-      List<String> rawRoles = extractRoles(jwt.getClaims(), rolesClaim, rolesToUpperCase);
-      List<String> idpRoles = authorizationService.filterToExistingRoles(rawRoles);
-      authorizationService.syncOidcRoles(login, idpRoles);
+      AuthenticatedLogin authenticatedLogin = AuthenticatedLogin.builder()
+          .login(login)
+          .name(name)
+          .origin(UserOrigin.OIDC)
+          .roles(roles)
+          .originAuthentication(null)  // Direct JWT flow doesn't have Spring Authentication
+          .build();
 
-      List<SimpleGrantedAuthority> authorities = idpRoles.stream()
-          .map(SimpleGrantedAuthority::new)
-          .toList();
-      Authentication wrapped = new UsernamePasswordAuthenticationToken(login, null, authorities);
-      LoginService.Result result = loginService.mintSession(wrapped);
+      LoginService.Result result = loginService.onSuccess(authenticatedLogin);
 
       return ResponseEntity.ok()
           .header("Bearer", result.jwt())

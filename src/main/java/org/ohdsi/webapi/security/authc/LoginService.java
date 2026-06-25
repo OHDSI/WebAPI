@@ -2,10 +2,13 @@ package org.ohdsi.webapi.security.authc;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.Role;
 import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.security.session.SessionProperties;
 import org.ohdsi.webapi.security.session.SessionService;
@@ -16,9 +19,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class LoginService {
@@ -52,26 +54,92 @@ public class LoginService {
     this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
   }
 
-  public Result onSuccess(Authentication authentication) {
-    String login = authentication.getName().toLowerCase();
-    authorizationService.ensureUserExists(login, login, null, this.defaultRoles);
-    return mintSession(authentication);
-  }
+  /**
+   * Orchestrates the complete login flow for all authentication types.
+   *
+   * This is the single source of truth for login, ensuring:
+   * 1. User exists in database (created or updated)
+   * 2. Roles are synchronized based on origin
+   * 3. Session is created
+   * 4. JWT is minted
+   *
+   * @param authenticatedLogin normalized authentication data from any auth source
+   * @return Result with JWT and roles for the authenticated user
+   */
+  @Transactional
+  public Result onSuccess(AuthenticatedLogin authenticatedLogin) {
+    String login = authenticatedLogin.getLogin().toLowerCase();
+    String name = authenticatedLogin.getName();
+    UserOrigin origin = authenticatedLogin.getOrigin();
+    Set<String> targetRoles = authenticatedLogin.getRoles();
 
-  // Skips ensureUserExists; for callers (e.g. OIDC) that provision the user themselves.
-  public Result mintSession(Authentication authentication) {
-    String login = authentication.getName().toLowerCase();
-    log.info("LoginService: mintSession: " + login);
+    log.info("LoginService: onSuccess: {} (origin: {})", login, origin);
 
-    String[] roles = authentication.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .toArray(String[]::new);
+    // Ensure user exists in database
+    authorizationService.ensureUserExists(login, name, origin, this.defaultRoles);
 
+    // Sync roles: align database roles with target roles from this authentication source
+    syncRoles(login, origin, targetRoles);
+
+    // Create session
     UUID sessionId = sessionService.createSession(login);
     Instant expiresAt = Instant.now().plus(sessionProps.getExpiration());
+
+    // Mint JWT
     String jwt = jwtService.generateToken(login, sessionId.toString(), Date.from(expiresAt));
 
+    // Get final roles from database
+    String[] roles = authorizationService.getUserRoles(login).stream()
+        .map(Role::name)
+        .toArray(String[]::new);
+
     return new Result(login, jwt, roles, "Login successful");
+  }
+
+  /**
+   * Synchronizes the roles for a user from a specific origin with target roles.
+   *
+   * Adds roles present in targetRoles but not in the database,
+   * and removes roles from the database that are not in targetRoles
+   * (only for roles assigned by this origin).
+   *
+   * @param login user login name
+   * @param origin authentication origin (for filtering which roles to sync)
+   * @param targetRoles the set of role names that should be assigned from this origin
+   */
+  @Transactional
+  private void syncRoles(String login, UserOrigin origin, Set<String> targetRoles) {
+    List<String> currentOriginRoles;
+    try {
+      currentOriginRoles = authorizationService.getRolesByOrigin(login, origin);
+    } catch (Exception e) {
+      log.warn("Could not fetch {}-origin roles for user {}: {}", origin, login, e.getMessage());
+      return;
+    }
+
+    // Add roles present in target but not in current
+    for (String roleName : targetRoles) {
+      if (!currentOriginRoles.contains(roleName)) {
+        try {
+          authorizationService.addUserToRole(roleName, login, origin);
+          log.info("Sync roles: added role '{}' to user '{}' (origin: {})", roleName, login, origin);
+        } catch (Exception e) {
+          log.warn("Sync roles: could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
+        }
+      }
+    }
+
+    // Remove roles present in current but not in target (only for this origin)
+    for (String roleName : currentOriginRoles) {
+      if (!targetRoles.contains(roleName)) {
+        try {
+          authorizationService.removeUserFromRole(roleName, login, origin);
+          log.info("Sync roles: removed role '{}' from user '{}' (origin: {})", roleName, login, origin);
+        } catch (Exception e) {
+          log.warn("Sync roles: could not remove role '{}' from user '{}': {}", roleName, login, e.getMessage());
+        }
+      }
+    }
   }
 
   /**
@@ -157,3 +225,4 @@ public class LoginService {
   }
 
 }
+

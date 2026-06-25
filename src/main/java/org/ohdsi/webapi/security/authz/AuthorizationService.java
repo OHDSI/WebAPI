@@ -83,7 +83,7 @@ public class AuthorizationService {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthorizationService.class);
     List<String> currentOidcRoleNames;
     try {
-      currentOidcRoleNames = getOidcOriginRoles(login);
+      currentOidcRoleNames = getRolesByOrigin(login, UserOrigin.OIDC);
     } catch (Exception e) {
       log.warn("OIDC sync: could not fetch OIDC-origin roles for user {}: {}", login, e.getMessage());
       return;
@@ -178,7 +178,7 @@ public class AuthorizationService {
   }
 
   @Transactional(readOnly = true)
-  public List<Role> getUserRoles(String login) throws Exception {
+  public List<Role> getUserRoles(String login) {
     UserEntity user = this.userService.getUserByLogin(login).orElseThrow();
     Set<RoleEntity> roleEntities = this.roleService.getUserRoles(user);
     ArrayList<Role> roles = new ArrayList<>();
@@ -254,10 +254,10 @@ public class AuthorizationService {
 
   // @Transactional required: UserEntity.userRoles is FetchType.LAZY and getUserByLogin closes its own txn.
   @Transactional(readOnly = true)
-  public List<String> getOidcOriginRoles(String login) {
+  public List<String> getRolesByOrigin(String login, UserOrigin origin) {
     UserEntity user = userService.getUserByLogin(login).orElseThrow();
     return user.getUserRoles().stream()
-        .filter(ur -> ur.getOrigin() == UserOrigin.OIDC)
+        .filter(ur -> ur.getOrigin() == origin)
         .map(ur -> ur.getRole())
         .filter(role -> Boolean.TRUE.equals(role.isSystemRole()))
         .map(role -> role.getName())

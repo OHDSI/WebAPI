@@ -1147,6 +1147,34 @@ CREATE TABLE ${ohdsiSchema}.sec_session
 CREATE INDEX idx_sec_session_login
     ON ${ohdsiSchema}.sec_session(login);
 
+CREATE SEQUENCE ${ohdsiSchema}.sec_api_key_sequence
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE ${ohdsiSchema}.sec_api_key
+(
+    id          bigint NOT NULL,
+    key_identifier character varying(64) NOT NULL,
+    key_hash    character varying(255) NOT NULL,
+    user_id     bigint NOT NULL,
+    name        character varying(255) NOT NULL,
+    description character varying(1000),
+    created_at  timestamp with time zone NOT NULL,
+    expires_at  timestamp with time zone,
+    disabled    boolean NOT NULL,
+    last_used_at timestamp with time zone
+);
+
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.id IS 'Primary key';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.key_identifier IS 'Public, indexed identifier portion of the API key (not secret)';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.key_hash IS 'BCrypt hash of the secret portion of the API key';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.user_id IS 'Foreign key to SEC_USER';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.name IS 'User-provided label for this key';
+COMMENT ON COLUMN ${ohdsiSchema}.sec_api_key.disabled IS 'True when the key has been revoked';
+
 -- Legacy permission table, will be empty for baseline, but including it for consistency.
 CREATE TABLE ${ohdsiSchema}.sec_permission_legacy
 (
@@ -1431,6 +1459,20 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_user
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
     ADD CONSTRAINT pk_sec_user_role PRIMARY KEY (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_api_key
+    ADD CONSTRAINT pk_sec_api_key PRIMARY KEY (id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_api_key
+    ALTER COLUMN id SET DEFAULT nextval('${ohdsiSchema}.sec_api_key_sequence'::regclass);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_api_key
+    ALTER COLUMN disabled SET DEFAULT false;
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_api_key
+    ADD CONSTRAINT uq_sec_api_key_identifier UNIQUE (key_identifier);
+
+CREATE INDEX idx_sec_api_key_identifier ON ${ohdsiSchema}.sec_api_key (key_identifier);
 
 ALTER TABLE ONLY ${ohdsiSchema}.source
     ADD CONSTRAINT pk_source PRIMARY KEY (source_id);
@@ -1725,6 +1767,9 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_user_role
     ADD CONSTRAINT fk_user_role_to_user FOREIGN KEY (user_id) REFERENCES ${ohdsiSchema}.sec_user(id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_api_key
+    ADD CONSTRAINT fk_sec_api_key_user FOREIGN KEY (user_id) REFERENCES ${ohdsiSchema}.sec_user(id) ON DELETE CASCADE;
 
 -- FK constraints for sec_{entity} tables: role and entity references.
 -- Both FKs use ON DELETE CASCADE: deleting a role or a parent entity automatically

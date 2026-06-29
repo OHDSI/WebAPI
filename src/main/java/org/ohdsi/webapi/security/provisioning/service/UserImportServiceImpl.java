@@ -24,7 +24,7 @@ import org.ohdsi.webapi.security.authz.Role;
 import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.security.provisioning.JobAlreadyExistException;
-import org.ohdsi.webapi.security.provisioning.RoleGroupUtils;
+import org.ohdsi.webapi.security.provisioning.GroupRoleImportUtils;
 import org.ohdsi.webapi.security.provisioning.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.security.provisioning.model.AtlasUserRoles;
 import org.ohdsi.webapi.security.provisioning.model.AuthenticationProviders;
@@ -32,9 +32,9 @@ import org.ohdsi.webapi.security.provisioning.model.ConnectionInfo;
 import org.ohdsi.webapi.security.provisioning.model.LdapGroup;
 import org.ohdsi.webapi.security.provisioning.model.LdapProviderType;
 import org.ohdsi.webapi.security.provisioning.model.LdapUserImportStatus;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupEntity;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportEntity;
 import org.ohdsi.webapi.security.provisioning.model.RoleGroupMapping;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupRepository;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportRepository;
 import org.ohdsi.webapi.security.provisioning.model.RoleGroupsMap;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJob;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJobDTO;
@@ -84,7 +84,7 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final AuthorizationService userManager;
 
-  private final RoleGroupRepository roleGroupMappingRepository;
+  private final GroupRoleImportRepository roleGroupMappingRepository;
 
   private final UserImportJobService userImportJobService;
 
@@ -104,7 +104,7 @@ public class UserImportServiceImpl implements UserImportService {
                                UserRepository userRepository,
                                UserImportJobRepository userImportJobRepository,
                                AuthorizationService userManager,
-                               RoleGroupRepository roleGroupMappingRepository,
+                               GroupRoleImportRepository roleGroupMappingRepository,
                                @Lazy @Autowired(required = false) UserImportJobService userImportJobService,
                                GenericConversionService conversionService) {
 
@@ -234,7 +234,7 @@ public class UserImportServiceImpl implements UserImportService {
   @PreAuthorize("isPermitted('admin:security')")
   public void saveMappingEndpoint(@PathVariable("type") String type, @RequestBody RoleGroupMapping mapping) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
+    List<GroupRoleImportEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
     saveRoleGroupMapping(providerType, mappingEntities);
   }
 
@@ -248,7 +248,7 @@ public class UserImportServiceImpl implements UserImportService {
   @PreAuthorize("isPermitted('admin:security')")
   public RoleGroupMapping getMappingEndpoint(@PathVariable("type") String type) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupEntity> mappingEntities = getRoleGroupMapping(providerType);
+    List<GroupRoleImportEntity> mappingEntities = getRoleGroupMapping(providerType);
     return RoleGroupMappingConverter.convertRoleGroupMapping(type, mappingEntities);
   }
 
@@ -355,11 +355,11 @@ public class UserImportServiceImpl implements UserImportService {
 
   @Override
   @Transactional
-  public void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities) {
+  public void saveRoleGroupMapping(LdapProviderType providerType, List<GroupRoleImportEntity> mappingEntities) {
 
-    List<RoleGroupEntity> exists = roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
-    List<RoleGroupEntity> deleted = RoleGroupUtils.findDeleted(exists, mappingEntities);
-    List<RoleGroupEntity> created = RoleGroupUtils.findCreated(exists, mappingEntities);
+    List<GroupRoleImportEntity> exists = roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
+    List<GroupRoleImportEntity> deleted = GroupRoleImportUtils.findDeleted(exists, mappingEntities);
+    List<GroupRoleImportEntity> created = GroupRoleImportUtils.findCreated(exists, mappingEntities);
     if (!deleted.isEmpty()) {
       roleGroupMappingRepository.deleteAll(deleted);
     }
@@ -369,7 +369,7 @@ public class UserImportServiceImpl implements UserImportService {
   }
 
   @Override
-  public List<RoleGroupEntity> getRoleGroupMapping(LdapProviderType providerType) {
+  public List<GroupRoleImportEntity> getRoleGroupMapping(LdapProviderType providerType) {
 
     return roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
   }

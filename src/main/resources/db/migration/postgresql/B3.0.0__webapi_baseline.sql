@@ -951,15 +951,15 @@ COMMENT ON COLUMN ${ohdsiSchema}.sec_role.id IS 'primary key';
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role.name IS 'Role name';
 
-CREATE SEQUENCE ${ohdsiSchema}.sec_role_group_seq
+CREATE SEQUENCE ${ohdsiSchema}.sec_group_role_import_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE ${ohdsiSchema}.sec_role_group (
-    id integer DEFAULT nextval('${ohdsiSchema}.sec_role_group_seq'::regclass) NOT NULL,
+CREATE TABLE ${ohdsiSchema}.sec_group_role_import (
+    id integer DEFAULT nextval('${ohdsiSchema}.sec_group_role_import_seq'::regclass) NOT NULL,
     provider character varying NOT NULL,
     group_dn character varying NOT NULL,
     group_name character varying,
@@ -1497,8 +1497,8 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
 
 -- NOTE: schema_version constraint removed - Flyway manages this table automatically
 
-ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
-    ADD CONSTRAINT sec_role_group_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
+    ADD CONSTRAINT sec_group_role_import_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role
     ADD CONSTRAINT sec_role_name_uq UNIQUE (name, system_role);
@@ -1509,7 +1509,7 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_user
 ALTER TABLE ONLY ${ohdsiSchema}.source
     ADD CONSTRAINT source_key_unique UNIQUE (source_key);
 
-ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
+ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
     ADD CONSTRAINT uc_provider_group_role UNIQUE (provider, group_dn, role_id, job_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.source_daimon
@@ -1753,8 +1753,8 @@ ALTER TABLE ONLY ${ohdsiSchema}.reusable_version
 ALTER TABLE ONLY ${ohdsiSchema}.reusable_version
     ADD CONSTRAINT fk_reusable_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user(id);
 
-ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
-    ADD CONSTRAINT fk_role_group_job FOREIGN KEY (job_id) REFERENCES ${ohdsiSchema}.user_import_job(id) ON DELETE CASCADE;
+ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
+    ADD CONSTRAINT fk_group_role_import_job FOREIGN KEY (job_id) REFERENCES ${ohdsiSchema}.user_import_job(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
     ADD CONSTRAINT fk_role_permission_to_permission FOREIGN KEY (permission_id) REFERENCES ${ohdsiSchema}.sec_permission(id);

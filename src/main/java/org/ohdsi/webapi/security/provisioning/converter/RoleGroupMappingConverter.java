@@ -5,7 +5,7 @@ import org.ohdsi.webapi.security.authz.Role;
 import org.ohdsi.webapi.security.authz.RoleEntity;
 import org.ohdsi.webapi.security.provisioning.model.LdapGroup;
 import org.ohdsi.webapi.security.provisioning.model.LdapProviderType;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupEntity;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportEntity;
 import org.ohdsi.webapi.security.provisioning.model.RoleGroupMapping;
 import org.ohdsi.webapi.security.provisioning.model.RoleGroupsMap;
 
@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 public class RoleGroupMappingConverter {
 
-  public static RoleGroupMapping convertRoleGroupMapping(String provider, List<RoleGroupEntity> mappingEntities) {
+  public static RoleGroupMapping convertRoleGroupMapping(String provider, List<GroupRoleImportEntity> mappingEntities) {
 
     RoleGroupMapping roleGroupMapping = new RoleGroupMapping();
     roleGroupMapping.setProvider(provider);
-    Map<Long, List<RoleGroupEntity>> entityMap = mappingEntities.stream()
+    Map<Long, List<GroupRoleImportEntity>> entityMap = mappingEntities.stream()
             .collect(Collectors.groupingBy(r -> r.getRole().getId()));
     Map<Long, RoleEntity> roleMap = entityMap.entrySet().stream().map(e -> new ImmutablePair<>(e.getKey(), e.getValue().iterator().next().getRole()))
             .collect(Collectors.toMap(ImmutablePair::getKey, ImmutablePair::getValue));
@@ -40,14 +40,14 @@ public class RoleGroupMappingConverter {
     return roleGroupMapping;
   }
 
-  public static List<RoleGroupEntity> convertRoleGroupMapping(RoleGroupMapping mapping) {
+  public static List<GroupRoleImportEntity> convertRoleGroupMapping(RoleGroupMapping mapping) {
 
     final String providerTypeName = mapping.getProvider();
     final LdapProviderType providerTyper = LdapProviderType.fromValue(providerTypeName);
     return mapping.getRoleGroups().stream().flatMap(m -> {
       RoleEntity roleEntity = convertRole(m.getRole());
       return m.getGroups().stream().map(g -> {
-        RoleGroupEntity entity = new RoleGroupEntity();
+        GroupRoleImportEntity entity = new GroupRoleImportEntity();
         entity.setGroupDn(g.getDistinguishedName());
         entity.setGroupName(g.getDisplayName());
         entity.setRole(roleEntity);

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
  * Maps LDAP groups (from authentication authorities) to WebAPI role names.
  *
  * PHASE 1 PLACEHOLDER: Currently returns empty set to support the unified login pipeline.
- * Phase 2 will implement actual group-to-role mapping using the sec_role_group table
- * and RoleGroupEntity infrastructure.
+ * Phase 2 will implement actual group-to-role mapping using the sec_group_role_import table
+ * and GroupRoleImportEntity infrastructure.
  *
  * The mapping infrastructure is currently entangled with the LDAP import job in the
  * security.provisioning package. Phase 2 will refactor this to provide a clean

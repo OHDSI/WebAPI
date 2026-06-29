@@ -30,7 +30,7 @@ import java.util.List;
   }
 )
 @NamedEntityGraph(name = "jobWithMapping",
-  attributeNodes = @NamedAttributeNode("roleGroupMapping"))
+  attributeNodes = @NamedAttributeNode("groupRoleImportMapping"))
 public class UserImportJob extends ArachneJob {
 
   @ElementCollection(fetch = FetchType.EAGER)
@@ -44,7 +44,7 @@ public class UserImportJob extends ArachneJob {
   private LdapProviderType providerType;
 
   @OneToMany(mappedBy = "userImportJob")
-  private List<RoleGroupEntity> roleGroupMapping;
+  private List<GroupRoleImportEntity> groupRoleImportMapping;
 
   @Column(name = "preserve_roles")
   private Boolean preserveRoles;
@@ -71,12 +71,12 @@ public class UserImportJob extends ArachneJob {
     this.providerType = providerType;
   }
 
-  public List<RoleGroupEntity> getRoleGroupMapping() {
-    return roleGroupMapping;
+  public List<GroupRoleImportEntity> getRoleGroupMapping() {
+    return groupRoleImportMapping;
   }
 
-  public void setRoleGroupMapping(List<RoleGroupEntity> roleGroupMapping) {
-    this.roleGroupMapping = roleGroupMapping;
+  public void setRoleGroupMapping(List<GroupRoleImportEntity> groupRoleImportMapping) {
+    this.groupRoleImportMapping = groupRoleImportMapping;
   }
 
   public Boolean getPreserveRoles() {

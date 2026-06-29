@@ -378,7 +378,6 @@ public class SourceService extends AbstractDaoService {
      * @return
      */
     @GetMapping(value = "/daimon/priority", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<Map<SourceDaimon.DaimonType, SourceInfo>> getPriorityDaimonsEndpoint() {
         return ResponseEntity.ok(getPriorityDaimons()
                 .entrySet().stream()

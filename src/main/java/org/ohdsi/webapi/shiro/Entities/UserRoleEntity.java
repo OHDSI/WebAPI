@@ -5,6 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -58,7 +59,7 @@ public class UserRoleEntity implements Serializable {
     this.status = status;
   }
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="USER_ID", nullable=false)
   public UserEntity getUser() {
     return user;
@@ -68,7 +69,7 @@ public class UserRoleEntity implements Serializable {
     this.user = user;
   }
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="ROLE_ID", nullable=false)
   public RoleEntity getRole() {
     return role;

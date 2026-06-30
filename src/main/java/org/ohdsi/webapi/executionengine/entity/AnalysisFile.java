@@ -27,7 +27,7 @@ public class AnalysisFile {
     @Column
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
     private ExecutionEngineAnalysisStatus analysisExecution;
 

@@ -974,11 +974,26 @@ CREATE SEQUENCE ${ohdsiSchema}.sec_role_permission_sequence
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE ${ohdsiSchema}.sec_external_role_map_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE ${ohdsiSchema}.sec_role_permission (
     id integer DEFAULT nextval('${ohdsiSchema}.sec_role_permission_sequence'::regclass) NOT NULL,
     role_id integer NOT NULL,
     permission_id integer NOT NULL,
     status character varying(255)
+);
+
+CREATE TABLE ${ohdsiSchema}.sec_external_role_map (
+    id integer DEFAULT nextval('${ohdsiSchema}.sec_external_role_map_seq'::regclass) NOT NULL,
+    origin character varying(32) NOT NULL,
+    external_claim character varying(255) NOT NULL,
+    role_id integer NOT NULL,
+    description character varying(500)
 );
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role_permission.id IS 'Primary key';
@@ -1500,6 +1515,9 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
 ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
     ADD CONSTRAINT sec_group_role_import_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY ${ohdsiSchema}.sec_external_role_map
+    ADD CONSTRAINT sec_external_role_map_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role
     ADD CONSTRAINT sec_role_name_uq UNIQUE (name, system_role);
 
@@ -1511,6 +1529,9 @@ ALTER TABLE ONLY ${ohdsiSchema}.source
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
     ADD CONSTRAINT uc_provider_group_role UNIQUE (provider, group_dn, role_id, job_id);
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_external_role_map
+    ADD CONSTRAINT unique_origin_claim_role UNIQUE (origin, external_claim, role_id);
 
 ALTER TABLE ONLY ${ohdsiSchema}.source_daimon
     ADD CONSTRAINT un_source_daimon UNIQUE (source_id, daimon_type);
@@ -1543,6 +1564,8 @@ CREATE INDEX concept_set_tags_tag_id_idx ON ${ohdsiSchema}.concept_set_tag USING
 CREATE INDEX concept_set_version_asset_idx ON ${ohdsiSchema}.concept_set_version USING btree (asset_id);
 
 CREATE INDEX idx_cohort_sample_source ON ${ohdsiSchema}.cohort_sample USING btree (cohort_definition_id, source_id);
+
+CREATE INDEX idx_external_role_map_origin_claim ON ${ohdsiSchema}.sec_external_role_map USING btree (origin, external_claim);
 
 CREATE INDEX idx_penelope_laertes_uni_pivot ON ${ohdsiSchema}.penelope_laertes_uni_pivot USING btree (ingredient_concept_id, condition_concept_id);
 
@@ -1755,6 +1778,9 @@ ALTER TABLE ONLY ${ohdsiSchema}.reusable_version
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_group_role_import
     ADD CONSTRAINT fk_group_role_import_job FOREIGN KEY (job_id) REFERENCES ${ohdsiSchema}.user_import_job(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ${ohdsiSchema}.sec_external_role_map
+    ADD CONSTRAINT fk_external_role_map_role FOREIGN KEY (role_id) REFERENCES ${ohdsiSchema}.sec_role(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
     ADD CONSTRAINT fk_role_permission_to_permission FOREIGN KEY (permission_id) REFERENCES ${ohdsiSchema}.sec_permission(id);

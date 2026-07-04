@@ -104,6 +104,10 @@ logging:
         orm: info
         web: info
     root: info
+# MCP server (analyst copilot). Disabled by default; enable per-deployment.
+mcp:
+  server:
+    enabled: ${MCP_SERVER_ENABLED:false}
 organization:
   name: OHDSI
 person:
@@ -333,6 +337,14 @@ sparql:
 spring:
   main:
     lazy-initialization: true
+  ai:
+    mcp:
+      server:
+        enabled: ${MCP_SERVER_ENABLED:false}
+        type: SYNC
+        name: ohdsi-webapi
+        version: 1.0.0
+        sse-message-endpoint: /mcp/message
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
   batch:

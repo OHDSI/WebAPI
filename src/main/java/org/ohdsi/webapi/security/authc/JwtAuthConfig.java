@@ -275,6 +275,9 @@ public class JwtAuthConfig {
         .authorizeHttpRequests(auth -> {
             // Bootstrap endpoints the login page needs before authentication.
             auth.requestMatchers("/info", "/auth/providers", "/i18n/**").permitAll();
+            // MCP endpoints always require authentication (via X-API-KEY or JWT),
+            // regardless of the allowAnonymousAccess setting used for the rest of the API.
+            auth.requestMatchers("/mcp/**").authenticated();
             if (allowAnonymousAccess) {
               // Token-less requests proceed as the anonymous principal; what a principal may do
               // is governed by per-endpoint @PreAuthorize and the permission grants it holds.

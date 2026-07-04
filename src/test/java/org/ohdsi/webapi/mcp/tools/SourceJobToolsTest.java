@@ -12,6 +12,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SourceJobToolsTest {
@@ -39,6 +40,8 @@ class SourceJobToolsTest {
         McpResult r = tools.cdmResultsDashboard("DEMO_CDM");
 
         assertThat(r.ok()).isTrue();
+        verify(context).requireSource("DEMO_CDM");
+        verify(cdm).getDashboard("DEMO_CDM");
     }
 
     @Test
@@ -48,6 +51,8 @@ class SourceJobToolsTest {
         McpResult r = tools.cdmResultsDomainCounts("DEMO_CDM", "condition");
 
         assertThat(r.ok()).isTrue();
+        verify(context).requireSource("DEMO_CDM");
+        verify(cdm).getTreemap("DEMO_CDM", "condition");
     }
 
     @Test
@@ -55,13 +60,15 @@ class SourceJobToolsTest {
         McpResult r = tools.jobStatus(42L);
 
         assertThat(r.ok()).isTrue();
+        verify(jobs).findJob(42L);
     }
 
     @Test
-    void jobListRecentReturnsOkEnvelope() {
+    void jobListRecentReturnsOkEnvelope() throws Exception {
         McpResult r = tools.jobListRecent();
 
         assertThat(r.ok()).isTrue();
+        verify(jobs).list(null, 0, 20, false);
     }
 
     @Test

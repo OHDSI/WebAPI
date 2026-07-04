@@ -20,6 +20,7 @@ public class SourceJobTools implements McpToolset {
     private final SourceService sourceService;
     private final CDMResultsService cdmResults;
     private final JobService jobService;
+    // Reserved for a future notifications tool; not yet exposed via @Tool.
     private final NotificationServiceImpl notifications;
     private final McpToolContext context;
 
@@ -45,10 +46,11 @@ public class SourceJobTools implements McpToolset {
         return McpCall.guard(() -> cdmResults.getDashboard(context.requireSource(sourceKey)));
     }
 
-    @Tool(description = "Get per-domain record counts (treemap) for a source, e.g. Condition, Drug, Procedure.")
+    @Tool(description = "Get a per-concept treemap breakdown (patient/record counts by concept) within a "
+            + "given OMOP domain for a source, e.g. top concepts within Condition, Drug, Procedure.")
     public McpResult cdmResultsDomainCounts(
             @ToolParam(description = "Source key (see sourceList)") String sourceKey,
-            @ToolParam(description = "OMOP domain, e.g. condition, drug") String domain) {
+            @ToolParam(description = "OMOP domain to break down by concept, e.g. condition, drug") String domain) {
         return McpCall.guard(() -> cdmResults.getTreemap(context.requireSource(sourceKey), domain));
     }
 

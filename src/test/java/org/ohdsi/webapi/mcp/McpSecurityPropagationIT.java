@@ -125,6 +125,15 @@ public class McpSecurityPropagationIT extends WebApiIT {
             "vocabSearchConcepts", "vocabGetConcept", "vocabConceptDescendants");
     }
 
+    @Test
+    public void sourceAndJobToolsAreRegistered() {
+        List<String> names = Arrays.stream(provider().getToolCallbacks())
+            .map(t -> t.getToolDefinition().name())
+            .toList();
+
+        assertThat(names).contains("sourceList", "cdmResultsDashboard", "jobStatus");
+    }
+
     // ------------------------------------------------------------------------
     // Assertion 2 (ESSENTIAL): with an authenticated-but-unprivileged principal on
     // the calling thread, a @PreAuthorize-gated tool must come back permission_denied.

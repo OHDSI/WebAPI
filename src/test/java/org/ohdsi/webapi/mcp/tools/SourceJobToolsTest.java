@@ -1,0 +1,77 @@
+package org.ohdsi.webapi.mcp.tools;
+
+import org.junit.jupiter.api.Test;
+import org.ohdsi.webapi.mcp.support.McpResult;
+import org.ohdsi.webapi.mcp.support.McpToolContext;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.SourceService;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class SourceJobToolsTest {
+
+    private final SourceService sourceService = mock(SourceService.class);
+    private final org.ohdsi.webapi.service.CDMResultsService cdm = mock(org.ohdsi.webapi.service.CDMResultsService.class);
+    private final org.ohdsi.webapi.service.JobService jobs = mock(org.ohdsi.webapi.service.JobService.class);
+    private final org.ohdsi.webapi.job.NotificationServiceImpl notifications = mock(org.ohdsi.webapi.job.NotificationServiceImpl.class);
+    private final McpToolContext context = mock(McpToolContext.class);
+    private final SourceJobTools tools = new SourceJobTools(sourceService, cdm, jobs, notifications, context);
+
+    @Test
+    void sourceListReturnsSources() {
+        SourceInfo info = new SourceInfo(new Source());
+        when(sourceService.getSourcesEndpoint())
+                .thenReturn(ResponseEntity.ok(List.of(info)));
+        McpResult r = tools.sourceList();
+        assertThat(r.ok()).isTrue();
+    }
+
+    @Test
+    void cdmResultsDashboardResolvesSourceKeyThenCallsService() {
+        when(context.requireSource("DEMO_CDM")).thenReturn("DEMO_CDM");
+
+        McpResult r = tools.cdmResultsDashboard("DEMO_CDM");
+
+        assertThat(r.ok()).isTrue();
+    }
+
+    @Test
+    void cdmResultsDomainCountsResolvesSourceKeyThenCallsService() {
+        when(context.requireSource("DEMO_CDM")).thenReturn("DEMO_CDM");
+
+        McpResult r = tools.cdmResultsDomainCounts("DEMO_CDM", "condition");
+
+        assertThat(r.ok()).isTrue();
+    }
+
+    @Test
+    void jobStatusReturnsOkEnvelope() {
+        McpResult r = tools.jobStatus(42L);
+
+        assertThat(r.ok()).isTrue();
+    }
+
+    @Test
+    void jobListRecentReturnsOkEnvelope() {
+        McpResult r = tools.jobListRecent();
+
+        assertThat(r.ok()).isTrue();
+    }
+
+    @Test
+    void unknownSourceKeyBecomesInvalidInput() {
+        when(context.requireSource("NOPE"))
+                .thenThrow(new IllegalArgumentException("Unknown sourceKey 'NOPE'. Valid keys: [DEMO_CDM]"));
+
+        McpResult r = tools.cdmResultsDashboard("NOPE");
+
+        assertThat(r.ok()).isFalse();
+        assertThat(r.status()).isEqualTo("invalid_input");
+    }
+}

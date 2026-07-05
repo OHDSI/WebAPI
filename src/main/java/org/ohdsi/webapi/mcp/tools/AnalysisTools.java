@@ -13,11 +13,13 @@ import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 /** MCP tools for the four analysis types: characterization, incidence rate, pathway, feature. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class AnalysisTools implements McpToolset {
 
     private final CcController cc;
@@ -35,13 +37,17 @@ public class AnalysisTools implements McpToolset {
         this.context = context;
     }
 
+    private static PageRequest pageRequest(Integer page, Integer size) {
+        return PageRequest.of(page == null ? 0 : page, size == null ? 20 : size);
+    }
+
     // ---- Cohort characterization ----
 
     @Tool(description = "List cohort characterizations (paged).")
     public McpResult characList(
             @ToolParam(required = false, description = "0-based page") Integer page,
             @ToolParam(required = false, description = "page size") Integer size) {
-        return McpCall.guard(() -> cc.list(PageRequest.of(page == null ? 0 : page, size == null ? 20 : size)));
+        return McpCall.guard(() -> cc.list(pageRequest(page, size)));
     }
 
     @Tool(description = "Get a cohort characterization's metadata by id.")
@@ -121,7 +127,7 @@ public class AnalysisTools implements McpToolset {
     public McpResult pathwayList(
             @ToolParam(required = false, description = "0-based page") Integer page,
             @ToolParam(required = false, description = "page size") Integer size) {
-        return McpCall.guard(() -> pathway.list(PageRequest.of(page == null ? 0 : page, size == null ? 20 : size)));
+        return McpCall.guard(() -> pathway.list(pageRequest(page, size)));
     }
 
     @Tool(description = "Get a pathway analysis by id.")
@@ -156,7 +162,7 @@ public class AnalysisTools implements McpToolset {
     public McpResult feanalysisList(
             @ToolParam(required = false, description = "0-based page") Integer page,
             @ToolParam(required = false, description = "page size") Integer size) {
-        return McpCall.guard(() -> fe.list(PageRequest.of(page == null ? 0 : page, size == null ? 20 : size)));
+        return McpCall.guard(() -> fe.list(pageRequest(page, size)));
     }
 
     @Tool(description = "Get a feature analysis by id.")

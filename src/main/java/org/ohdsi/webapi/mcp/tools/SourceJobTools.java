@@ -10,11 +10,12 @@ import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.source.SourceService;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** MCP tools for data sources, CDM result summaries, and job status. Read-only. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class SourceJobTools implements McpToolset {
 
     private final SourceService sourceService;
@@ -54,20 +55,14 @@ public class SourceJobTools implements McpToolset {
         return McpCall.guard(() -> cdmResults.getTreemap(context.requireSource(sourceKey), domain));
     }
 
-    @Tool(description = "Get the status of a job by jobId. Use to poll generation/analysis jobs.")
+    @Tool(description = "Get the status of a job execution by executionId. Use to poll generation/analysis jobs.")
     public McpResult jobStatus(
-            @ToolParam(description = "Job id returned by a *_generate/*_execute tool") long jobId) {
-        return McpCall.guard(() -> jobService.findJob(jobId));
+            @ToolParam(description = "The execution id returned by a *_generate/*_execute tool") long executionId) {
+        return McpCall.guard(() -> jobService.findJobExecutionById(executionId));
     }
 
     @Tool(description = "List recent job executions (most recent page).")
     public McpResult jobListRecent() {
-        return McpCall.guard(() -> {
-            try {
-                return jobService.list(null, 0, 20, false);
-            } catch (NoSuchJobException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return McpCall.guard(() -> jobService.list(null, 0, 20, false));
     }
 }

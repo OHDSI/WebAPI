@@ -2,6 +2,7 @@ package org.ohdsi.webapi.mcp.support;
 
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 /** Resolves and validates human-friendly source keys used across MCP tools. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class McpToolContext {
 
     private final SourceService sourceService;

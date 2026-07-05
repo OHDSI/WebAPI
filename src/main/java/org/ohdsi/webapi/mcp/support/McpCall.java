@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 /** Runs a tool body and converts any exception into an {@link McpResult} envelope. */
 public final class McpCall {
@@ -14,9 +14,9 @@ public final class McpCall {
     private McpCall() {
     }
 
-    public static McpResult guard(Supplier<?> body) {
+    public static McpResult guard(Callable<?> body) {
         try {
-            return McpResult.ok(body.get());
+            return McpResult.ok(body.call());
         } catch (AccessDeniedException e) {
             return McpResult.error("permission_denied", e.getMessage());
         } catch (IllegalArgumentException e) {

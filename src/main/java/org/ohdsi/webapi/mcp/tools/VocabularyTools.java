@@ -8,10 +8,12 @@ import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** MCP tools for browsing the OMOP vocabulary. Read-only. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class VocabularyTools implements McpToolset {
 
     private final VocabularyService vocab;

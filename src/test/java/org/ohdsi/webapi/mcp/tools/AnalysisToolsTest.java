@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+import org.mockito.ArgumentCaptor;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -46,10 +48,13 @@ class AnalysisToolsTest {
         Page<CcShortDTO> page = new PageImpl<>(List.of());
         when(cc.list(any(Pageable.class))).thenReturn(page);
 
-        McpResult r = tools.characList(0, 20);
+        McpResult r = tools.characList(1, 5);
 
         assertThat(r.ok()).isTrue();
-        verify(cc).list(any(Pageable.class));
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(cc).list(captor.capture());
+        assertThat(captor.getValue().getPageNumber()).isEqualTo(1);
+        assertThat(captor.getValue().getPageSize()).isEqualTo(5);
     }
 
     @Test
@@ -194,10 +199,13 @@ class AnalysisToolsTest {
         Page<PathwayAnalysisDTO> page = new PageImpl<>(List.of());
         when(pathway.list(any(Pageable.class))).thenReturn(page);
 
-        McpResult r = tools.pathwayList(0, 20);
+        McpResult r = tools.pathwayList(1, 5);
 
         assertThat(r.ok()).isTrue();
-        verify(pathway).list(any(Pageable.class));
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(pathway).list(captor.capture());
+        assertThat(captor.getValue().getPageNumber()).isEqualTo(1);
+        assertThat(captor.getValue().getPageSize()).isEqualTo(5);
     }
 
     @Test
@@ -264,10 +272,13 @@ class AnalysisToolsTest {
         Page<FeAnalysisShortDTO> page = new PageImpl<>(List.of());
         when(fe.list(any(Pageable.class))).thenReturn(page);
 
-        McpResult r = tools.feanalysisList(0, 20);
+        McpResult r = tools.feanalysisList(1, 5);
 
         assertThat(r.ok()).isTrue();
-        verify(fe).list(any(Pageable.class));
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(fe).list(captor.capture());
+        assertThat(captor.getValue().getPageNumber()).isEqualTo(1);
+        assertThat(captor.getValue().getPageSize()).isEqualTo(5);
     }
 
     @Test

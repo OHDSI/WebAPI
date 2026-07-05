@@ -8,10 +8,12 @@ import org.ohdsi.webapi.mcp.support.McpResult;
 import org.ohdsi.webapi.mcp.support.McpToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** MCP tools for cohort definitions: browse, edit, generate, and read generation results. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class CohortTools implements McpToolset {
 
     private final CohortDefinitionService cohorts;

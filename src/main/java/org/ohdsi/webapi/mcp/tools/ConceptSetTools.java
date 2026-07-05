@@ -10,10 +10,12 @@ import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** MCP tools for browsing, creating, editing, and resolving concept sets. */
 @Component
+@ConditionalOnProperty(name = "mcp.server.enabled", havingValue = "true")
 public class ConceptSetTools implements McpToolset {
 
     private final ConceptSetService conceptSets;

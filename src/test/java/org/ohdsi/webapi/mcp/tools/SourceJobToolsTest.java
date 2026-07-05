@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.mcp.tools;
 
 import org.junit.jupiter.api.Test;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.mcp.support.McpResult;
 import org.ohdsi.webapi.mcp.support.McpToolContext;
 import org.ohdsi.webapi.source.Source;
@@ -57,10 +58,13 @@ class SourceJobToolsTest {
 
     @Test
     void jobStatusReturnsOkEnvelope() {
+        JobExecutionResource execution = new JobExecutionResource();
+        when(jobs.findJobExecutionById(42L)).thenReturn(execution);
+
         McpResult r = tools.jobStatus(42L);
 
         assertThat(r.ok()).isTrue();
-        verify(jobs).findJob(42L);
+        verify(jobs).findJobExecutionById(42L);
     }
 
     @Test

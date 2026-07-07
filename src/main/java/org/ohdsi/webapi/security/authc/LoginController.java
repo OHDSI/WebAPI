@@ -16,7 +16,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * The LoginController class groups the different auth controller endpoints, and
@@ -49,8 +52,19 @@ public class LoginController {
   }
 
   @GetMapping("/user/logout")
-  public LoginService.Result logout(Authentication authentication) {
-    return loginSvc.logout(authentication);
+  public LoginService.Result logout(Authentication authentication, HttpSession session) {
+    // Revoke the WebAPI session
+    LoginService.Result result = loginSvc.logout(authentication);
+    
+    // Clear the Spring Security context to remove any cached principals
+    SecurityContextHolder.clearContext();
+    
+    // Invalidate the HTTP session to clear cookies and session data
+    if (session != null) {
+      session.invalidate();
+    }
+    
+    return result;
   }
 
   /**

@@ -219,7 +219,7 @@ public class LoginService {
   }
 
   // Since login service initiates sessions, it can determine the cleanup schedule
-  @Scheduled(fixedRateString = "#{@sessionProperties.cleanupInterval.toMillis()}")
+  @Scheduled(fixedDelayString = "#{@sessionProperties.cleanupInterval.toMillis()}")
   public void cleanupSessions() {
     sessionService.cleanupExpiredSessions();
   }

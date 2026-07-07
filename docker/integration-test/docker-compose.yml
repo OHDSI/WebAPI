@@ -96,7 +96,6 @@ services:
       - SECURITY_AUTH_OIDC_LOGOUTURL=http://localhost:9090/default/endsession
       - SECURITY_AUTH_OIDC_EXTRASCOPES=profile email
       - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
-      - SECURITY_AUTH_OAUTH_CALLBACK_API=http://localhost:18080/WebAPI/user/oauth/callback
       - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query
       - SECURITY_AUTH_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
       - SECURITY_AUTH_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver

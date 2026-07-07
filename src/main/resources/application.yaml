@@ -205,7 +205,6 @@ security:
 
     oauth: # OAuth
       callback:
-        api: http://localhost:8080/WebAPI/user/oauth/callback
         ui: http://localhost/Atlas/#/otc
       facebook:
         enabled: false

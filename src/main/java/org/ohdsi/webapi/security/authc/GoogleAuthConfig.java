@@ -17,7 +17,6 @@
 package org.ohdsi.webapi.security.authc;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -46,6 +45,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * Uses OIDC discovery to automatically obtain provider endpoints (authorization_endpoint,
  * token_endpoint, userinfo_endpoint, jwks_uri) from Google's metadata.
  * 
+ * OAuth2 callback URI is automatically resolved by Spring Security's template mechanism:
+ * {baseUrl} is extracted from the incoming request (respecting X-Forwarded-* headers),
+ * and {registrationId} is replaced with "google", resulting in:
+ * https://host:port/WebAPI/user/oauth/callback/google
+ * 
  * Authentication flow:
  * 1. User clicks "Login with Google" → redirected to /user/login/google
  * 2. OAuth2Login filter redirects to Google's authorization endpoint
@@ -53,7 +57,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * 4. Google redirects back to /user/oauth/callback/google with authorization code
  * 5. OAuth2Login exchanges code for ID token (OIDC)
  * 6. ID token signature validated using Google's JWKS
- * 7. handleGoogleSuccess() extracts user claims, maps to roles, creates session + mints JWT
+ * 7. handleGoogleSuccess() extracts user claims, creates session + mints JWT
  * 8. JWT embedded in OTC, OTC returned to client in query parameter
  * 9. Client calls /user/login/otc to redeem OTC for JWT
  */
@@ -62,7 +66,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class GoogleAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(GoogleAuthConfig.class);
-  private static final String REGISTRATION_ID = "google";
 
   private final HttpSecurityShared httpSecurityShared;
   private final LoginService loginService;
@@ -73,9 +76,6 @@ public class GoogleAuthConfig {
 
   @Value("${security.auth.oauth.google.apiSecret}")
   private String clientSecret;
-
-  @Value("${security.auth.oauth.callback.api}")
-  private String callbackApi;
 
   @Value("${security.auth.oauth.callback.ui}")
   private String callbackUi;
@@ -96,6 +96,10 @@ public class GoogleAuthConfig {
    * Register Google as an OAuth2 client using OIDC discovery.
    * Automatically discovers authorization, token, userinfo, and JWKS endpoints from
    * Google's /.well-known/openid-configuration metadata.
+   * 
+   * The redirect URI uses Spring Security's template mechanism: {baseUrl} is resolved
+   * from the incoming request (respecting X-Forwarded-* headers and context path),
+   * and {registrationId} is automatically replaced.
    */
   @Bean
   public ClientRegistrationRepository googleClientRegistrationRepository() {
@@ -106,13 +110,15 @@ public class GoogleAuthConfig {
 
     log.info("Google OAuth: Configuring with OIDC discovery");
 
-    // ✅ Use OIDC discovery instead of hardcoding endpoints
+    // ✅ Use Spring Security's template-based redirect URI
+    // {baseUrl} → resolved from request (respects X-Forwarded-* headers and context path)
+    // {registrationId} → automatically replaced with "google"
     ClientRegistration registration = ClientRegistrations
         .fromIssuerLocation("https://accounts.google.com")
-        .registrationId(REGISTRATION_ID)
+        .registrationId("google")
         .clientId(clientId)
         .clientSecret(clientSecret)
-        .redirectUri(joinPath(callbackApi, REGISTRATION_ID))
+        .redirectUri("{baseUrl}/user/oauth/callback/{registrationId}")
         .scope("openid", "profile", "email")
         .build();
 
@@ -125,19 +131,21 @@ public class GoogleAuthConfig {
    */
   @Bean
   @Order(2)  // After OIDC chains (Order 0, 1)
-  public SecurityFilterChain googleAuthChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain googleAuthChain(
+      HttpSecurity http,
+      ClientRegistrationRepository clientRegistrationRepository) throws Exception {
     httpSecurityShared.configureDefaults(http);
     http
         .securityMatcher("/user/login/google", "/user/oauth/callback/google")
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .oauth2Login(oauth -> oauth
-            .clientRegistrationRepository(googleClientRegistrationRepository())
+            .clientRegistrationRepository(clientRegistrationRepository)
             // ✅ Use OIDC user service — validates ID token signature via JWKS
             .userInfoEndpoint(userInfo -> userInfo
                 .oidcUserService(new OidcUserService())
             )
             .authorizationEndpoint(authz -> authz.baseUri("/user/login"))
-            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/" + REGISTRATION_ID))
+            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/google"))
             .successHandler(this::handleGoogleSuccess)
             .failureHandler((req, res, ex) -> {
               log.warn("Google: Authentication failed: {}", ex.getMessage());
@@ -182,10 +190,6 @@ public class GoogleAuthConfig {
     // Invalidate the HTTP session to prevent OAuth2 context from persisting
     request.getSession().invalidate();
     response.sendRedirect(callbackUi + "?code=" + otc);
-  }
-
-  private static String joinPath(String base, String segment) {
-    return (base.endsWith("/") ? base : base + "/") + segment;
   }
 
   private static String firstNonBlank(String... values) {

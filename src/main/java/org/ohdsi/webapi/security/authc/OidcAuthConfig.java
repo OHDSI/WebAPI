@@ -44,7 +44,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class OidcAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(OidcAuthConfig.class);
-  private static final String REGISTRATION_ID = "openid";
   private static final String DISCOVERY_SUFFIX = "/.well-known/openid-configuration";
 
   private final HttpSecurityShared httpSecurityShared;
@@ -73,9 +72,6 @@ public class OidcAuthConfig {
   @Value("${security.auth.oidc.rolesToUpperCase:true}")
   private boolean rolesToUpperCase;
 
-  @Value("${security.auth.oauth.callback.api}")
-  private String callbackApi;
-
   @Value("${security.auth.oauth.callback.ui}")
   private String callbackUi;
 
@@ -103,10 +99,10 @@ public class OidcAuthConfig {
     log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
 
     ClientRegistration.Builder builder = ClientRegistrations.fromIssuerLocation(issuer)
-        .registrationId(REGISTRATION_ID)
+        .registrationId("openid")
         .clientId(clientId)
         .clientSecret(clientSecret)
-        .redirectUri(joinPath(callbackApi, REGISTRATION_ID))
+        .redirectUri("{baseUrl}/user/oauth/callback/{registrationId}")
         .scope(buildScopes());
 
     if (externalUrl != null && !externalUrl.isBlank()) {
@@ -131,15 +127,17 @@ public class OidcAuthConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain oidcAuthChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain oidcAuthChain(
+      HttpSecurity http,
+      ClientRegistrationRepository clientRegistrationRepository) throws Exception {
     httpSecurityShared.configureDefaults(http);
     http
-        .securityMatcher("/user/login/" + REGISTRATION_ID, "/user/oauth/callback/" + REGISTRATION_ID)
+        .securityMatcher("/user/login/openid", "/user/oauth/callback/openid")
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .oauth2Login(oauth -> oauth
-            .clientRegistrationRepository(oidcClientRegistrationRepository())
+            .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authz -> authz.baseUri("/user/login"))
-            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/" + REGISTRATION_ID))
+            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/openid"))
             .successHandler(this::handleSuccess)
             .failureHandler((req, res, ex) -> {
               log.warn("OIDC: Authentication failed: {}", ex.getMessage());
@@ -196,21 +194,6 @@ public class OidcAuthConfig {
       }
     }
     return scopes;
-  }
-
-  private static String joinPath(String base, String segment) {
-    return (base.endsWith("/") ? base : base + "/") + segment;
-  }
-
-  private static String appendFragmentParam(String url, String key, String value) {
-    int fragmentIdx = url.indexOf('#');
-    if (fragmentIdx < 0) {
-      return url + "#" + key + "=" + value;
-    }
-    String base = url.substring(0, fragmentIdx);
-    String fragment = url.substring(fragmentIdx + 1);
-    String separator = fragment.isEmpty() ? "" : "&";
-    return base + "#" + fragment + separator + key + "=" + value;
   }
 
   private String stripDiscoverySuffix(String url) {

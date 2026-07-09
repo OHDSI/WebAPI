@@ -3,6 +3,7 @@ package org.ohdsi.webapi.security.authc;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,7 +20,9 @@ public class HttpSecurityShared {
         .cors(Customizer.withDefaults())
         // Disable all unnecessary filters
         .requestCache(AbstractHttpConfigurer::disable)
-        .sessionManagement(AbstractHttpConfigurer::disable)
+        // STATELESS: Spring Security never creates or uses sessions
+        // This prevents JSESSIONID cookie creation and session bleeding
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .logout(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable);
   }

@@ -24,6 +24,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.sql.Driver;
@@ -45,7 +46,29 @@ public class DataAccessConfig {
     private Environment env;
     @Value("${jasypt.encryptor.enabled}")
     private boolean encryptorEnabled;
-  
+
+    // Simba/Databricks JDBC 2.6.40 defaults its internal LoginTimeout to 5s whenever
+    // DriverManager.getLoginTimeout() returns 0 (the JVM default), and that 5s value
+    // leaks into the read timeout of subsequent statement executions, capping long
+    // cohort-generation queries. The only lever this driver build honors is the
+    // JVM-global DriverManager.setLoginTimeout(), and only when it is NON-ZERO
+    // (setting 0 is indistinguishable from "unset" and keeps the 5s default).
+    // Override it here at startup, before any source connection is opened. Tunable via
+    // the datasource.loginTimeout property / DATASOURCE_LOGINTIMEOUT env var; <= 0
+    // disables the override and leaves the driver's own default in place.
+    @Value("${datasource.loginTimeout:3600}")
+    private int loginTimeoutSeconds;
+
+    @PostConstruct
+    public void configureGlobalLoginTimeout() {
+        if (loginTimeoutSeconds > 0) {
+            DriverManager.setLoginTimeout(loginTimeoutSeconds);
+            logger.info("Set global JDBC DriverManager loginTimeout to {}s", loginTimeoutSeconds);
+        } else {
+            logger.info("Global JDBC DriverManager loginTimeout override disabled (datasource.loginTimeout={})", loginTimeoutSeconds);
+        }
+    }
+
     private Properties getJPAProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));

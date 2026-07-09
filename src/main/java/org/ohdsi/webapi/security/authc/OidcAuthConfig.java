@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,11 +44,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class OidcAuthConfig {
 
   private static final Logger log = LoggerFactory.getLogger(OidcAuthConfig.class);
-  private static final String REGISTRATION_ID = "openid";
   private static final String DISCOVERY_SUFFIX = "/.well-known/openid-configuration";
 
   private final HttpSecurityShared httpSecurityShared;
   private final LoginService loginService;
+  private final OneTimeCodeService oneTimeCodeService;
   private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
 
   @Value("${security.auth.oidc.clientId}")
@@ -71,9 +72,6 @@ public class OidcAuthConfig {
   @Value("${security.auth.oidc.rolesToUpperCase:true}")
   private boolean rolesToUpperCase;
 
-  @Value("${security.auth.oauth.callback.api}")
-  private String callbackApi;
-
   @Value("${security.auth.oauth.callback.ui}")
   private String callbackUi;
 
@@ -82,9 +80,11 @@ public class OidcAuthConfig {
 
   public OidcAuthConfig(HttpSecurityShared httpSecurityShared,
                         LoginService loginService,
+                        OneTimeCodeService oneTimeCodeService,
                         org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper) {
     this.httpSecurityShared = httpSecurityShared;
     this.loginService = loginService;
+    this.oneTimeCodeService = oneTimeCodeService;
     this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
   }
 
@@ -99,10 +99,10 @@ public class OidcAuthConfig {
     log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
 
     ClientRegistration.Builder builder = ClientRegistrations.fromIssuerLocation(issuer)
-        .registrationId(REGISTRATION_ID)
+        .registrationId("openid")
         .clientId(clientId)
         .clientSecret(clientSecret)
-        .redirectUri(joinPath(callbackApi, REGISTRATION_ID))
+        .redirectUri("{baseUrl}/user/oauth/callback/{registrationId}")
         .scope(buildScopes());
 
     if (externalUrl != null && !externalUrl.isBlank()) {
@@ -127,18 +127,21 @@ public class OidcAuthConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain oidcAuthChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain oidcAuthChain(
+      HttpSecurity http,
+      ClientRegistrationRepository clientRegistrationRepository) throws Exception {
     httpSecurityShared.configureDefaults(http);
     http
-        .securityMatcher("/user/login/" + REGISTRATION_ID, "/user/oauth/callback/**")
+        .securityMatcher("/user/login/openid", "/user/oauth/callback/openid")
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .oauth2Login(oauth -> oauth
+            .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authz -> authz.baseUri("/user/login"))
-            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/*"))
+            .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/openid"))
             .successHandler(this::handleSuccess)
             .failureHandler((req, res, ex) -> {
               log.warn("OIDC: Authentication failed: {}", ex.getMessage());
-              res.sendRedirect(appendQueryParam(callbackUi, "error", "oidc_failed"));
+              res.sendRedirect(callbackUi + "?error=oidc_failed");
             }));
     return http.build();
   }
@@ -166,9 +169,16 @@ public class OidcAuthConfig {
         .originAuthentication(authentication)
         .build();
 
+    // ✅ Embed JWT in OTC instead of returning in fragment
     LoginService.Result result = loginService.onSuccess(authenticatedLogin);
+    UUID otc = oneTimeCodeService.generateCode(
+        login,
+        UserOrigin.OIDC,
+        result.jwt());
 
-    response.sendRedirect(appendFragmentParam(callbackUi, "token", result.jwt()));
+    // Invalidate the HTTP session to prevent OAuth2 context from persisting
+    request.getSession().invalidate();
+    response.sendRedirect(callbackUi + "?code=" + otc);
   }
 
   private Set<String> buildScopes() {
@@ -184,30 +194,6 @@ public class OidcAuthConfig {
       }
     }
     return scopes;
-  }
-
-  private static String joinPath(String base, String segment) {
-    return (base.endsWith("/") ? base : base + "/") + segment;
-  }
-
-  private static String appendQueryParam(String url, String key, String value) {
-    // Insert before any URL fragment so SPA hash-route callbacks keep the param queryable.
-    int fragmentIdx = url.indexOf('#');
-    String base = fragmentIdx >= 0 ? url.substring(0, fragmentIdx) : url;
-    String fragment = fragmentIdx >= 0 ? url.substring(fragmentIdx) : "";
-    String separator = base.contains("?") ? "&" : "?";
-    return base + separator + key + "=" + value + fragment;
-  }
-
-  private static String appendFragmentParam(String url, String key, String value) {
-    int fragmentIdx = url.indexOf('#');
-    if (fragmentIdx < 0) {
-      return url + "#" + key + "=" + value;
-    }
-    String base = url.substring(0, fragmentIdx);
-    String fragment = url.substring(fragmentIdx + 1);
-    String separator = fragment.isEmpty() ? "" : "&";
-    return base + "#" + fragment + separator + key + "=" + value;
   }
 
   private String stripDiscoverySuffix(String url) {
@@ -284,11 +270,12 @@ public class OidcAuthConfig {
 
   @RestController
   @ConditionalOnProperty(prefix = "security.auth.oidc", name = "enabled", havingValue = "true")
-  public static class OpenidDirect {
+  public class OpenidDirect {
 
     private static final Logger log = LoggerFactory.getLogger(OpenidDirect.class);
 
     private final LoginService loginService;
+    private final OneTimeCodeService oneTimeCodeService;
     private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
     private final JwtDecoder jwtDecoder;
     private final String rolesClaim;
@@ -296,12 +283,14 @@ public class OidcAuthConfig {
 
     public OpenidDirect(
         LoginService loginService,
+        OneTimeCodeService oneTimeCodeService,
         org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper,
         @Value("${security.auth.oidc.enabled:false}") boolean enabled,
         @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
         @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
         @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase) {
       this.loginService = loginService;
+      this.oneTimeCodeService = oneTimeCodeService;
       this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
       this.rolesClaim = rolesClaim;
       this.rolesToUpperCase = rolesToUpperCase;
@@ -324,16 +313,16 @@ public class OidcAuthConfig {
     }
 
     @GetMapping("/user/login/openidDirect")
-    public ResponseEntity<LoginService.Result> login(
+    public ResponseEntity<OneTimeCodeResponse> login(
         @RequestHeader(value = "Authorization", required = false) String auth) {
 
       if (jwtDecoder == null) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new LoginService.Result(null, null, null, "OIDC is not enabled"));
+            .body(new OneTimeCodeResponse(null, null));
       }
       if (auth == null || !auth.regionMatches(true, 0, "Bearer ", 0, 7)) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new LoginService.Result(null, null, null, "Missing Bearer token"));
+            .body(new OneTimeCodeResponse(null, null));
       }
       String token = auth.substring(7).trim();
 
@@ -343,7 +332,7 @@ public class OidcAuthConfig {
       } catch (JwtException e) {
         log.warn("OIDC direct: token validation failed: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new LoginService.Result(null, null, null, "Invalid token"));
+            .body(new OneTimeCodeResponse(null, null));
       }
 
       String login = jwt.getSubject().toLowerCase();
@@ -368,12 +357,21 @@ public class OidcAuthConfig {
           .originAuthentication(null)  // Direct JWT flow doesn't have Spring Authentication
           .build();
 
+      // ✅ Embed JWT in OTC instead of returning it directly
       LoginService.Result result = loginService.onSuccess(authenticatedLogin);
+      UUID otc = oneTimeCodeService.generateCode(
+          login,
+          UserOrigin.OIDC,
+          result.jwt());
 
-      return ResponseEntity.ok()
-          .header("Bearer", result.jwt())
-          .body(result);
+      return ResponseEntity.ok(new OneTimeCodeResponse(otc, java.time.Duration.ofMinutes(10)));
     }
+
+    /**
+     * Response DTO for OTC redemption endpoint.
+     * Returns the generated OTC and its expiration time.
+     */
+    record OneTimeCodeResponse(UUID code, java.time.Duration expiresIn) {}
 
     private static String stripDiscoverySuffixStatic(String url) {
       if (url == null || url.isBlank()) {

@@ -23,11 +23,12 @@ UPDATE ${ohdsiSchema}.reusable set created_by_id = -1 where created_by_id is nul
 -- Introduce session table
 
 CREATE TABLE ${ohdsiSchema}.sec_session (
-    session_id      UUID PRIMARY KEY,
+    session_id      UUID NOT NULL,
     login           VARCHAR(255) NOT NULL,
     created_at      TIMESTAMP NOT NULL,
     expires_at      TIMESTAMP NOT NULL,
-    revoked         BOOLEAN NOT NULL DEFAULT FALSE
+    revoked         BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_sec_session PRIMARY KEY (session_id)
 );
 
 CREATE INDEX idx_sec_session_login

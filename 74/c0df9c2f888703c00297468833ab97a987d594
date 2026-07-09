@@ -1,0 +1,25 @@
+src/main/java/org/ohdsi/webapi/DataAccessConfig.java
+  s_06bb41664eec51::t_6d4b9e91236645 27
+  s_06bb41664eec51::t_d61f62f31f36a1 49-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "74c0df9c2f888703c00297468833ab97a987d594",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_06bb41664eec51": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f6d5098e-92ad-4ee5-be73-477cb1a9dd5e",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "User <user@example.com>"
+    }
+  }
+}

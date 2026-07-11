@@ -1,0 +1,31 @@
+src/main/java/org/ohdsi/webapi/vocabulary/DatabaseSearchProvider.java
+  s_2896759d96e600::t_e64f2c3ada0bde 42-47
+  s_2896759d96e600::t_7c95fd048f03a2 9-10,16-18
+src/main/java/org/ohdsi/webapi/util/PreparedStatementRenderer.java
+  s_2896759d96e600::t_996094a49c0e1e 36-37
+  s_2896759d96e600::t_de020ded270201 23-24
+  s_2896759d96e600::t_4acd16f24d2cfd 299-300,303-308
+src/main/java/org/ohdsi/webapi/service/VocabularyService.java
+  s_2896759d96e600::t_5dae8fa45a74c5 460-466
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "b8ee9c52fca20efb46902c979c3f17e9cfc9cd2b",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_2896759d96e600": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f858bc5-2a6c-40c8-ba0a-fc6a411e54d1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "User <user@example.com>"
+    }
+  }
+}

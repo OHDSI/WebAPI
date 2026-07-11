@@ -20,6 +20,8 @@ import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 
 /**
@@ -30,6 +32,8 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
  * @author DNS   SHELLB (Brett Shelley)
  */
 public class PreparedStatementRenderer implements ParameterizedSqlProvider {
+
+  private static final Logger log = LoggerFactory.getLogger(PreparedStatementRenderer.class);
 
   private Source source;
   private String sql;
@@ -292,10 +296,16 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
       try {
         sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
       } catch (SQLException e) {
-        e.printStackTrace();
+        log.warn("sparkHandleInsert failed; proceeding with original SQL. {}", e.getMessage());
+        log.debug("sparkHandleInsert exception", e);
       }
     }
-    return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
+    String translatedSql = SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
+    if (log.isDebugEnabled()) {
+      log.debug("SQL sent to source [dialect={}]:\n{}\nOrdered parameters: {}",
+              targetDialect, translatedSql, getOrderedParamsList());
+    }
+    return translatedSql;
   }
 
   public PreparedStatementSetter getSetter() {

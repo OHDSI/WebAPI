@@ -457,7 +457,13 @@ public class VocabularyService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
+    Collection<Concept> concepts = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
+    if (log.isDebugEnabled()) {
+      log.debug("Vocabulary search on source [{}] for query [{}] returned {} concept(s): {}",
+              sourceKey, search.query, concepts.size(),
+              concepts.stream().map(c -> c.conceptId).collect(Collectors.toList()));
+    }
+    return concepts;
   }
 
   protected PreparedStatementRenderer prepareExecuteSearch(ConceptSearch search, Source source) {

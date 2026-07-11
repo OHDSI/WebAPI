@@ -6,11 +6,16 @@ import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DatabaseSearchProvider implements SearchProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseSearchProvider.class);
+
     @Autowired
     private SourceRepository sourceRepository;
 
@@ -34,6 +39,11 @@ public class DatabaseSearchProvider implements SearchProvider {
         Source source = sourceRepository.findBySourceKey(config.getSourceKey());
 
         PreparedStatementRenderer psr = vocabService.prepareExecuteSearchWithQuery(query, source);
-        return vocabService.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), vocabService.getRowMapper());
+        Collection<Concept> concepts = vocabService.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), vocabService.getRowMapper());
+        if (log.isDebugEnabled()) {
+            log.debug("Database vocabulary search on source [{}] for query [{}] returned {} concept(s)",
+                    config.getSourceKey(), query, concepts.size());
+        }
+        return concepts;
     }
 }

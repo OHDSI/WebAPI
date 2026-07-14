@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.security.authc.mapper;
+package org.ohdsi.webapi.security.authz.mapping;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

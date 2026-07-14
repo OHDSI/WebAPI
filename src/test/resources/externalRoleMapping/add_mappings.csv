@@ -1,0 +1,4 @@
+claim,role_name,description
+"CN=Developers,OU=Groups,DC=corp,DC=local",Viewer,LDAP Developers group
+"CORP\\Auditors",Auditor,Windows Auditors group
+realm_viewer,Viewer,OIDC Viewer realm role

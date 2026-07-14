@@ -1,9 +1,11 @@
-package org.ohdsi.webapi.security.authc.mapper;
+package org.ohdsi.webapi.security.authz.mapping;
 
 import java.util.Collection;
 import java.util.List;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -32,14 +34,27 @@ public interface ExternalRoleMapRepository extends JpaRepository<ExternalRoleMap
   List<ExternalRoleMapEntity> findByOriginAndExternalClaimIn(UserOrigin origin, Collection<String> externalClaims);
 
   /**
+   * Count mappings for specific external claims within an origin.
+   * Used to validate for duplicate claims before adding new mappings.
+   *
+   * @param origin the authentication origin
+   * @param externalClaims collection of claim values to check
+   * @return count of mappings matching the claims
+   */
+  int countByOriginAndExternalClaimIn(UserOrigin origin, Collection<String> externalClaims);
+
+  /**
    * Delete mappings for a specific origin, claim, and role combination.
    * Used when cleaning up mappings.
    *
    * @param origin the authentication origin
    * @param externalClaim the claim value
    * @param roleId the WebAPI role ID
+   * @return number of rows deleted
    */
-  void deleteByOriginAndExternalClaimAndRoleId(UserOrigin origin, String externalClaim, Integer roleId);
+  @Modifying
+  @Query("DELETE FROM ExternalRoleMapEntity e WHERE e.origin = :origin AND e.externalClaim = :externalClaim AND e.role.id = :roleId")
+  int deleteByOriginAndExternalClaimAndRoleId(UserOrigin origin, String externalClaim, Long roleId);
 
   /**
    * Delete all mappings for a specific origin and claim.
@@ -48,7 +63,9 @@ public interface ExternalRoleMapRepository extends JpaRepository<ExternalRoleMap
    * @param origin the authentication origin
    * @param externalClaim the claim value
    */
-  void deleteByOriginAndExternalClaim(UserOrigin origin, String externalClaim);
+  @Modifying
+  @Query("DELETE FROM ExternalRoleMapEntity e WHERE e.origin = :origin AND e.externalClaim = :externalClaim")
+  int deleteByOriginAndExternalClaim(UserOrigin origin, String externalClaim);
 
   /**
    * Delete all mappings for a specific origin.
@@ -56,5 +73,7 @@ public interface ExternalRoleMapRepository extends JpaRepository<ExternalRoleMap
    *
    * @param origin the authentication origin
    */
-  void deleteByOrigin(UserOrigin origin);
+  @Modifying
+  @Query("DELETE FROM ExternalRoleMapEntity e WHERE e.origin = :origin")
+  int deleteByOrigin(UserOrigin origin);
 }

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.security.authc.mapper;
+package org.ohdsi.webapi.security.authz.mapping;
 
 import org.ohdsi.webapi.security.authz.Role;
 

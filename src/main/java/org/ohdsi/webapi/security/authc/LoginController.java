@@ -135,12 +135,12 @@ public class LoginController {
   @ConditionalOnProperty(prefix = "security.auth.windows", name = "enabled", havingValue = "true")
   public static class Windows {
     private final LoginService loginSvc;
-    private final org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper;
+    private final org.ohdsi.webapi.security.authz.mapping.WindowsGroupToRoleMapper windowsGroupToRoleMapper;
 
     public Windows(LoginService loginSvc,
-                   org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper) {
+                   org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService) {
       this.loginSvc = loginSvc;
-      this.windowsGroupToRoleMapper = windowsGroupToRoleMapper;
+      this.windowsGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.WindowsGroupToRoleMapper(externalRoleMapService);
     }
 
     @GetMapping("/user/login/windows")
@@ -222,13 +222,13 @@ public class LoginController {
   public static class Ldap {
 
     private final LoginService loginSvc;
-    private final org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper;
+    private final org.ohdsi.webapi.security.authz.mapping.LdapGroupToRoleMapper ldapGroupToRoleMapper;
     private static final Logger log = LoggerFactory.getLogger(Ldap.class);
     
     public Ldap(LoginService loginSvc,
-               org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper) {
+               org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService) {
       this.loginSvc = loginSvc;
-      this.ldapGroupToRoleMapper = ldapGroupToRoleMapper;
+      this.ldapGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.LdapGroupToRoleMapper(externalRoleMapService);
     }
 
     @GetMapping("/user/login/ldap")

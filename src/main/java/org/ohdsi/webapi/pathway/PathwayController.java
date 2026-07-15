@@ -8,7 +8,6 @@ import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
-import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -53,11 +52,10 @@ public class PathwayController {
 	private AuthorizationService authorizationService;
 	private final SourceService sourceService;
 	private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
-	private final I18nService i18nService;
 	private PathwayChecker checker;
 
 	@Autowired
-	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, I18nService i18nService, AuthorizationService authorizationService) {
+	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, AuthorizationService authorizationService) {
 
 		this.conversionService = conversionService;
 		this.converterUtils = converterUtils;
@@ -65,7 +63,6 @@ public class PathwayController {
 		this.authorizationService = authorizationService;
 		this.sourceService = sourceService;
 		this.sensitiveInfoService = sensitiveInfoService;
-		this.i18nService = i18nService;
 		this.checker = checker;
 	}
 
@@ -210,7 +207,7 @@ public class PathwayController {
 	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('read:pathway') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
 	public PathwayAnalysisDTO get(@PathVariable("id") final Integer id) {
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format(i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d."), id));
+		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
 		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
 		PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);

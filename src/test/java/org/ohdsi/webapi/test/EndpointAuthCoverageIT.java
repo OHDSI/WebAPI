@@ -41,8 +41,7 @@ public class EndpointAuthCoverageIT extends WebApiIT {
     // Reachable before login by design (login/bootstrap). Prefix match. Adding to
     // this list is a deliberate, reviewable change — keep it minimal.
     static final List<String> ANONYMOUS_ALLOW_LIST = List.of(
-        "/info", "/auth/providers", "/i18n",
-        "/user/login", "/user/refresh", "/user/logout", "/user/oauth/callback");
+        "/info", "/auth/providers", "/user/login", "/user/refresh", "/user/logout", "/user/oauth/callback");
 
     // Intentionally open under the anonymous-principal model (EXACT match): listing /
     // registry / self-scoped reads. Their contents are filtered per-entity, or they are

@@ -5,7 +5,7 @@ import java.util.List;
 import org.ohdsi.webapi.security.provisioning.model.AtlasUserRoles;
 import org.ohdsi.webapi.security.provisioning.model.LdapGroup;
 import org.ohdsi.webapi.security.provisioning.model.LdapProviderType;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupEntity;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportEntity;
 import org.ohdsi.webapi.security.provisioning.model.RoleGroupMapping;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJob;
 import org.ohdsi.webapi.security.provisioning.model.UserImportResult;
@@ -18,9 +18,9 @@ public interface UserImportService {
 
   UserImportResult importUsers(List<AtlasUserRoles> users, LdapProviderType providerType, boolean preserveRoles);
 
-  void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities);
+  void saveRoleGroupMapping(LdapProviderType providerType, List<GroupRoleImportEntity> mappingEntities);
 
-  List<RoleGroupEntity> getRoleGroupMapping(LdapProviderType providerType);
+  List<GroupRoleImportEntity> getRoleGroupMapping(LdapProviderType providerType);
 
   void testConnection(LdapProviderType provider);
 

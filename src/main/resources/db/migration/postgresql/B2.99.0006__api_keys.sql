@@ -981,6 +981,7 @@ CREATE TABLE ${ohdsiSchema}.sec_role_permission (
     status character varying(255)
 );
 
+
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role_permission.id IS 'Primary key';
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role_permission.role_id IS 'Foreign key to SEC_ROLE';
@@ -1146,31 +1147,6 @@ CREATE TABLE ${ohdsiSchema}.sec_session
 
 CREATE INDEX idx_sec_session_login
     ON ${ohdsiSchema}.sec_session(login);
-
--- One-Time Code (OTC) table for OAuth2/OIDC authentication delivery
--- OTC wraps pre-minted JWT tokens to support load-balanced WebAPI instances
-CREATE TABLE ${ohdsiSchema}.sec_one_time_code (
-    code            uuid NOT NULL,
-    login           character varying(255) NOT NULL,
-    origin          character varying(50) NOT NULL,
-    jwt_token       text NOT NULL,
-    created_at      timestamp NOT NULL,
-    expires_at      timestamp NOT NULL,
-    revoked         boolean NOT NULL DEFAULT false,
-    CONSTRAINT pk_sec_one_time_code PRIMARY KEY (code)
-);
-
--- Index for cleanup queries (find expired codes)
-CREATE INDEX idx_sec_one_time_code_expires_at
-    ON ${ohdsiSchema}.sec_one_time_code(expires_at);
-
--- Index for login-based queries
-CREATE INDEX idx_sec_one_time_code_login
-    ON ${ohdsiSchema}.sec_one_time_code(login, expires_at);
-
--- Composite index for common query pattern: lookup by code + expiry check
-CREATE INDEX idx_sec_one_time_code_lookup
-    ON ${ohdsiSchema}.sec_one_time_code(code, expires_at, revoked);
 
 CREATE SEQUENCE ${ohdsiSchema}.sec_api_key_sequence
     START WITH 1
@@ -1524,6 +1500,7 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
     ADD CONSTRAINT sec_role_group_pkey PRIMARY KEY (id);
+
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role
     ADD CONSTRAINT sec_role_name_uq UNIQUE (name, system_role);

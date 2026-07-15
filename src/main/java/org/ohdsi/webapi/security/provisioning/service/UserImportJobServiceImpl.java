@@ -9,11 +9,11 @@ import org.ohdsi.webapi.arachne.scheduler.service.BaseJobServiceImpl;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.provisioning.JobAlreadyExistException;
-import org.ohdsi.webapi.security.provisioning.RoleGroupUtils;
+import org.ohdsi.webapi.security.provisioning.GroupRoleImportUtils;
 import org.ohdsi.webapi.security.provisioning.model.JobHistoryItemDTO;
 import org.ohdsi.webapi.security.provisioning.model.LdapProviderType;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupEntity;
-import org.ohdsi.webapi.security.provisioning.model.RoleGroupRepository;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportEntity;
+import org.ohdsi.webapi.security.provisioning.model.GroupRoleImportRepository;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJob;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJobDTO;
 import org.ohdsi.webapi.security.provisioning.model.UserImportJobHistoryItem;
@@ -61,7 +61,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
   private final UserImportService userImportService;
   private final UserImportJobRepository jobRepository;
-  private final RoleGroupRepository roleGroupRepository;
+  private final GroupRoleImportRepository roleGroupRepository;
   private final UserImportJobHistoryItemRepository jobHistoryItemRepository;
   private final TransactionTemplate transactionTemplate;
   private final JobRepository jobRepositoryBatch;
@@ -73,7 +73,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
                                   CronDefinition cronDefinition,
                                   UserImportJobRepository jobRepository,
                                   UserImportService userImportService,
-                                  RoleGroupRepository roleGroupRepository,
+                                  GroupRoleImportRepository roleGroupRepository,
                                   UserImportJobHistoryItemRepository jobHistoryItemRepository,
                                   @Qualifier("transactionTemplateRequiresNew")
                                   TransactionTemplate transactionTemplate,
@@ -121,10 +121,10 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   protected void updateAdditionalFields(UserImportJob exists, UserImportJob updated) {
 
     exists.setProviderType(updated.getProviderType());
-    List<RoleGroupEntity> existMapping = exists.getRoleGroupMapping();
-    List<RoleGroupEntity> updatedMapping = updated.getRoleGroupMapping();
-    List<RoleGroupEntity> deleted = RoleGroupUtils.findDeleted(existMapping, updatedMapping);
-    List<RoleGroupEntity> created = RoleGroupUtils.findCreated(existMapping, updatedMapping);
+    List<GroupRoleImportEntity> existMapping = exists.getRoleGroupMapping();
+    List<GroupRoleImportEntity> updatedMapping = updated.getRoleGroupMapping();
+    List<GroupRoleImportEntity> deleted = GroupRoleImportUtils.findDeleted(existMapping, updatedMapping);
+    List<GroupRoleImportEntity> created = GroupRoleImportUtils.findCreated(existMapping, updatedMapping);
     created.forEach(c -> c.setUserImportJob(exists));
     if (!deleted.isEmpty()) {
       roleGroupRepository.deleteAll(deleted);

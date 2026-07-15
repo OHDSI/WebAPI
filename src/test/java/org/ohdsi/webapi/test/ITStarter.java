@@ -13,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -31,7 +32,7 @@ public class ITStarter extends AbstractSpringSecurity {
     public static void before() throws IOException {
 
         if (pg == null) {
-            pg = EmbeddedPostgres.start();
+            pg = EmbeddedPostgres.builder().setPGStartupWait(Duration.ofSeconds(60)).start();
             try {
                 String jdbcUrl = pg.getPostgresDatabase().getConnection().getMetaData().getURL();
                 System.setProperty("datasource.url", jdbcUrl);

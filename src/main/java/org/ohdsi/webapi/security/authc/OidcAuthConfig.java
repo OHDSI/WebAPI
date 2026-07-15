@@ -49,7 +49,7 @@ public class OidcAuthConfig {
   private final HttpSecurityShared httpSecurityShared;
   private final LoginService loginService;
   private final OneTimeCodeService oneTimeCodeService;
-  private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
+  private final org.ohdsi.webapi.security.authz.mapping.OidcGroupToRoleMapper oidcGroupToRoleMapper;
 
   @Value("${security.auth.oidc.clientId}")
   private String clientId;
@@ -81,11 +81,11 @@ public class OidcAuthConfig {
   public OidcAuthConfig(HttpSecurityShared httpSecurityShared,
                         LoginService loginService,
                         OneTimeCodeService oneTimeCodeService,
-                        org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper) {
+                        org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService) {
     this.httpSecurityShared = httpSecurityShared;
     this.loginService = loginService;
     this.oneTimeCodeService = oneTimeCodeService;
-    this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
+    this.oidcGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.OidcGroupToRoleMapper(externalRoleMapService);
   }
 
   @Bean
@@ -276,7 +276,7 @@ public class OidcAuthConfig {
 
     private final LoginService loginService;
     private final OneTimeCodeService oneTimeCodeService;
-    private final org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper;
+    private final org.ohdsi.webapi.security.authz.mapping.OidcGroupToRoleMapper oidcGroupToRoleMapper;
     private final JwtDecoder jwtDecoder;
     private final String rolesClaim;
     private final boolean rolesToUpperCase;
@@ -284,14 +284,14 @@ public class OidcAuthConfig {
     public OpenidDirect(
         LoginService loginService,
         OneTimeCodeService oneTimeCodeService,
-        org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper,
+        org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService,
         @Value("${security.auth.oidc.enabled:false}") boolean enabled,
         @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
         @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
         @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase) {
       this.loginService = loginService;
       this.oneTimeCodeService = oneTimeCodeService;
-      this.oidcGroupToRoleMapper = oidcGroupToRoleMapper;
+      this.oidcGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.OidcGroupToRoleMapper(externalRoleMapService);
       this.rolesClaim = rolesClaim;
       this.rolesToUpperCase = rolesToUpperCase;
       if (!enabled || discoveryOrIssuerUrl == null || discoveryOrIssuerUrl.isBlank()) {

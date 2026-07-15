@@ -14,19 +14,19 @@ import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.security.authz.RoleEntity;
 
 @Entity
-@Table(name = "sec_role_group")
-public class RoleGroupEntity {
+@Table(name = "sec_group_role_import")
+public class GroupRoleImportEntity {
 
   @Id
   @GenericGenerator(
-    name = "sec_role_group_generator",
+    name = "sec_group_role_import_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
-      @Parameter(name = "sequence_name", value = "sec_role_group_seq"),
+      @Parameter(name = "sequence_name", value = "sec_group_role_import_seq"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "sec_role_group_generator")
+  @GeneratedValue(generator = "sec_group_role_import_generator")
   @Column(name = "id")
   private int id;
 

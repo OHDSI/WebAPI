@@ -17,6 +17,7 @@ package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -164,7 +165,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
         ConceptSet conceptSet = getConceptSetRepository().findById(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
-        return conversionService.convert(conceptSet, ConceptSetDTO.class);
+        ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+        dto.setVersion(versionService.getLatest(ConceptSetVersion.class, id));
+        return dto;
     }
 
     /**

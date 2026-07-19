@@ -1041,7 +1041,7 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
+      <version>6.3.8</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>

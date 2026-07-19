@@ -19,8 +19,10 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,7 +31,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
-
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -43,8 +46,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.annotations.SearchDataTransformer;
+import org.ohdsi.webapi.service.cscompare.ConceptSetBatchCompareRequest;
+import org.ohdsi.webapi.service.cscompare.ConceptSetBatchCompareTasklet;
+import org.ohdsi.webapi.service.cscompare.ConceptSetFilterService;
 import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
@@ -70,7 +78,11 @@ import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
@@ -78,6 +90,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
+
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 
 /**
  * Provides REST services for working with
@@ -145,7 +159,19 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private ObjectMapper mapper;
 
+		@Autowired
+		private ConceptSetExpressionResolver conceptSetExpressionResolver;
 
+	  @Autowired
+	  @Qualifier("conceptSetBatchCompareJob")
+	  private Job conceptSetBatchCompareJob;
+
+  	@Autowired
+	  private JobTemplate jobTemplate;
+		
+		@Autowired
+	  private ConceptSetFilterService filterService;
+	
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
 
@@ -353,7 +379,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary DO NOT USE
      * @deprecated
      * @param id The concept set ID
-     * @param sourceKey The source key
      * @return The concept set expression
      */
     @Deprecated
@@ -621,7 +646,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param id The concept set ID
      */
     @DELETE
-    @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
+    @Transactional(rollbackFor = Exception.class, noRollbackFor = EmptyResultDataAccessException.class)
     @Path("{id}")
 		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
 		public void deleteConceptSet(@PathParam("id") final int id) {
@@ -1038,4 +1063,185 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             return Response.ok().build();
         } else throw new NotFoundException("Concept set annotation not found");
     }
+
+	@POST
+	@Path("compare-batch")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional(readOnly = true)
+	public JobExecutionResource queueConceptSetBatchCompareJob(ConceptSetBatchCompareRequest task) throws Exception {
+		if (task == null) {
+			log.warn("Received null ConceptSetBatchCompareRequest");
+			return null;
+		}
+
+		log.info("Starting Concept Set Batch Compare Job with parameters: " +
+				"source1Key={}, source2Key={}, createdDateFrom={}, createdDateTo={}, " +
+				"updatedDateFrom={}, updatedDateTo={}, tags={}, " +
+				"authors={}, compareSourceCodes={}, conceptSetIds={}",
+			task.getSource1Key(),
+			task.getSource2Key(),
+			task.getCreatedDateFrom(),
+			task.getCreatedDateTo(),
+			task.getUpdatedDateFrom(),
+			task.getUpdatedDateTo(),
+			task.getTags(),
+			task.getAuthors(),
+			task.isCompareSourceCodes(),
+			task.getConceptSetIds());
+
+		JobParametersBuilder builder = new JobParametersBuilder();
+		builder.addString(JOB_NAME, "Running batch concept set compare");
+		builder.addString("source1Key", task.getSource1Key());
+		builder.addString("source2Key", task.getSource2Key());
+		builder.addString("source1Version", vocabService.getInfo(task.getSource1Key()).version);
+		builder.addString("source2Version", vocabService.getInfo(task.getSource2Key()).version);
+		builder.addString("createdDateFrom", task.getCreatedDateFrom());
+		builder.addString("createdDateTo", task.getCreatedDateTo());
+		builder.addString("updatedDateFrom", task.getUpdatedDateFrom());
+		builder.addString("updatedDateTo", task.getUpdatedDateTo());
+
+		List<String> tags = task.getTags();
+		if (CollectionUtils.isNotEmpty(tags)) {
+			String tagsIds = String.join(",", tags);
+			builder.addString("tagsIds", tagsIds);
+			log.debug("Tags filter applied: {}", tagsIds);
+		} else {
+			log.debug("No tags filter applied");
+		}
+
+		if (CollectionUtils.isNotEmpty(task.getAuthors())) {
+			String authorIds = task.getAuthors().stream()
+				.map(String::valueOf)
+				.collect(Collectors.joining(","));
+			builder.addString("authorIds", authorIds);
+			log.debug("Author filter applied: {}", authorIds);
+		}
+
+		if (CollectionUtils.isNotEmpty(task.getConceptSetIds())) {
+			String conceptSetIds = task.getConceptSetIds().stream()
+				.map(String::valueOf)
+				.collect(Collectors.joining(","));
+			builder.addString("conceptSetIds", conceptSetIds);
+			log.debug("Concept set IDs filter applied: {}", conceptSetIds);
+		} else {
+			log.debug("No concept set IDs filter applied");
+		}
+
+		builder.addString("compareSourceCodes", Boolean.toString(task.isCompareSourceCodes()));
+		log.debug("Compare source codes: {}", task.isCompareSourceCodes());
+
+		final JobParameters jobParameters = builder.toJobParameters();
+
+		log.info("Launching conceptSetBatchCompareJob with job parameters: {}", jobParameters);
+
+		JobExecutionResource result = this.jobTemplate.launch(conceptSetBatchCompareJob, jobParameters);
+
+		log.info("Concept Set Batch Compare Job queued successfully with execution ID: {}",
+			result != null ? result.getExecutionId() : "unknown");
+
+		return result;
+	}
+
+	/**
+	 * Check how many concept sets match the specified filter criteria
+	 * without running the actual batch comparison job.
+	 *
+	 * @summary Check concept set filter count
+	 * @param filterRequest The filter criteria
+	 * @return Count of matching concept sets
+	 */
+	@POST
+	@Path("check-filter-count")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional(readOnly = true)
+	public Response checkFilterCount(ConceptSetBatchCompareRequest filterRequest) {
+		try {
+			if (filterRequest == null) {
+				log.warn("Received null filter request");
+				return Response.status(Response.Status.BAD_REQUEST)
+					.entity("Filter request cannot be null")
+					.build();
+			}
+
+			log.info("Checking concept set filter count with parameters: " +
+					"createdDateFrom={}, createdDateTo={}, updatedDateFrom={}, updatedDateTo={}, " +
+					"tags={}, authors={}",
+				filterRequest.getCreatedDateFrom(),
+				filterRequest.getCreatedDateTo(),
+				filterRequest.getUpdatedDateFrom(),
+				filterRequest.getUpdatedDateTo(),
+				filterRequest.getTags(),
+				filterRequest.getAuthors());
+
+			// Build filter criteria
+			ConceptSetFilterService.ConceptSetFilterCriteria criteria =
+				buildFilterCriteriaFromRequest(filterRequest);
+
+			// Get filtered concept sets
+			List<ConceptSet> conceptSets = filterService.filterConceptSets(criteria);
+
+			int count = conceptSets.size();
+			log.info("Found {} concept sets matching filter criteria", count);
+
+			Map<String, Integer> response = new HashMap<>();
+			response.put("count", count);
+
+			return Response.ok(response).build();
+
+		} catch (Exception e) {
+			log.error("Error checking filter count", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+				.entity("Error checking filter count: " + e.getMessage())
+				.build();
+		}
+	}
+
+	/**
+	 * Helper method to build filter criteria from batch compare request
+	 */
+	private ConceptSetFilterService.ConceptSetFilterCriteria buildFilterCriteriaFromRequest(
+		ConceptSetBatchCompareRequest request) {
+
+		ConceptSetFilterService.ConceptSetFilterCriteria criteria =
+			new ConceptSetFilterService.ConceptSetFilterCriteria();
+
+		DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
+		if (StringUtils.isNotBlank(request.getCreatedDateFrom())) {
+			criteria.setCreatedFrom(LocalDate.parse(request.getCreatedDateFrom(), formatter));
+		}
+		if (StringUtils.isNotBlank(request.getCreatedDateTo())) {
+			criteria.setCreatedTo(LocalDate.parse(request.getCreatedDateTo(), formatter));
+		}
+		if (StringUtils.isNotBlank(request.getUpdatedDateFrom())) {
+			criteria.setUpdatedFrom(LocalDate.parse(request.getUpdatedDateFrom(), formatter));
+		}
+		if (StringUtils.isNotBlank(request.getUpdatedDateTo())) {
+			criteria.setUpdatedTo(LocalDate.parse(request.getUpdatedDateTo(), formatter));
+		}
+
+		if (CollectionUtils.isNotEmpty(request.getTags())) {
+			List<Integer> tagIds = request.getTags().stream()
+				.map(Integer::parseInt)
+				.collect(Collectors.toList());
+			criteria.setTagIds(tagIds);
+		}
+
+		// Handle multiple authors
+		if (CollectionUtils.isNotEmpty(request.getAuthors())) {
+			criteria.setAuthorIds(request.getAuthors());
+			log.debug("Setting author filter with {} authors: {}",
+				request.getAuthors().size(), request.getAuthors());
+		}
+
+		if (CollectionUtils.isNotEmpty(request.getConceptSetIds())) {
+			criteria.setConceptSetIds(request.getConceptSetIds());
+			log.debug("Setting concept set ID filter with {} IDs: {}",
+				request.getConceptSetIds().size(), request.getConceptSetIds());
+		}
+
+		return criteria;
+	}
 }

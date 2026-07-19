@@ -33,8 +33,11 @@ public class JobExecutionResource {
 
     @JsonProperty("ownerType")
     private JobOwnerType ownerType;
-    
-    public JobExecutionResource() {
+
+	  @JsonProperty("hasArtifact")
+	  private Boolean hasArtifact;  
+
+	public JobExecutionResource() {
         //needed for json deserialization
     }
     
@@ -129,4 +132,12 @@ public class JobExecutionResource {
     public void setOwnerType(JobOwnerType ownerType) {
         this.ownerType = ownerType;
     }
+
+	public Boolean getHasArtifact() {
+		return hasArtifact;
+	}
+
+	public void setHasArtifact(Boolean hasArtifact) {
+		this.hasArtifact = hasArtifact;
+	}
 }

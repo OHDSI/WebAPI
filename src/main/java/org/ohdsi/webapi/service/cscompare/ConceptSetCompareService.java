@@ -34,10 +34,11 @@ public class ConceptSetCompareService extends AbstractDaoService {
     public static final RowMapper<ConceptSetComparison> CONCEPT_SET_COMPARISON_ROW_MAPPER = (rs, rowNum) -> {
         ConceptSetComparison csc = new ConceptSetComparison();
         csc.conceptId = rs.getLong("concept_id");
-        csc.conceptIn1Only = rs.getLong("concept_in_1_only");
-        csc.conceptIn2Only = rs.getLong("concept_in_2_only");
-        csc.conceptIn1And2 = rs.getLong("concept_in_both_1_and_2");
-        csc.conceptName = rs.getString("concept_name");
+        csc.conceptInCS1Only = rs.getLong("concept_in_1_only");
+        csc.conceptInCS2Only = rs.getLong("concept_in_2_only");
+        csc.conceptInCS1AndCS2 = rs.getLong("concept_in_both_1_and_2");
+        csc.vocab1ConceptName = rs.getString("concept_name");
+        csc.vocab2ConceptName = rs.getString("concept_name");
         csc.standardConcept = rs.getString("standard_concept");
         csc.invalidReason = rs.getString("invalid_reason");
         csc.conceptCode = rs.getString("concept_code");
@@ -49,14 +50,13 @@ public class ConceptSetCompareService extends AbstractDaoService {
         return csc;
     };
 
-    public Collection<ConceptSetComparison> compareConceptSets(final String sourceKey,
+    public Collection<ConceptSetComparison> compareConceptSets(final Source source,
                                                                final CompareArbitraryDto dto) throws Exception {
         final ConceptSetExpression[] csExpressionList = dto.compareTargets;
         if (csExpressionList.length != 2) {
             throw new Exception("You must specify two concept set expressions in order to use this method.");
         }
 
-        final Source source = getSourceRepository().findBySourceKey(sourceKey);
         final String vocabSchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
         final Function<JdbcTemplate, TransactionCallback<Collection<ConceptSetComparison>>> callbackFunction =

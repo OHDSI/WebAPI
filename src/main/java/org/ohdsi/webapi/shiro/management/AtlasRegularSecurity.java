@@ -412,6 +412,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(authcFilters.toArray(new FilterTemplates[0]))
+								.setCustomUrlFilter(CONCEPTSET_LOCK)
                 .setAuthzFilter(AUTHZ)
                 // login/logout
                 .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)

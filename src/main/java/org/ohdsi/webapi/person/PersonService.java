@@ -55,7 +55,7 @@ public class PersonService extends AbstractDaoService {
    * @return All records in a patient profile with start and end days relative to cohort start date or initial date of
    * observation
    */
-  @PreAuthorize("hasSourceAccess(#sourceKey, READ)")
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{personId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PersonProfile getPersonProfile(@PathVariable("sourceKey") String sourceKey, @PathVariable("personId") String personId,
                                         @RequestParam(value = "cohort", defaultValue = "0") Long cohortId)

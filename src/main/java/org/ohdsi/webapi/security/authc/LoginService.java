@@ -117,14 +117,21 @@ public class LoginService {
       return;
     }
 
-    // Add roles present in target but not in current
-    for (String roleName : targetRoles) {
-      if (!currentOriginRoles.contains(roleName)) {
-        try {
-          authorizationService.addUserToRole(roleName, login, origin);
-          log.info("Sync roles: added role '{}' to user '{}' (origin: {})", roleName, login, origin);
-        } catch (Exception e) {
-          log.warn("Sync roles: could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
+    // Add roles present in target but not in current. Concurrent logins would otherwise both
+    // find a role missing and both add it, so the ones with work to do are serialised and then
+    // re-read what the winner committed.
+    if (!currentOriginRoles.containsAll(targetRoles)) {
+      authorizationService.lockRoleSync(login);
+      currentOriginRoles = authorizationService.getRolesByOrigin(login, origin);
+
+      for (String roleName : targetRoles) {
+        if (!currentOriginRoles.contains(roleName)) {
+          try {
+            authorizationService.addUserToRole(roleName, login, origin);
+            log.info("Sync roles: added role '{}' to user '{}' (origin: {})", roleName, login, origin);
+          } catch (Exception e) {
+            log.warn("Sync roles: could not add role '{}' to user '{}': {}", roleName, login, e.getMessage());
+          }
         }
       }
     }

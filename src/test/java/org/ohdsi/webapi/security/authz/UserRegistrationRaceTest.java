@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.security.authz;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +29,8 @@ import java.util.stream.IntStream;
 import org.junit.After;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.ohdsi.webapi.security.authc.AuthenticatedLogin;
+import org.ohdsi.webapi.security.authc.LoginService;
 import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,15 +46,21 @@ public class UserRegistrationRaceTest extends AbstractDatabaseTest {
   @Autowired
   private AuthorizationService authorizationService;
 
+  @Autowired
+  private LoginService loginService;
+
   private static final String LOGIN = "race_test_user";
+  private static final String ROLE_NAME = "RaceTestRole";
+  private static final Long ROLE_ID = 51003L;
   private static final int THREADS = 16;
 
   @After
   public void deleteFixture() {
     jdbcTemplate.update("DELETE FROM " + ohdsiSchema + ".sec_user_role WHERE user_id IN "
-        + "(SELECT id FROM " + ohdsiSchema + ".sec_user WHERE login = ?)", LOGIN);
+        + "(SELECT id FROM " + ohdsiSchema + ".sec_user WHERE login = ?) OR role_id = ?", LOGIN, ROLE_ID);
+    jdbcTemplate.update("DELETE FROM " + ohdsiSchema + ".sec_session WHERE login = ?", LOGIN);
     jdbcTemplate.update("DELETE FROM " + ohdsiSchema + ".sec_user WHERE login = ?", LOGIN);
-    jdbcTemplate.update("DELETE FROM " + ohdsiSchema + ".sec_role WHERE name = ?", LOGIN);
+    jdbcTemplate.update("DELETE FROM " + ohdsiSchema + ".sec_role WHERE name IN (?, ?)", LOGIN, ROLE_NAME);
   }
 
   @Test
@@ -83,5 +92,53 @@ public class UserRegistrationRaceTest extends AbstractDatabaseTest {
     assertEquals("Exactly one user should have been registered", 1,
         (int) jdbcTemplate.queryForObject(
             "SELECT count(*) FROM " + ohdsiSchema + ".sec_user WHERE login = ?", Integer.class, LOGIN));
+  }
+
+  @Test
+  public void testConcurrentLoginsDoNotDuplicateRoleAssignments() throws Exception {
+    jdbcTemplate.update("INSERT INTO " + ohdsiSchema + ".sec_role (id, name, system_role) VALUES (?, ?, true)",
+        ROLE_ID, ROLE_NAME);
+
+    // Register first, so the concurrent logins below race role assignment rather than
+    // queueing on the registration lock.
+    loginService.onSuccess(AuthenticatedLogin.builder()
+        .login(LOGIN).name(LOGIN).origin(UserOrigin.OIDC).roles(Set.of()).originAuthentication(null).build());
+
+    AuthenticatedLogin authenticated = AuthenticatedLogin.builder()
+        .login(LOGIN)
+        .name(LOGIN)
+        .origin(UserOrigin.OIDC)
+        .roles(Set.of(ROLE_NAME))
+        .originAuthentication(null)
+        .build();
+
+    CyclicBarrier startTogether = new CyclicBarrier(THREADS);
+    ExecutorService pool = Executors.newFixedThreadPool(THREADS);
+
+    try {
+      List<Callable<Object>> logins = IntStream.range(0, THREADS)
+          .<Callable<Object>>mapToObj(i -> () -> {
+            startTogether.await(30, TimeUnit.SECONDS);
+            return loginService.onSuccess(authenticated);
+          })
+          .collect(Collectors.toList());
+
+      for (Future<Object> result : pool.invokeAll(logins, 60, TimeUnit.SECONDS)) {
+        try {
+          result.get();
+        } catch (Exception e) {
+          fail("Concurrent login failed: " + e.getCause());
+        }
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertEquals("The role should be assigned exactly once", 1,
+        (int) jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM " + ohdsiSchema + ".sec_user_role ur "
+                + "JOIN " + ohdsiSchema + ".sec_user u ON u.id = ur.user_id "
+                + "JOIN " + ohdsiSchema + ".sec_role r ON r.id = ur.role_id "
+                + "WHERE u.login = ? AND r.name = ?", Integer.class, LOGIN, ROLE_NAME));
   }
 }

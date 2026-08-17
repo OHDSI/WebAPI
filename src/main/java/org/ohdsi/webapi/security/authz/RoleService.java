@@ -205,12 +205,14 @@ class RoleService {
 
   public UserRoleEntity addUserToRole(final UserEntity user, final RoleEntity role,
       final UserOrigin userOrigin) {
-    UserRoleEntity relation = this.userRoleRepository.findByUserAndRole(user, role)
+    final UserOrigin origin = userOrigin != null ? userOrigin : UserOrigin.SYSTEM;
+
+    UserRoleEntity relation = this.userRoleRepository.findFirstByUserAndRoleAndOrigin(user, role, origin)
         .orElseGet(() -> {
           UserRoleEntity newRelation = new UserRoleEntity();
           newRelation.setUser(user);
           newRelation.setRole(role);
-          newRelation.setOrigin(userOrigin != null ? userOrigin : UserOrigin.SYSTEM);
+          newRelation.setOrigin(origin);
           newRelation = this.userRoleRepository.save(newRelation);
           authCacheService.evictUser(user.getId());
           return newRelation;
@@ -229,24 +231,26 @@ class RoleService {
     RoleEntity role = this.getSystemRoleByName(roleName).orElseThrow(() -> new RuntimeException("Role not found."));
     UserEntity user = userService.getUserByLogin(login).orElseThrow(() -> new RuntimeException("Login not found."));
 
-    this.userRoleRepository.findByUserAndRole(user, role)
-        .ifPresent((userRole) -> {
-          if (origin == null || origin.equals(userRole.getOrigin())) {
-            this.userRoleRepository.delete(userRole);
-            authCacheService.evictUser(user.getId());
-          }
-        });
+    List<UserRoleEntity> assignments = this.userRoleRepository.findAllByUserAndRole(user, role).stream()
+        .filter(userRole -> origin == null || origin.equals(userRole.getOrigin()))
+        .toList();
+
+    if (!assignments.isEmpty()) {
+      this.userRoleRepository.deleteAll(assignments);
+      authCacheService.evictUser(user.getId());
+    }
   }
 
   public void removeUser(Long userId, Long roleId) {
     UserEntity user = userService.getUserById(userId);
     RoleEntity role = this.getRole(roleId);
 
-    this.userRoleRepository.findByUserAndRole(user, role)
-      .ifPresent((userRole) -> {
-        this.userRoleRepository.delete(userRole);
-        authCacheService.evictUser(user.getId());
-      });
+    List<UserRoleEntity> assignments = this.userRoleRepository.findAllByUserAndRole(user, role);
+
+    if (!assignments.isEmpty()) {
+      this.userRoleRepository.deleteAll(assignments);
+      authCacheService.evictUser(user.getId());
+    }
   }
 
   public Set<RoleEntity> getUserRoles(Long userId) {

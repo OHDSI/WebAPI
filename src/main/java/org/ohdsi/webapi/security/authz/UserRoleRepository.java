@@ -16,7 +16,12 @@ public interface UserRoleRepository extends CrudRepository<UserRoleEntity, Long>
 
   public List<UserRoleEntity> findByUser(UserEntity user);
 
-  public Optional<UserRoleEntity> findByUserAndRole(UserEntity user, RoleEntity role);
+  // findFirst, not a plain Optional query: databases predating the dedupe migration
+  // can still hold duplicate rows, which would raise IncorrectResultSizeDataAccessException.
+  public Optional<UserRoleEntity> findFirstByUserAndRoleAndOrigin(UserEntity user, RoleEntity role,
+      UserOrigin origin);
+
+  public List<UserRoleEntity> findAllByUserAndRole(UserEntity user, RoleEntity role);
 
 @Query("""
     select ur.user.id

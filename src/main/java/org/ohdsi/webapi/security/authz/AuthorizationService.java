@@ -8,6 +8,8 @@ import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,14 @@ public class AuthorizationService {
   private final PermissionService permissionService;
   private final EntityAccessService entityAccessService;
   private final SourceRepository sourceRepository;
+
+  // Advisory lock namespaces, so these locks cannot collide with each other or with any
+  // other advisory lock taken against this database.
+  private static final int USER_REGISTRATION_LOCK_NAMESPACE = 0x55534552;
+  private static final int ROLE_SYNC_LOCK_NAMESPACE = 0x524f4c45;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public AuthorizationService(
       AuthorizationCacheService authorizationCacheService,
@@ -321,9 +331,47 @@ public class AuthorizationService {
    */
   @Transactional
   public User ensureUserExists(String login, String name, UserOrigin origin, List<String> defaultRoles) {
+    Optional<UserEntity> existing = userService.getUserByLogin(login);
+    if (existing.isPresent()) {
+      return updateIfNeeded(existing.get(), name, origin);
+    }
+
+    // Concurrent first logins for one principal would otherwise race the unique sec_user.login,
+    // and the loser would abort the caller's transaction. Serialise them instead.
+    lockLogin(USER_REGISTRATION_LOCK_NAMESPACE, login);
+
     return userService.getUserByLogin(login)
         .map(entity -> updateIfNeeded(entity, name, origin))
-        .orElseGet(() -> registerUser(login, name, origin, new HashSet<>(defaultRoles == null ? List.of() : defaultRoles)));
+        .orElseGet(() -> registerUser(login, name, origin,
+            new HashSet<>(defaultRoles == null ? List.of() : defaultRoles)));
+  }
+
+  /**
+   * Serialise the callers that are about to grant this login the roles an origin asserts.
+   *
+   * Role assignment is a lookup followed by an insert, so without this two logins can both
+   * find a role missing and both add it. Held only by the logins that actually have
+   * something to add, and released when the transaction ends.
+   *
+   * @param login the login whose role assignments are being changed
+   */
+  @Transactional
+  public void lockRoleSync(String login) {
+    lockLogin(ROLE_SYNC_LOCK_NAMESPACE, login);
+  }
+
+  /**
+   * Take a transaction scoped advisory lock keyed on a login.
+   *
+   * Runs through the EntityManager so that it is taken on the connection this transaction
+   * already holds; a JdbcTemplate would take a second one and lock in a different
+   * transaction. Requires an active transaction, or the lock is released immediately.
+   */
+  private void lockLogin(int namespace, String login) {
+    entityManager.createNativeQuery("SELECT pg_advisory_xact_lock(?1, ?2)")
+        .setParameter(1, namespace)
+        .setParameter(2, login.hashCode())
+        .getSingleResult();
   }
 
   /**

@@ -8,6 +8,8 @@ import org.ohdsi.webapi.security.authc.UserOrigin;
 import org.ohdsi.webapi.security.identity.WebApiPrincipal;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,12 @@ public class AuthorizationService {
   private final PermissionService permissionService;
   private final EntityAccessService entityAccessService;
   private final SourceRepository sourceRepository;
+
+  // Advisory lock namespace, so user registration cannot collide with other advisory locks.
+  private static final int USER_REGISTRATION_LOCK_NAMESPACE = 0x55534552;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public AuthorizationService(
       AuthorizationCacheService authorizationCacheService,
@@ -321,9 +329,24 @@ public class AuthorizationService {
    */
   @Transactional
   public User ensureUserExists(String login, String name, UserOrigin origin, List<String> defaultRoles) {
+    Optional<UserEntity> existing = userService.getUserByLogin(login);
+    if (existing.isPresent()) {
+      return updateIfNeeded(existing.get(), name, origin);
+    }
+
+    // Concurrent first logins for one principal would otherwise race the unique sec_user.login,
+    // and the loser would abort the caller's transaction. Serialise them instead. The lock is
+    // held on this transaction's own connection and released when the transaction ends, so the
+    // waiting logins observe the registration once it has been committed.
+    entityManager.createNativeQuery("SELECT pg_advisory_xact_lock(?1, ?2)")
+        .setParameter(1, USER_REGISTRATION_LOCK_NAMESPACE)
+        .setParameter(2, login.hashCode())
+        .getSingleResult();
+
     return userService.getUserByLogin(login)
         .map(entity -> updateIfNeeded(entity, name, origin))
-        .orElseGet(() -> registerUser(login, name, origin, new HashSet<>(defaultRoles == null ? List.of() : defaultRoles)));
+        .orElseGet(() -> registerUser(login, name, origin,
+            new HashSet<>(defaultRoles == null ? List.of() : defaultRoles)));
   }
 
   /**

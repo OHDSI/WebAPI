@@ -28,11 +28,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -144,7 +147,9 @@ public class GoogleAuthConfig {
             .userInfoEndpoint(userInfo -> userInfo
                 .oidcUserService(new OidcUserService())
             )
-            .authorizationEndpoint(authz -> authz.baseUri("/user/login"))
+        .authorizationEndpoint(authz -> authz
+          .baseUri("/user/login")
+          .authorizationRequestResolver(googleAuthorizationRequestResolver(clientRegistrationRepository)))
             .redirectionEndpoint(redir -> redir.baseUri("/user/oauth/callback/google"))
             .successHandler(this::handleGoogleSuccess)
             .failureHandler((req, res, ex) -> {
@@ -190,6 +195,49 @@ public class GoogleAuthConfig {
     // Invalidate the HTTP session to prevent OAuth2 context from persisting
     request.getSession().invalidate();
     response.sendRedirect(callbackUi + "?code=" + otc);
+  }
+
+  static OAuth2AuthorizationRequestResolver googleAuthorizationRequestResolver(
+      ClientRegistrationRepository clientRegistrationRepository) {
+    DefaultOAuth2AuthorizationRequestResolver delegate =
+        new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/user/login");
+
+    return new OAuth2AuthorizationRequestResolver() {
+      @Override
+      public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+        return logAndReturn(delegate.resolve(request), request);
+      }
+
+      @Override
+      public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
+        return logAndReturn(delegate.resolve(request, clientRegistrationId), request);
+      }
+    };
+  }
+
+  private static OAuth2AuthorizationRequest logAndReturn(
+      OAuth2AuthorizationRequest authorizationRequest,
+      HttpServletRequest request) {
+    if (authorizationRequest != null) {
+      log.info(
+          "Google OAuth request details: requestURL={}, requestURI={}, scheme={}, secure={}, serverName={}, serverPort={}, contextPath={}, Forwarded={}, X-Forwarded-Proto={}, X-Forwarded-Host={}, X-Forwarded-Port={}, Host={}",
+          request.getRequestURL(),
+          request.getRequestURI(),
+          request.getScheme(),
+          request.isSecure(),
+          request.getServerName(),
+          request.getServerPort(),
+          request.getContextPath(),
+          request.getHeader("Forwarded"),
+          request.getHeader("X-Forwarded-Proto"),
+          request.getHeader("X-Forwarded-Host"),
+          request.getHeader("X-Forwarded-Port"),
+          request.getHeader("Host"));
+      log.info("Google OAuth authorization request: redirectUri={}, authorizationRequestUri={}",
+          authorizationRequest.getRedirectUri(),
+          authorizationRequest.getAuthorizationRequestUri());
+    }
+    return authorizationRequest;
   }
 
   private static String firstNonBlank(String... values) {

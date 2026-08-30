@@ -2,6 +2,10 @@ package org.ohdsi.webapi.security.authc;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,8 +30,11 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import org.springframework.security.web.SecurityFilterChain;
@@ -61,6 +68,15 @@ public class OidcAuthConfig {
 
   @Value("${security.auth.oidc.externalUrl:}")
   private String externalUrl;
+
+  // Base URL that serves the same provider as the issuer but is reachable from
+  // inside the deployment. The issuer a provider advertises has to stay the one
+  // its tokens carry, which in a split-horizon deployment is a public address the
+  // server itself cannot resolve; discovery and JWKS are then fetched here while
+  // the public issuer remains what tokens are validated against. Blank keeps the
+  // plain behaviour of resolving everything from the issuer.
+  @Value("${security.auth.oidc.internalUrl:}")
+  private String internalUrl;
 
   @Value("${security.auth.oidc.extraScopes:}")
   private String extraScopes;
@@ -96,9 +112,18 @@ public class OidcAuthConfig {
       return registrationId -> null;
     }
     String issuer = stripDiscoverySuffix(discoveryOrIssuerUrl);
-    log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
+    String internalBase = normaliseBase(internalUrl);
 
-    ClientRegistration.Builder builder = ClientRegistrations.fromIssuerLocation(issuer)
+    ClientRegistration.Builder builder;
+    if (internalBase == null) {
+      log.info("OIDC: Discovering provider metadata from issuer {}", issuer);
+      builder = ClientRegistrations.fromIssuerLocation(issuer);
+    } else {
+      log.info("OIDC: Discovering provider metadata for issuer {} via internal base {}", issuer, internalBase);
+      builder = ClientRegistrations.fromOidcConfiguration(
+          internalConfiguration(issuer, internalBase));
+    }
+    builder
         .registrationId(REGISTRATION_ID)
         .clientId(clientId)
         .clientSecret(clientSecret)
@@ -210,6 +235,68 @@ public class OidcAuthConfig {
     return base + "#" + fragment + separator + key + "=" + value;
   }
 
+  // Fetches the discovery document from the internally reachable base and points
+  // the endpoints the server itself calls back at that base. The issuer and the
+  // endpoints a browser is sent to are deliberately left on their public
+  // addresses: rewriting those would put an unreachable host in front of the user
+  // and break issuer validation.
+  private static Map<String, Object> internalConfiguration(String issuer, String internalBase) {
+    Map<String, Object> configuration = fetchConfiguration(internalBase + DISCOVERY_SUFFIX);
+    for (String endpoint : List.of("token_endpoint", "jwks_uri", "userinfo_endpoint")) {
+      Object value = configuration.get(endpoint);
+      if (value instanceof String url) {
+        configuration.put(endpoint, toInternal(url, issuer, internalBase));
+      }
+    }
+    return configuration;
+  }
+
+  private static Map<String, Object> fetchConfiguration(String url) {
+    try {
+      HttpResponse<String> response = HttpClient.newBuilder()
+          // Ask for HTTP/1.1 outright. The default attempts an HTTP/2 upgrade,
+          // which a provider that only speaks 1.1 answers with a 502 rather than
+          // by declining the upgrade -- discovery then fails against a provider
+          // that is serving the document perfectly well.
+          .version(HttpClient.Version.HTTP_1_1)
+          .connectTimeout(Duration.ofSeconds(10))
+          .build()
+          .send(HttpRequest.newBuilder(URI.create(url))
+                  .timeout(Duration.ofSeconds(10))
+                  .GET()
+                  .build(),
+              HttpResponse.BodyHandlers.ofString());
+      if (response.statusCode() != 200) {
+        throw new IllegalStateException(
+            "OIDC discovery at " + url + " returned HTTP " + response.statusCode());
+      }
+      return new ObjectMapper().readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not read OIDC discovery from " + url, e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted reading OIDC discovery from " + url, e);
+    }
+  }
+
+  private static String toInternal(String url, String issuer, String internalBase) {
+    return url.startsWith(issuer) ? internalBase + url.substring(issuer.length()) : url;
+  }
+
+  private static String normaliseBase(String url) {
+    if (url == null || url.isBlank()) {
+      return null;
+    }
+    String base = url.trim();
+    if (base.endsWith(DISCOVERY_SUFFIX)) {
+      base = base.substring(0, base.length() - DISCOVERY_SUFFIX.length());
+    }
+    while (base.endsWith("/")) {
+      base = base.substring(0, base.length() - 1);
+    }
+    return base;
+  }
+
   private String stripDiscoverySuffix(String url) {
     if (url == null || url.isBlank()) {
       throw new IllegalStateException("security.auth.oidc.url must be configured when OIDC is enabled");
@@ -299,6 +386,7 @@ public class OidcAuthConfig {
         org.ohdsi.webapi.security.authc.mapper.OidcGroupToRoleMapper oidcGroupToRoleMapper,
         @Value("${security.auth.oidc.enabled:false}") boolean enabled,
         @Value("${security.auth.oidc.url}") String discoveryOrIssuerUrl,
+        @Value("${security.auth.oidc.internalUrl:}") String internalUrl,
         @Value("${security.auth.oidc.rolesClaim:}") String rolesClaim,
         @Value("${security.auth.oidc.rolesToUpperCase:true}") boolean rolesToUpperCase) {
       this.loginService = loginService;
@@ -311,16 +399,38 @@ public class OidcAuthConfig {
         return;
       }
       String issuer = stripDiscoverySuffixStatic(discoveryOrIssuerUrl);
-      log.info("OIDC direct: building JwtDecoder for issuer {}", issuer);
+      String internalBase = normaliseBase(internalUrl);
       // Accept both `JWT` and `at+jwt` (RFC 9068) header types — Logto and other
       // providers tag access tokens as `at+jwt`, which Spring's default verifier rejects.
-      this.jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuer)
-          .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(
-              new DefaultJOSEObjectTypeVerifier<>(
-                  JOSEObjectType.JWT,
-                  new JOSEObjectType("at+jwt"),
-                  null)))
-          .build();
+      NimbusJwtDecoder decoder;
+      if (internalBase == null) {
+        log.info("OIDC direct: building JwtDecoder for issuer {}", issuer);
+        decoder = NimbusJwtDecoder.withIssuerLocation(issuer)
+            .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(
+                new DefaultJOSEObjectTypeVerifier<>(
+                    JOSEObjectType.JWT,
+                    new JOSEObjectType("at+jwt"),
+                    null)))
+            .build();
+      } else {
+        // Same split-horizon concession as the registration repository: the keys
+        // are fetched over the internal base, but tokens are still only accepted
+        // when they carry the public issuer.
+        Object jwks = internalConfiguration(issuer, internalBase).get("jwks_uri");
+        if (!(jwks instanceof String jwkSetUri)) {
+          throw new IllegalStateException("OIDC discovery at " + internalBase + " advertised no jwks_uri");
+        }
+        log.info("OIDC direct: building JwtDecoder for issuer {} with keys from {}", issuer, jwkSetUri);
+        decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+            .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(
+                new DefaultJOSEObjectTypeVerifier<>(
+                    JOSEObjectType.JWT,
+                    new JOSEObjectType("at+jwt"),
+                    null)))
+            .build();
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer));
+      }
+      this.jwtDecoder = decoder;
     }
 
     @GetMapping("/user/login/openidDirect")

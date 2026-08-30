@@ -179,7 +179,6 @@ public class SourceService extends AbstractDaoService {
      * @return The CDM metadata for the priority vocabulary.
      */
     @GetMapping(value = "/priorityVocabulary", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<SourceInfo> getPriorityVocabularySourceInfoEndpoint() {
         return ResponseEntity.ok(getPriorityVocabularySourceInfo());
     }
@@ -191,7 +190,6 @@ public class SourceService extends AbstractDaoService {
      * @return  Metadata for a single Source that matches the <code>sourceKey</code>.
      */
     @GetMapping(value = "/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source'))")
     public ResponseEntity<SourceInfo> getSource(@PathVariable("key") final String sourceKey) {
         return ResponseEntity.ok(sourceRepository.findBySourceKey(sourceKey).getSourceInfo());
     }

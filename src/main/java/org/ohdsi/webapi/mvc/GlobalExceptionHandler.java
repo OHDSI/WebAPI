@@ -63,13 +63,35 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorMessage> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         logException(ex);
 
-        String cause = ex.getCause().getCause().getMessage();
-        cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());
-        RuntimeException sanitizedException = new RuntimeException(cause);
+        RuntimeException sanitizedException = new RuntimeException(describeConstraintViolation(ex));
         sanitizedException.setStackTrace(new StackTraceElement[0]);
 
         ErrorMessage errorMessage = new ErrorMessage(sanitizedException);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+    }
+
+    /**
+     * Pull a human-readable reason out of a constraint violation.
+     *
+     * <p>The cause chain is not guaranteed to be two levels deep, nor to carry a
+     * message, and only PostgreSQL appends a "Detail: " section. Assuming any of
+     * that threw a NullPointerException (or silently truncated the message by
+     * seven characters when {@code indexOf} returned -1) from inside the handler,
+     * which Spring then reported as a 500 instead of the intended 409.
+     */
+    private static String describeConstraintViolation(DataIntegrityViolationException ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            String message = t.getMessage();
+            if (message == null) {
+                continue;
+            }
+            int detailIndex = message.indexOf(DETAIL);
+            if (detailIndex >= 0) {
+                return message.substring(detailIndex + DETAIL.length());
+            }
+        }
+        String message = ex.getMostSpecificCause().getMessage();
+        return message != null ? message : "The request conflicts with existing data.";
     }
 
     /**
@@ -111,7 +133,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle bad request exceptions
      */
-    @ExceptionHandler(ConceptNotExistException.class)
+    @ExceptionHandler({ConceptNotExistException.class, BadRequestAtlasException.class})
     public ResponseEntity<ErrorMessage> handleBadRequestException(Exception ex) {
         logException(ex);
         ex.setStackTrace(new StackTraceElement[0]);

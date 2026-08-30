@@ -981,6 +981,7 @@ CREATE TABLE ${ohdsiSchema}.sec_role_permission (
     status character varying(255)
 );
 
+
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role_permission.id IS 'Primary key';
 
 COMMENT ON COLUMN ${ohdsiSchema}.sec_role_permission.role_id IS 'Foreign key to SEC_ROLE';
@@ -1141,7 +1142,7 @@ CREATE TABLE ${ohdsiSchema}.sec_session
     created_at timestamp NOT NULL,
     expires_at timestamp NOT NULL,
     revoked boolean NOT NULL DEFAULT false,
-    CONSTRAINT sec_session_pkey PRIMARY KEY (session_id)
+    CONSTRAINT pk_sec_session PRIMARY KEY (session_id)
 );
 
 CREATE INDEX idx_sec_session_login
@@ -1499,6 +1500,7 @@ ALTER TABLE ONLY ${ohdsiSchema}.sec_role_permission
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role_group
     ADD CONSTRAINT sec_role_group_pkey PRIMARY KEY (id);
+
 
 ALTER TABLE ONLY ${ohdsiSchema}.sec_role
     ADD CONSTRAINT sec_role_name_uq UNIQUE (name, system_role);

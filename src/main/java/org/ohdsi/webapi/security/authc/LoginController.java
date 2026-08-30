@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.security.authc;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * The LoginController class groups the different auth controller endpoints, and
@@ -49,8 +54,19 @@ public class LoginController {
   }
 
   @GetMapping("/user/logout")
-  public LoginService.Result logout(Authentication authentication) {
-    return loginSvc.logout(authentication);
+  public LoginService.Result logout(Authentication authentication, HttpSession session) {
+    // Revoke the WebAPI session
+    LoginService.Result result = loginSvc.logout(authentication);
+    
+    // Clear the Spring Security context to remove any cached principals
+    SecurityContextHolder.clearContext();
+    
+    // Invalidate the HTTP session to clear cookies and session data
+    if (session != null) {
+      session.invalidate();
+    }
+    
+    return result;
   }
 
   /**
@@ -73,18 +89,58 @@ public class LoginController {
   }
 
   /**
+   * One-Time Code (OTC) authentication controller. Allows redeeming one-time codes for JWT tokens.
+   */
+  @RestController
+  public static class OTC {
+    private final OneTimeCodeService oneTimeCodeService;
+    private static final Logger log = LoggerFactory.getLogger(OTC.class);
+
+    public OTC(OneTimeCodeService oneTimeCodeService) {
+      this.oneTimeCodeService = oneTimeCodeService;
+    }
+
+    /**
+     * Redeem a one-time code for a JWT token.
+     * 
+     * @param code the OTC UUID to redeem
+     * @return JWT token wrapped in LoginService.Result, or 401 if OTC is invalid/expired/revoked
+     */
+    @GetMapping(value = "/user/login/otc", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginService.Result> redeemOtc(@RequestParam UUID code) {
+
+      Optional<OneTimeCodeEntity> otcEntity = oneTimeCodeService.validateAndConsume(code);
+
+      if (otcEntity.isEmpty()) {
+        log.debug("OTC redemption failed: code {} invalid or expired", code);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new LoginService.Result(null, null, null, "Invalid or expired code"));
+      }
+
+      OneTimeCodeEntity otc = otcEntity.get();
+      String jwt = otc.getJwtToken();
+
+      log.debug("OTC: {} redeemed successfully for user: {}", code, otc.getLogin());
+
+      // Return the pre-minted JWT directly
+      // Client uses this token to establish session with WebAPI
+      return ResponseEntity.ok(new LoginService.Result(otc.getLogin(), jwt, null, "OTC redeemed successfully."));
+    }
+  }
+
+  /**
    * Windows Authentication controller which responds with JWT and login results.
    */
   @RestController
   @ConditionalOnProperty(prefix = "security.auth.windows", name = "enabled", havingValue = "true")
   public static class Windows {
     private final LoginService loginSvc;
-    private final org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper;
+    private final org.ohdsi.webapi.security.authz.mapping.WindowsGroupToRoleMapper windowsGroupToRoleMapper;
 
     public Windows(LoginService loginSvc,
-                   org.ohdsi.webapi.security.authc.mapper.WindowsGroupToRoleMapper windowsGroupToRoleMapper) {
+                   org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService) {
       this.loginSvc = loginSvc;
-      this.windowsGroupToRoleMapper = windowsGroupToRoleMapper;
+      this.windowsGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.WindowsGroupToRoleMapper(externalRoleMapService);
     }
 
     @GetMapping("/user/login/windows")
@@ -166,13 +222,13 @@ public class LoginController {
   public static class Ldap {
 
     private final LoginService loginSvc;
-    private final org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper;
+    private final org.ohdsi.webapi.security.authz.mapping.LdapGroupToRoleMapper ldapGroupToRoleMapper;
     private static final Logger log = LoggerFactory.getLogger(Ldap.class);
     
     public Ldap(LoginService loginSvc,
-               org.ohdsi.webapi.security.authc.mapper.LdapGroupToRoleMapper ldapGroupToRoleMapper) {
+               org.ohdsi.webapi.security.authz.mapping.ExternalRoleMapService externalRoleMapService) {
       this.loginSvc = loginSvc;
-      this.ldapGroupToRoleMapper = ldapGroupToRoleMapper;
+      this.ldapGroupToRoleMapper = new org.ohdsi.webapi.security.authz.mapping.LdapGroupToRoleMapper(externalRoleMapService);
     }
 
     @GetMapping("/user/login/ldap")
@@ -200,5 +256,4 @@ public class LoginController {
       return loginSvc.onSuccess(authenticatedLogin);
     }
   }
-
 }

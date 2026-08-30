@@ -1,6 +1,5 @@
 package org.ohdsi.webapi;
 
-import org.ohdsi.webapi.i18n.mvc.LocaleInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -20,21 +19,9 @@ import java.util.List;
 @EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired(required = false)
-    private LocaleInterceptor localeInterceptor;
-
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.setUseTrailingSlashMatch(true);
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // Add locale interceptor if available
-        if (localeInterceptor != null) {
-            registry.addInterceptor(localeInterceptor)
-                    .addPathPatterns("/**");
-        }
     }
 
     @Override

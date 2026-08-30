@@ -160,11 +160,6 @@ public class VocabularyService extends AbstractDaoService {
     return this.rowMapper;
   }
 
-  private String getDefaultVocabularySourceKey() {
-    Source vocabSource = sourceService.getPriorityVocabularySource();
-    return Objects.nonNull(vocabSource) ? vocabSource.getSourceKey() : null;
-  }
-
   public Source getPriorityVocabularySource() {
 
     Source source = sourceService.getPriorityVocabularySource();
@@ -317,27 +312,6 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "identifiers", identifiers);
   }
   
-  /**
-   * Get concepts from concept identifiers (IDs) from the default vocabulary
-   * source
-   *
-   * @summary Perform a lookup of an array of concept identifiers returning the
-   * matching concepts with their detailed properties, using the default source.
-   * @param identifiers an array of concept identifiers
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/lookup/identifiers",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> executeIdentifierLookup(@RequestBody long[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503      
-
-    return executeIdentifierLookup(defaultSourceKey, identifiers);   
-  }  
-  
   public Collection<Concept> executeIncludedConceptLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -387,26 +361,6 @@ public class VocabularyService extends AbstractDaoService {
     return psr;
   }
 
-  /**
-   * Get concepts from source codes from the default vocabulary source
-   *
-   * @summary Lookup source codes from the concept CONCEPT_CODE field
-   * in the specified vocabulary
-   * @param sourcecodes array of source codes
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/lookup/sourcecodes",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> executeSourcecodeLookup(@RequestBody String[] sourcecodes) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503      
-
-    return executeSourcecodeLookup(defaultSourceKey, sourcecodes);
-  }
-  
   /**
    * Get concepts mapped to the selected concept identifiers from a
    * specific source. Find all concepts mapped to the concept identifiers
@@ -459,28 +413,8 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, tqName, tqValue, "identifiers", identifiers);
   }
 
-  /**
-   * Get concepts mapped to the selected concept identifiers from a
-   * specific source. Find all concepts mapped to the concept identifiers
-   * provided. This end-point will check the CONCEPT, CONCEPT_RELATIONSHIP and
-   * SOURCE_TO_CONCEPT_MAP tables.
-   *
-   * @summary Concepts mapped to other concepts
-   * @param identifiers an array of concept identifiers
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/lookup/mapped",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> executeMappedLookup(@RequestBody long[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503      
 
-    return executeMappedLookup(defaultSourceKey, identifiers);
-  }
-  
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   public Collection<Concept> executeMappedLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -659,25 +593,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Search for a concept on the default vocabulary source.
-   *
-   * @summary Search for a concept (default vocabulary source)
-   * @param search The ConceptSearch parameters
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/search",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> executeSearch(@RequestBody ConceptSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return executeSearch(defaultSourceKey, search);
-  }
- 
-  /**
    * Search for a concept based on a query using the selected vocabulary source.
    *
    * @summary Search for a concept using a query
@@ -743,27 +658,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Search for a concept based on a query using the default vocabulary source.
-   * NOTE: This method uses the query as part of the URL and not the
-   * query string
-   *
-   * @summary Search for a concept using a query (default vocabulary)
-   * @param query The query to use to search for concepts
-   * @return A collection of concepts
-   */
-  @GetMapping(value = "/search/{query}",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> executeSearch(@PathVariable("query") String query) {
-
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return executeSearch(defaultSourceKey, query);
-  }
-
-  /**
    * Get a concept based on the concept identifier from the specified
    * source
    *
@@ -794,26 +688,6 @@ public class VocabularyService extends AbstractDaoService {
     return concept;
   }
   
-  /**
-   * Get a concept based on the concept identifier from the default
-   * vocabulary source
-   *
-   * @summary Get concept details (default vocabulary source)
-   * @param id The concept ID to find
-   * @return The concept details
-   */
-  @GetMapping(value = "/concept/{id}",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Concept getConcept(@PathVariable("id") final long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getConcept(defaultSourceKey, id);
-
-  }
-
   /**
    * Get related concepts for the selected concept identifier from a source.
    * Related concepts will include those concepts that have a relationship
@@ -946,25 +820,6 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Get related concepts for the selected concept identifier from the
-   * default vocabulary source.
-   *
-   * @summary Get related concepts (default vocabulary)
-   * @param id The concept identifier
-   * @return A collection of related concepts
-   */
-  @GetMapping(value = "/concept/{id}/related",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<RelatedConcept> getRelatedConcepts(@PathVariable("id") final Long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getRelatedConcepts(defaultSourceKey, id);
-  }
- 
-  /**
    * Get a list of common ancestor concepts for a selected list of concept
    * identifiers using the selected vocabulary source.
    *
@@ -1006,26 +861,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get a list of common ancestor concepts for a selected list of concept
-   * identifiers using the default vocabulary source.
-   *
-   * @summary Get common ancestor concepts (default vocabulary)
-   * @param identifiers An array of concept identifiers
-   * @return A collection of related concepts
-   */
-  @PostMapping(value = "/commonAncestors",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<RelatedConcept> getCommonAncestors(@RequestBody Object[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getCommonAncestors(defaultSourceKey, identifiers);
-  }
-  
-  /**
    * Resolve a concept set expression into a collection
    * of concept identifiers using the selected vocabulary source.
    *
@@ -1055,26 +890,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Resolve a concept set expression into a collection
-   * of concept identifiers using the default vocabulary source.
-   *
-   * @summary Resolve concept set expression (default vocabulary)
-   * @param conceptSetExpression A concept set expression
-   * @return A collection of concept identifiers
-   */
-  @PostMapping(value = "/resolveConceptSetExpression",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Long> resolveConceptSetExpression(@RequestBody ConceptSetExpression conceptSetExpression) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
-  }
-
-  /**
    * Resolve a concept set expression to get the count
    * of included concepts using the selected vocabulary source.
    *
@@ -1095,28 +910,6 @@ public class VocabularyService extends AbstractDaoService {
     String query = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, sql -> "select count(*) from (" + sql + ") Q;").getSql();
     return getSourceJdbcTemplate(source).query(query, rs -> rs.next() ? rs.getInt(1) : 0);
   }
-
-  /**
-   * Resolve a concept set expression to get the count
-   * of included concepts using the default vocabulary source.
-   *
-   * @summary Get included concept counts for concept set expression (default vocabulary)
-   * @param conceptSetExpression A concept set expression
-   * @return A count of included concepts
-   */
-  @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
-  @PostMapping(value = "/included-concepts/count",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Integer countIncludedConcepSets(@RequestBody ConceptSetExpression conceptSetExpression) {
-
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    if (Objects.isNull(defaultSourceKey)) {
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed.");
-    }
-    return countIncludedConceptSets(defaultSourceKey, conceptSetExpression);
-  }
-
 
   /**
    * Produces a SQL query to use against your OMOP CDM to create the
@@ -1169,25 +962,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get a collection of descendant concepts for the selected concept
-   * identifier using the default vocabulary
-   *
-   * @summary Get descendant concepts for the selected concept identifier (default vocabulary)
-   * @param id The concept identifier
-   * @return A collection of concepts
-   */
-  @GetMapping(value = "/concept/{id}/descendants",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<RelatedConcept> getDescendantConcepts(@PathVariable("id") final Long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getDescendantConcepts(defaultSourceKey, id);
-  }
-  
-  /**
    * Get a collection of domains from the domain table in the
    * vocabulary for the the selected source key.
    *
@@ -1214,24 +988,6 @@ public class VocabularyService extends AbstractDaoService {
         return domain;
       }
     });
-  }
-  
-  /**
-   * Get a collection of domains from the domain table in the
-   * default vocabulary.
-   *
-   * @summary Get domains (default vocabulary)
-   * @return A collection of domains
-   */
-  @GetMapping(value = "/domains",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Domain> getDomains() {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getDomains(defaultSourceKey);
   }
   
   /**
@@ -1265,24 +1021,6 @@ public class VocabularyService extends AbstractDaoService {
     });
   }
   
-  /**
-   * Get a collection of vocabularies from the vocabulary table in the
-   * default vocabulary
-   *
-   * @summary Get vocabularies (default vocabulary)
-   * @return A collection of vocabularies
-   */
-  @GetMapping(value = "/vocabularies",
-              produces = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Vocabulary> getVocabularies() {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getVocabularies(defaultSourceKey);
-  }  
-
   private void addRelationships(final Map<Long, RelatedConcept> concepts, final ResultSet resultSet) throws SQLException {
     final Long concept_id = resultSet.getLong("CONCEPT_ID");
     if (!concepts.containsKey(concept_id)) {
@@ -1397,28 +1135,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get the descendant concepts of the selected ancestor vocabulary and
-   * concept class for the selected sibling vocabulary and concept class.
-   * It is unclear how this endpoint is used so it may be a candidate to
-   * deprecate.
-   *
-   * @summary Get descendant concepts (default vocabulary)
-   * @param search The descendant of ancestor search object
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/descendantofancestor",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> getDescendantOfAncestorConcepts(@RequestBody DescendentOfAncestorSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getDescendantOfAncestorConcepts(defaultSourceKey, search);
-  }
-  
-  /**
    * Get the related concepts for a list of concept ids using the
    * concept_relationship table for the selected source key
    *
@@ -1465,26 +1181,6 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get the related concepts for a list of concept ids using the
-   * concept_relationship table
-   *
-   * @summary Get related concepts (default vocabulary)
-   * @param search The concept identifiers of interest
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/relatedconcepts",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<Concept> getRelatedConcepts(@RequestBody RelatedConceptSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getRelatedConcepts(defaultSourceKey, search);
-  }
-  
-  /**
    * Get the descendant concepts for a selected list of concept ids for a
    * selected source key
    *
@@ -1514,25 +1210,6 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
   
-  /**
-   * Get the descendant concepts for a selected list of concept ids
-   *
-   * @summary Get descendant concepts for selected concepts (default vocabulary)
-   * @param conceptList The list of concept identifiers
-   * @return A collection of concepts
-   */
-  @PostMapping(value = "/conceptlist/descendants",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<RelatedConcept> getDescendantConceptsByList(@RequestBody String[] conceptList) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return getDescendantConceptsByList(defaultSourceKey, conceptList);
-  }    
-
   protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
     String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
     String tqName = "CDM_schema";
@@ -1672,50 +1349,6 @@ public class VocabularyService extends AbstractDaoService {
     });
 
     return returnVal;
-  }
-
-  /**
-   * Compares two concept set expressions to find which concepts are
-   * shared or unique to each concept set.
-   *
-   * @summary Compare concept sets (default vocabulary)
-   * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
-   * @return A collection of concept set comparisons
-   */
-  @PostMapping(value = "/compare",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public Collection<ConceptSetComparison> compareConceptSets(
-          @RequestBody ConceptSetExpression[] conceptSetExpressionList) throws Exception {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return compareConceptSets(defaultSourceKey, conceptSetExpressionList);
-  }
-  
-  
-  /**
-   * Optimizes a concept set expressions to find redundant concepts specified
-   * in a concept set expression.
-   *
-   * @summary Optimize concept set (default vocabulary)
-   * @param conceptSetExpression The concept set expression to optimize
-   * @return A concept set optimization
-   */
-  @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
-  @PostMapping(value = "/optimize",
-               produces = MediaType.APPLICATION_JSON_VALUE,
-               consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ConceptSetOptimizationResult optimizeConceptSet(
-          @RequestBody ConceptSetExpression conceptSetExpression) throws Exception {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-
-    if (defaultSourceKey == null)
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No vocabulary or cdm daimon was found in configured sources.  Search failed."); // http 503
-
-    return optimizeConceptSet(defaultSourceKey, conceptSetExpression);
   }
 
   /**

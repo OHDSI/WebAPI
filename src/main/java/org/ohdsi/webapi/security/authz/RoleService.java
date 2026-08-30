@@ -203,14 +203,32 @@ class RoleService {
     this.addUserToRole(user, role, userOrigin);
   }
 
+  /**
+   * Grant a role to a user on behalf of one authentication origin.
+   *
+   * The same role may be held from several origins at once, so an existing grant from
+   * another origin does not satisfy this one. Callers may pass a null origin, which is
+   * recorded as SYSTEM.
+   *
+   * The lookup and the insert are not atomic, so concurrent callers can still create a
+   * duplicate assignment. Duplicates are tolerated rather than prevented; removing that
+   * race needs an upsert and a unique constraint on (user, role, origin).
+   *
+   * @param user the user to grant the role to
+   * @param role the role to grant
+   * @param userOrigin the authentication origin making the grant, null for SYSTEM
+   * @return the existing or newly created assignment
+   */
   public UserRoleEntity addUserToRole(final UserEntity user, final RoleEntity role,
       final UserOrigin userOrigin) {
-    UserRoleEntity relation = this.userRoleRepository.findByUserAndRole(user, role)
+    final UserOrigin origin = userOrigin != null ? userOrigin : UserOrigin.SYSTEM;
+
+    UserRoleEntity relation = this.userRoleRepository.findFirstByUserAndRoleAndOrigin(user, role, origin)
         .orElseGet(() -> {
           UserRoleEntity newRelation = new UserRoleEntity();
           newRelation.setUser(user);
           newRelation.setRole(role);
-          newRelation.setOrigin(userOrigin != null ? userOrigin : UserOrigin.SYSTEM);
+          newRelation.setOrigin(origin);
           newRelation = this.userRoleRepository.save(newRelation);
           authCacheService.evictUser(user.getId());
           return newRelation;
@@ -219,6 +237,16 @@ class RoleService {
     return relation;
   }
 
+  /**
+   * Revoke a role from a user, for one authentication origin or for all of them.
+   *
+   * Every assignment matching the origin is removed, so grants recorded more than once
+   * do not survive the call. Grants from other origins are left untouched.
+   *
+   * @param login the user to revoke the role from
+   * @param roleName the role to revoke
+   * @param origin the authentication origin to revoke for, null for every origin
+   */
   public void removeUserFromRole(String login, String roleName, UserOrigin origin) {
     Assert.hasLength(roleName, "roleName can not be empty.");
     Assert.hasLength(login, "login can not be empty");
@@ -229,24 +257,37 @@ class RoleService {
     RoleEntity role = this.getSystemRoleByName(roleName).orElseThrow(() -> new RuntimeException("Role not found."));
     UserEntity user = userService.getUserByLogin(login).orElseThrow(() -> new RuntimeException("Login not found."));
 
-    this.userRoleRepository.findByUserAndRole(user, role)
-        .ifPresent((userRole) -> {
-          if (origin == null || origin.equals(userRole.getOrigin())) {
-            this.userRoleRepository.delete(userRole);
-            authCacheService.evictUser(user.getId());
-          }
-        });
+    List<UserRoleEntity> assignments = this.userRoleRepository.findAllByUserAndRole(user, role).stream()
+        .filter(userRole -> origin == null || origin.equals(userRole.getOrigin()))
+        .toList();
+
+    if (!assignments.isEmpty()) {
+      this.userRoleRepository.deleteAll(assignments);
+      authCacheService.evictUser(user.getId());
+    }
   }
 
+  /**
+   * Revoke a role from a user across every authentication origin.
+   *
+   * This spans all origins so that the result matches what {@link #getRoleUsers(Long)}
+   * reports, which is not origin-scoped: leaving another origin's grant in place would
+   * keep the user listed in the role after being removed from it. An origin that still
+   * asserts the role re-grants it on the user's next login.
+   *
+   * @param userId the user to revoke the role from
+   * @param roleId the role to revoke
+   */
   public void removeUser(Long userId, Long roleId) {
     UserEntity user = userService.getUserById(userId);
     RoleEntity role = this.getRole(roleId);
 
-    this.userRoleRepository.findByUserAndRole(user, role)
-      .ifPresent((userRole) -> {
-        this.userRoleRepository.delete(userRole);
-        authCacheService.evictUser(user.getId());
-      });
+    List<UserRoleEntity> assignments = this.userRoleRepository.findAllByUserAndRole(user, role);
+
+    if (!assignments.isEmpty()) {
+      this.userRoleRepository.deleteAll(assignments);
+      authCacheService.evictUser(user.getId());
+    }
   }
 
   public Set<RoleEntity> getUserRoles(Long userId) {

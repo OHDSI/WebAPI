@@ -39,7 +39,7 @@ import static org.junit.Assert.fail;
 public abstract class AbstractDatabaseTest {
 
   @Value("${datasource.ohdsi.schema:public}")
-  private String ohdsiSchema;
+  protected String ohdsiSchema;
 
   @org.junit.Before
   public void setUpSecurityContext() {

@@ -314,21 +314,20 @@
                   "});",
                   "",
                   "const location = pm.response.headers.get('Location');",
-                  "pm.test('Redirect contains JWT token', function() {",
+                  "pm.test('Redirect contains WebAPI OTC code', function() {",
                   "    pm.expect(location).to.not.be.undefined;",
-                  "    pm.expect(location).to.include('token=');",
+                  "    pm.expect(location).to.include('code=');",
                   "});",
                   "",
-                  "// Extract JWT from redirect URL",
+                  "// Extract OTC from redirect URL",
                   "if (location) {",
-                  "    const tokenMatch = location.match(/[?&#]token=([^&#]+)/);",
-                  "    const token = tokenMatch ? tokenMatch[1] : null;",
-                  "    if (token) {",
-                  "        pm.collectionVariables.set('oidc_jwt_token', token);",
-                  "        pm.test('JWT token is well-formed', function() {",
-                  "            pm.expect(token).to.include('.');",
-                  "            const parts = token.split('.');",
-                  "            pm.expect(parts.length).to.equal(3);",
+                  "    const otcMatch = location.match(/[?&#]code=([^&#]+)/);",
+                  "    const otc = otcMatch ? otcMatch[1] : null;",
+                  "    if (otc) {",
+                  "        pm.collectionVariables.set('oidc_webapi_otc', otc);",
+                  "        pm.test('OTC is well-formed UUID', function() {",
+                  "            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+                  "            pm.expect(otc).to.match(uuidRegex);",
                   "        });",
                   "    }",
                   "}"
@@ -368,45 +367,35 @@
           }
         },
         {
-          "name": "4. Get Token via Refresh",
+          "name": "4. Redeem OTC Code",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "const token = pm.collectionVariables.get('oidc_jwt_token');",
-                  "if (token) {",
-                  "    pm.request.headers.add({",
-                  "        key: 'Authorization',",
-                  "        value: 'Bearer ' + token",
-                  "    });",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            },
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "const token = pm.collectionVariables.get('oidc_jwt_token');",
-                  "if (!token) {",
-                  "    pm.test.skip('No OIDC token available');",
+                  "const otc = pm.collectionVariables.get('oidc_webapi_otc');",
+                  "if (!otc) {",
+                  "    pm.test.skip('No OIDC OTC code available');",
                   "} else {",
-                  "    pm.test('Refresh returns 200 with new JWT', function() {",
+                  "    pm.test('OTC redemption returns 200', function() {",
                   "        pm.response.to.have.status(200);",
                   "    });",
                   "",
                   "    const jsonData = pm.response.json();",
-                  "    pm.test('Refresh response contains login and jwt', function() {",
+                  "    pm.test('Redemption response contains login and jwt', function() {",
                   "        pm.expect(jsonData).to.have.property('login');",
                   "        pm.expect(jsonData).to.have.property('jwt');",
                   "        pm.expect(jsonData.login).to.equal('testuser');",
                   "    });",
                   "",
-                  "    // Update token for subsequent requests",
+                  "    // Store JWT for subsequent requests",
                   "    if (jsonData.jwt) {",
                   "        pm.collectionVariables.set('oidc_jwt_token', jsonData.jwt);",
+                  "        pm.test('JWT token is well-formed', function() {",
+                  "            pm.expect(jsonData.jwt).to.include('.');",
+                  "            const parts = jsonData.jwt.split('.');",
+                  "            pm.expect(parts.length).to.equal(3);",
+                  "        });",
                   "    }",
                   "}"
                 ],
@@ -418,13 +407,20 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/user/refresh",
+              "raw": "{{base_url}}/user/login/otc?code={{oidc_webapi_otc}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "user",
-                "refresh"
+                "login",
+                "otc"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "{{oidc_webapi_otc}}"
+                }
               ]
             }
           }
@@ -988,6 +984,10 @@
     },
     {
       "key": "oidc_auth_code",
+      "value": ""
+    },
+    {
+      "key": "oidc_webapi_otc",
       "value": ""
     },
     {

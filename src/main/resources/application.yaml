@@ -205,9 +205,7 @@ security:
 
     oauth: # OAuth
       callback:
-        api: http://localhost:8080/WebAPI/user/oauth/callback
-        ui: http://localhost/Atlas/#/welcome
-        urlResolver: query
+        ui: http://localhost/Atlas/#/otc
       facebook:
         enabled: false
         apiKey: ""
@@ -220,6 +218,9 @@ security:
         enabled: false
         apiKey: ""
         apiSecret: ""
+
+    otc: # One-Time Code (OTC) configuration
+      ttl: 10m  # OTC expiration time (default 10 minutes)
 
     oidc: # OpenID Connect
       enabled: false

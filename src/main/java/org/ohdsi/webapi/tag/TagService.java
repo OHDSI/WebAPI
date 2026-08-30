@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.tag;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.Tag;
@@ -72,16 +73,24 @@ public class TagService extends AbstractDaoService {
 
     public Tag create(Tag tag) {
         tag.setType(TagType.CUSTOM);
+        if (tag.getGroups() == null || tag.getGroups().isEmpty()) {
+            throw new BadRequestAtlasException("A tag must be assigned to at least one tag group.");
+        }
         List<Integer> groupIds = tag.getGroups().stream()
                 .map(Tag::getId)
                 .collect(Collectors.toList());
         List<Tag> groups = findByIdIn(groupIds);
-        boolean allowCustom = groups.stream()
-                .filter(Tag::isAllowCustom)
-                .count() == groups.size();
+        List<String> rejectingGroups = groups.stream()
+                .filter(group -> !group.isAllowCustom())
+                .map(Tag::getName)
+                .collect(Collectors.toList());
 
-        if (!allowCustom) {
-            throw new IllegalArgumentException("Tag can be added only to groups that allows to do it");
+        if (!rejectingGroups.isEmpty()) {
+            // Naming the groups matters: the client cannot otherwise tell which
+            // of the selected groups refused the tag.
+            throw new BadRequestAtlasException(
+                    "Tags cannot be added to these groups because they do not allow custom tags: "
+                            + String.join(", ", rejectingGroups));
         }
 
         tag.setGroups(new HashSet<>(groups));

@@ -18,14 +18,14 @@ public class UserImportJobDTO extends ArachneJobDTO {
 
   private Date startDate;
 
-  private RoleGroupMapping roleGroupMapping;
+  private RoleGroupMapping groupRoleImportMapping;
 
   public RoleGroupMapping getRoleGroupMapping() {
-    return roleGroupMapping;
+    return groupRoleImportMapping;
   }
 
-  public void setRoleGroupMapping(RoleGroupMapping roleGroupMapping) {
-    this.roleGroupMapping = roleGroupMapping;
+  public void setRoleGroupMapping(RoleGroupMapping groupRoleImportMapping) {
+    this.groupRoleImportMapping = groupRoleImportMapping;
   }
 
   public LdapProviderType getProviderType() {

@@ -110,9 +110,4 @@ public interface Constants {
     String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
     String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats_cache";
   }
-
-  interface CallbackUrlResolvers {
-    String QUERY = "query";
-    String PATH = "path";
-  }
 }

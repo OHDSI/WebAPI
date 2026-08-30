@@ -60,11 +60,10 @@ public class OidcAuthConfigInternalUrlTest {
   }
 
   private ClientRegistration buildRegistration(String externalUrl) {
-    OidcAuthConfig config = new OidcAuthConfig(null, null, null);
+    OidcAuthConfig config = new OidcAuthConfig(null, null, null, null);
     ReflectionTestUtils.setField(config, "oidcRuntimeEnabled", true);
     ReflectionTestUtils.setField(config, "clientId", "d2e-webapi");
     ReflectionTestUtils.setField(config, "clientSecret", "secret");
-    ReflectionTestUtils.setField(config, "callbackApi", "https://gateway.invalid:41100/WebAPI/user/oauth/callback");
     ReflectionTestUtils.setField(config, "callbackUi", "https://gateway.invalid:41100/atlas");
     ReflectionTestUtils.setField(config, "extraScopes", "");
     ReflectionTestUtils.setField(config, "discoveryOrIssuerUrl", PUBLIC_ISSUER);

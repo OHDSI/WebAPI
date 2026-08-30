@@ -25,24 +25,26 @@ public class GoogleAuthConfigTest {
   public void googleRedirectUriUsesHttpsWhenForwardedHeadersAreProcessed() throws Exception {
     OAuth2AuthorizationRequest authorizationRequest = resolveAuthorizationRequest(true);
 
+    String expectedRedirectUri = "https://atlas-preview.ohdsi.org/WebAPI/user/oauth/callback/google";
+
     assertNotNull(authorizationRequest);
-    assertEquals(
-        "https://atlas-preview.ohdsi.org/WebAPI/user/oauth/callback/google",
-        authorizationRequest.getRedirectUri());
-    assertTrue(authorizationRequest.getAuthorizationRequestUri().contains(
-        "redirect_uri=https%3A%2F%2Fatlas-preview.ohdsi.org%2FWebAPI%2Fuser%2Foauth%2Fcallback%2Fgoogle"));
+    assertEquals(expectedRedirectUri, authorizationRequest.getRedirectUri());
+    // ":" and "/" are legal in a query value, so the parameter carries the URI
+    // as-is rather than percent-encoded.
+    assertTrue(authorizationRequest.getAuthorizationRequestUri()
+        .contains("redirect_uri=" + expectedRedirectUri));
   }
 
   @Test
   public void googleRedirectUriFallsBackToHttpWhenForwardedHeadersAreIgnored() throws Exception {
     OAuth2AuthorizationRequest authorizationRequest = resolveAuthorizationRequest(false);
 
+    String expectedRedirectUri = "http://atlas-preview.ohdsi.org/WebAPI/user/oauth/callback/google";
+
     assertNotNull(authorizationRequest);
-    assertEquals(
-        "http://atlas-preview.ohdsi.org/WebAPI/user/oauth/callback/google",
-        authorizationRequest.getRedirectUri());
-    assertTrue(authorizationRequest.getAuthorizationRequestUri().contains(
-        "redirect_uri=http%3A%2F%2Fatlas-preview.ohdsi.org%2FWebAPI%2Fuser%2Foauth%2Fcallback%2Fgoogle"));
+    assertEquals(expectedRedirectUri, authorizationRequest.getRedirectUri());
+    assertTrue(authorizationRequest.getAuthorizationRequestUri()
+        .contains("redirect_uri=" + expectedRedirectUri));
   }
 
   private OAuth2AuthorizationRequest resolveAuthorizationRequest(boolean applyForwardedHeaderFilter) throws Exception {
@@ -52,7 +54,11 @@ public class GoogleAuthConfigTest {
     request.setRequestURI("/WebAPI/user/login/google");
     request.setScheme("http");
     request.setServerName("atlas-preview.ohdsi.org");
-    request.setServerPort(8080);
+    // A servlet container derives these from the Host header, so a portless Host
+    // means the default port for the scheme. Naming a different one here would
+    // describe a request no container can produce, and the port would then show
+    // up in the redirect URI.
+    request.setServerPort(80);
     request.setSecure(false);
     request.addHeader("Host", "atlas-preview.ohdsi.org");
     request.addHeader("X-Forwarded-Proto", "https");

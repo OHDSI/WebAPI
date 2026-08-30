@@ -3,6 +3,8 @@ package org.ohdsi.webapi.mvc;
 import org.junit.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -92,5 +94,61 @@ public class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertTrue(response.getBody().message().startsWith("Violation of UNIQUE KEY"));
+    }
+
+    /**
+     * The service layer raises IllegalArgumentException for a generation,
+     * characterization, analysis or preset the caller named but that does not
+     * exist. With no handler for it these reached the generic fallback, which
+     * answers 500 and replaces the message with the class name, so the caller
+     * learned neither what was rejected nor that the fault was theirs
+     * (OHDSI/Atlas3#291).
+     */
+    @Test
+    public void reportsARejectedArgumentAsBadRequestAndKeepsItsReason() {
+        ResponseEntity<GlobalExceptionHandler.ErrorMessage> response =
+                handler.handleIllegalArgument(new IllegalArgumentException("There is no generation with id = 42."));
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("There is no generation with id = 42.", response.getBody().message());
+    }
+
+    @Test
+    public void namesTheExceptionWhenARejectedArgumentCarriesNoReason() {
+        ResponseEntity<GlobalExceptionHandler.ErrorMessage> response =
+                handler.handleIllegalArgument(new IllegalArgumentException());
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().message().contains("java.lang.IllegalArgumentException"));
+    }
+
+    @Test
+    public void unwrapsARejectedArgumentThatArrivesThroughAProxy() {
+        UndeclaredThrowableException wrapped = new UndeclaredThrowableException(
+                new InvocationTargetException(new IllegalArgumentException("Preset analysis with id=7 does not exist")));
+
+        ResponseEntity<GlobalExceptionHandler.ErrorMessage> response = handler.handleUndeclaredThrowable(wrapped);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Preset analysis with id=7 does not exist", response.getBody().message());
+    }
+
+    /**
+     * The wrapper's own class name only says a proxy was involved. Naming the
+     * exception the caller actually hit is the point of the message.
+     */
+    @Test
+    public void namesTheUnderlyingExceptionRatherThanTheProxyWrapper() {
+        UndeclaredThrowableException wrapped = new UndeclaredThrowableException(
+                new InvocationTargetException(new IllegalStateException("boom")));
+
+        ResponseEntity<GlobalExceptionHandler.ErrorMessage> response = handler.handleUndeclaredThrowable(wrapped);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().message().contains("java.lang.IllegalStateException"));
     }
 }

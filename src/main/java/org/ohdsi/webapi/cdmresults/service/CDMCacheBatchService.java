@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -58,7 +58,7 @@ public class CDMCacheBatchService {
             modified.add(processedEntity);
         });
         if (!modified.isEmpty()) {
-          cdmCacheRepository.save(modified);
+          cdmCacheRepository.saveAll(modified);
         }
         return new ArrayList<>( cacheEntities.values());
     }

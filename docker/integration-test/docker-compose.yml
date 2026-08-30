@@ -1,0 +1,160 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: webapi-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ohdsi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - webapi-network
+
+  cdm-db:
+    image: ohdsi/broadsea-atlasdb:2.3.0
+    container_name: cdm-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - webapi-network
+
+  cdm-db-debug:
+    image: ohdsi/broadsea-atlasdb:2.3.0
+    container_name: cdm-db-debug
+    profiles: ["debug"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5433:5432"
+    networks:
+      - webapi-network
+
+  mock-oauth2:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    container_name: mock-oauth2
+    environment:
+      - SERVER_PORT=9090
+      - JSON_CONFIG={"interactiveLogin":true,"httpServer":"NettyWrapper","tokenCallbacks":[{"issuerId":"default","tokenExpiry":3600,"requestMappings":[{"requestParam":"grant_type","match":"*","claims":{"sub":"testuser","email":"testuser@example.com","name":"Test User"}}]}]}
+    ports:
+      - "9090:9090"
+    networks:
+      - webapi-network
+
+  webapi:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: webapi
+    restart: on-failure:3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cdm-db:
+        condition: service_healthy
+      mock-oauth2:
+        condition: service_started
+    environment:
+      - SERVER_SERVLET_CONTEXT_PATH=/WebAPI
+      - SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT=60000
+      - SPRING_DATASOURCE_HIKARI_INITIALIZATIONFAILTIMEOUT=60000
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - DATASOURCE_USERNAME=postgres
+      - DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DATASOURCE_OHDSI_SCHEMA=webapi
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=webapi
+      - SPRING_BATCH_REPOSITORY_TABLEPREFIX=webapi.BATCH_
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SPRING_FLYWAY_USER=postgres
+      - SPRING_FLYWAY_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - SPRING_FLYWAY_SCHEMAS=webapi
+      - SPRING_FLYWAY_PLACEHOLDERS_OHDSISCHEMA=webapi
+      - SECURITY_PROVIDER=AtlasRegularSecurity
+      - SECURITY_AUTH_OIDC_ENABLED=true
+      - SECURITY_AUTH_DB_ENABLED=true
+      - SECURITY_AUTH_LDAP_ENABLED=false
+      - SECURITY_AUTH_AD_ENABLED=false
+      - SECURITY_AUTH_CAS_ENABLED=false
+      - SECURITY_AUTH_WINDOWS_ENABLED=false
+      - SECURITY_AUTH_KERBEROS_ENABLED=false
+      - SECURITY_AUTH_OAUTH_GOOGLE_ENABLED=false
+      - SECURITY_AUTH_OAUTH_FACEBOOK_ENABLED=false
+      - SECURITY_AUTH_OAUTH_GITHUB_ENABLED=false
+      - SECURITY_AUTH_OIDC_CLIENTID=webapi-client
+      - SECURITY_AUTH_OIDC_APISECRET=${OIDC_CLIENT_SECRET:-webapi-secret}
+      - SECURITY_AUTH_OIDC_URL=http://mock-oauth2:9090/default/.well-known/openid-configuration
+      - SECURITY_AUTH_OIDC_EXTERNALURL=http://localhost:9090/default
+      - SECURITY_AUTH_OIDC_LOGOUTURL=http://localhost:9090/default/endsession
+      - SECURITY_AUTH_OIDC_EXTRASCOPES=profile email
+      - SECURITY_AUTH_OAUTH_CALLBACK_UI=http://localhost:18080/WebAPI/#/welcome
+      - SECURITY_AUTH_OAUTH_CALLBACK_URLRESOLVER=query
+      - SECURITY_AUTH_DB_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ohdsi
+      - SECURITY_AUTH_DB_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SECURITY_AUTH_DB_DATASOURCE_USERNAME=postgres
+      - SECURITY_AUTH_DB_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - SECURITY_AUTH_DB_DATASOURCE_SCHEMA=webapi
+      - SECURITY_JWT_SECRET=ci-test-jwt-secret-key-min-32chars!
+      - SECURITY_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:18080
+    ports:
+      - "18080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/WebAPI/info"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+    networks:
+      - webapi-network
+
+  db-setup:
+    image: postgres:15-alpine
+    container_name: db-setup
+    depends_on:
+      webapi:
+        condition: service_healthy
+    volumes:
+      - ./setup-test-data.sql:/setup-test-data.sql:ro
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    command: >
+      psql -h postgres -U postgres -d ohdsi -f /setup-test-data.sql
+    networks:
+      - webapi-network
+
+  newman:
+    image: postman/newman:6-alpine
+    container_name: newman
+    depends_on:
+      webapi:
+        condition: service_healthy
+      db-setup:
+        condition: service_completed_successfully
+    volumes:
+      - ./postman:/etc/newman
+      - ./test-results:/results
+    command:
+      - run
+      - /etc/newman/integration-tests.postman_collection.json
+      - --environment
+      - /etc/newman/integration-test-env.postman_environment.json
+      - --reporters
+      - cli,junit
+      - --reporter-junit-export
+      - /results/integration-test-results.xml
+      - --timeout-request
+      - "60000"
+    networks:
+      - webapi-network
+
+networks:
+  webapi-network:
+    driver: bridge

@@ -16,8 +16,6 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
-import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
@@ -57,7 +55,7 @@ public interface CcService extends HasTags<Long> {
     
     Page<CohortCharacterizationEntity> getPageWithLinkedEntities(Pageable pageable);
 
-    Page<CohortCharacterizationEntity> getPage(Pageable pageable);
+    org.springframework.data.domain.Page<org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO> getPage(org.springframework.data.domain.Pageable pageable);
 
     JobExecutionResource generateCc(Long id, final String sourceKey);
 
@@ -67,16 +65,13 @@ public interface CcService extends HasTags<Long> {
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
-    @DataSourceAccess
-    List<CcTemporalResult> findTemporalResultAsList(@CcGenerationId Long generationId);
+    List<CcTemporalResult> findTemporalResultAsList(Long generationId);
 
     GenerationResults findResult(Long generationId, ExecutionResultRequest params);
     
     List<CcResult> findResultAsList(Long generationId, float thresholdLevel);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
-
-    void hydrateAnalysis(Long analysisId, String packageName, OutputStream out);
 
     void deleteCcGeneration(Long generationId);
 

@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.util;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.dto.AuthMethod;
+import org.ohdsi.webapi.arachne.datasource.dto.DataSourceUnsecuredDTO;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,9 +12,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.*;
 
-import com.odysseusinc.arachne.execution_engine_common.util.BigQueryUtils;
-import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
-import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser;
+import org.ohdsi.webapi.arachne.datasource.util.BigQueryUtils;
+import org.ohdsi.webapi.arachne.datasource.util.ConnectionParams;
+import org.ohdsi.webapi.arachne.datasource.util.ConnectionParamsParser;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +22,8 @@ import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 
-import static com.odysseusinc.arachne.commons.types.DBMSType.BIGQUERY;
-import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
+import static org.ohdsi.webapi.common.DBMSType.BIGQUERY;
+import static org.ohdsi.webapi.common.DBMSType.IMPALA;
 
 public final class DataSourceDTOParser {
 

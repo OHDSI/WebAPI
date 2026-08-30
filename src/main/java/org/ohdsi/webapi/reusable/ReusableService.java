@@ -1,12 +1,17 @@
 package org.ohdsi.webapi.reusable;
 
+import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
-import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.security.authz.AuthorizationCacheService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
+import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -19,44 +24,73 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
-@Service
+@RestController
+@RequestMapping("/reusable")
 @Transactional
 public class ReusableService extends AbstractDaoService implements HasTags<Integer> {
+
+    private final AuthorizationService authorizationService;
     private final ReusableRepository reusableRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
-    private final PermissionService permissionService;
     private final VersionService<ReusableVersion> versionService;
+
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
 
     @Autowired
     public ReusableService(
+            AuthorizationService authorizationService,
             ReusableRepository reusableRepository,
             EntityManager entityManager,
-            ConversionService conversionService,
-            PermissionService permissionService,
+            @Qualifier("conversionService") ConversionService conversionService,
             VersionService<ReusableVersion> versionService) {
+        this.authorizationService = authorizationService;
         this.reusableRepository = reusableRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
-        this.permissionService = permissionService;
         this.versionService = versionService;
     }
 
-    public ReusableDTO create(ReusableDTO dto) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isPermitted('create:reusable')")
+    @CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")    
+    public ReusableDTO create(@RequestBody ReusableDTO dto) {
+        return createInternal(dto);
+    }
+
+    private ReusableDTO createInternal(ReusableDTO dto) {
         Reusable reusable = conversionService.convert(dto, Reusable.class);
         Reusable saved = create(reusable);
         return conversionService.convert(saved, ReusableDTO.class);
@@ -72,11 +106,13 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     public Reusable getById(Integer id) {
-        return reusableRepository.findOne(id);
+        return reusableRepository.findById(id).orElse(null);
     }
 
-    public ReusableDTO getDTOById(Integer id) {
-        Reusable reusable = reusableRepository.findOne(id);
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isAnyPermitted(anyOf('read:reusable','write:reusable')) or hasEntityAccess(#id, REUSABLE, READ)")
+    public ReusableDTO getDTOById(@PathVariable("id") Integer id) {
+        Reusable reusable = reusableRepository.findById(id).orElse(null);
         return conversionService.convert(reusable, ReusableDTO.class);
     }
 
@@ -84,22 +120,48 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return reusableRepository.findAll();
     }
 
-    public Page<ReusableDTO> page(final Pageable pageable) {
-        return reusableRepository.findAll(pageable)
-                .map(reusable -> {
-                    final ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
-                    permissionService.fillWriteAccess(reusable, dto);
-                    return dto;
-                });
+    // Listing is open; the returned page is filtered per-entity here.
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ReusableDTO> page(@Pagination Pageable pageable) {
+        UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+        boolean globalRead = authorizationService.isPermitted("read:reusable");
+        boolean globalWrite = authorizationService.isPermitted("write:reusable");
+        boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
+
+        java.util.function.Function<Reusable, ReusableDTO> toDto = reusable -> {
+            ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
+            EntityGrant grant = authz.reusableAccess.getOrDefault(Long.valueOf(reusable.getId()), EntityGrant.NONE);
+            dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+            dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
+            return dto;
+        };
+
+        if (!needsFiltering) {
+            return reusableRepository.findAll(pageable).map(toDto);
+        }
+        // Per-entity filtering required: load all, keep the readable ones, then re-paginate.
+        List<ReusableDTO> filtered = new ArrayList<>();
+        reusableRepository.findAll().forEach(reusable -> {
+            ReusableDTO dto = toDto.apply(reusable);
+            if (dto.isReadAccess()) {
+                filtered.add(dto);
+            }
+        });
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<ReusableDTO> content = start < filtered.size() ? filtered.subList(start, end) : new ArrayList<>();
+        return new PageImpl<>(content, pageable, filtered.size());
     }
 
-    public ReusableDTO update(Integer id, ReusableDTO entity) {
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public ReusableDTO update(@PathVariable("id") Integer id, @RequestBody ReusableDTO entity) {
         Date currentTime = Calendar.getInstance().getTime();
 
         saveVersion(id);
 
-        Reusable existing = reusableRepository.findOne(id);
-        UserEntity modifier = userRepository.findByLogin(security.getSubject());
+        Reusable existing = reusableRepository.findById(id).orElse(null);
+        UserEntity modifier = userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
 
         existing.setName(entity.getName())
                 .setDescription(entity.getDescription())
@@ -111,48 +173,79 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return conversionService.convert(saved, ReusableDTO.class);
     }
 
-    public ReusableDTO copy(Integer id) {
+    @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("(isOwner(#id, REUSABLE) or isAnyPermitted(anyOf('read:reusable','write:reusable')) or hasEntityAccess(#id, REUSABLE, READ)) and isPermitted('create:reusable')")
+    public ReusableDTO copy(@PathVariable("id") Integer id) {
         ReusableDTO def = getDTOById(id);
         def.setId(null);
         def.setTags(null);
         def.setName(NameUtils.getNameForCopy(def.getName(), this::getNamesLike, reusableRepository.findByName(def.getName())));
 
-        return create(def);
+        return createInternal(def);
     }
 
-    public void assignTag(Integer id, int tagId) {
+    @PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('admin:tags') or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public void assignTag(@PathVariable("id") Integer id, @RequestBody int tagId) {
         Reusable entity = getById(id);
         assignTag(entity, tagId);
     }
 
-    public void unassignTag(Integer id, int tagId) {
+    @DeleteMapping(value = "/{id}/tag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('admin:tags') or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public void unassignTag(@PathVariable("id") Integer id, @PathVariable("tagId") int tagId) {
         Reusable entity = getById(id);
         unassignTag(entity, tagId);
     }
 
-    public void delete(Integer id) {
-        Reusable existing = reusableRepository.findOne(id);
-
-        checkOwnerOrAdminOrModerator(existing.getCreatedBy());
-
-        reusableRepository.delete(id);
+    @PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("""
+            (isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE))
+            and isPermitted('admin:tags')
+    """)
+    public void assignPermissionProtectedTag(@PathVariable("id") int id, @RequestBody int tagId) {
+        Reusable entity = getById(id);
+        assignTag(entity, tagId);
     }
 
-    public List<VersionDTO> getVersions(long id) {
+    @DeleteMapping(value = "/{id}/protectedtag/{tagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("""
+            (isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE))
+            and isPermitted('admin:tags')
+    """)
+    public void unassignPermissionProtectedTag(@PathVariable("id") int id, @PathVariable("tagId") int tagId) {
+        Reusable entity = getById(id);
+        unassignTag(entity, tagId);
+    }
+
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")    
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public void delete(@PathVariable("id") Integer id) {
+        reusableRepository.deleteById(id);
+    }
+
+    @GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('read:reusable') or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, READ)")
+    public List<VersionDTO> getVersions(@PathVariable("id") long id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.REUSABLE, id);
         return versions.stream()
                 .map(v -> conversionService.convert(v, VersionDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public ReusableVersionFullDTO getVersion(int id, int version) {
-        checkVersion(id, version, false);
+    @GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('read:reusable') or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, READ)")
+    public ReusableVersionFullDTO getVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
+        checkVersion(id, version);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
 
         return conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
     }
 
-    public VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO) {
+    @PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public VersionDTO updateVersion(@PathVariable("id") int id, @PathVariable("version") int version, @RequestBody VersionUpdateDTO updateDTO) {
         checkVersion(id, version);
         updateDTO.setAssetId(id);
         updateDTO.setVersion(version);
@@ -161,13 +254,18 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return conversionService.convert(updated, VersionDTO.class);
     }
 
-    public void deleteVersion(int id, int version) {
+    @DeleteMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public void deleteVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
         checkVersion(id, version);
         versionService.delete(VersionType.REUSABLE, id, version);
     }
 
-    public ReusableDTO copyAssetFromVersion(int id, int version) {
-        checkVersion(id, version, false);
+    @PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+    @PreAuthorize("isOwner(#id, REUSABLE) or isPermitted('write:reusable') or hasEntityAccess(#id, REUSABLE, WRITE)")
+    public ReusableDTO copyAssetFromVersion(@PathVariable("id") int id, @PathVariable("version") int version) {
+        checkVersion(id, version);
         ReusableVersion reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ReusableVersionFullDTO fullDTO = conversionService.convert(reusableVersion, ReusableVersionFullDTO.class);
         ReusableDTO dto = conversionService.convert(fullDTO.getEntityDTO(), ReusableDTO.class);
@@ -175,10 +273,15 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         dto.setTags(null);
         dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
                 reusableRepository.findByName(dto.getName())));
-        return create(dto);
+        return createInternal(dto);
     }
 
-    public List<ReusableDTO> listByTags(TagNameListRequestDTO requestDTO) {
+    @PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:reusable','write:reusable'))")
+    public List<ReusableDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
         List<String> names = requestDTO.getNames().stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toList());
@@ -187,22 +290,13 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     private void checkVersion(int id, int version) {
-        checkVersion(id, version, true);
-    }
-
-    private void checkVersion(int id, int version, boolean checkOwnerShip) {
         Version reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(reusableVersion,
                 String.format("There is no reusable version with id = %d.", version));
-
-        Reusable entity = this.reusableRepository.findOne(id);
-        if (checkOwnerShip) {
-            checkOwnerOrAdminOrGranted(entity);
-        }
     }
 
     public ReusableVersion saveVersion(int id) {
-        Reusable def = this.reusableRepository.findOne(id);
+        Reusable def = this.reusableRepository.findById(id).orElse(null);
         ReusableVersion version = conversionService.convert(def, ReusableVersion.class);
 
         UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
@@ -215,10 +309,12 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private Reusable save(Reusable reusable) {
         reusable = reusableRepository.saveAndFlush(reusable);
         entityManager.refresh(reusable);
-        return reusableRepository.findOne(reusable.getId());
+        return reusableRepository.findById(reusable.getId()).orElse(null);
     }
 
-    public boolean exists(final int id, final String name) {
+    @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, REUSABLE) or isAnyPermitted(anyOf('read:reusable','write:reusable')) or hasEntityAccess(#id, REUSABLE, READ)")
+    public boolean exists(@PathVariable("id") int id, @RequestParam(value = "name", required = false) String name) {
         return reusableRepository.existsCount(id, name) > 0;
     }
 

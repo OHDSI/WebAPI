@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.ircalc;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.springframework.batch.core.BatchStatus;
@@ -13,6 +11,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class IRAnalysisInfoListener implements JobExecutionListener {
 
     private static final int MAX_MESSAGE_LENGTH = 2000;
-    private static final EntityGraph IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
+    private static final EntityGraph IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH = NamedEntityGraph.loading("IncidenceRateAnalysis.withExecutionInfoList");
 
     private final TransactionTemplate transactionTemplate;
     private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;

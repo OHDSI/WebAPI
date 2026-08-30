@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.report;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 
 import java.util.Objects;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
@@ -32,8 +32,8 @@ public class ComparativeDistributionItem extends ComparativeItem {
 
 		private static final CcDistributionStat EMPTY_ITEM;
 		
-    public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinition firstCohortDef,
-                                       CohortDefinition secondCohortDef) {
+    public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinitionEntity firstCohortDef,
+                                       CohortDefinitionEntity secondCohortDef) {
         super(firstItem, secondItem, firstCohortDef, secondCohortDef);
 
         DistributionItem item = Objects.nonNull(firstItem) ? firstItem : secondItem;

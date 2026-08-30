@@ -3,7 +3,7 @@ package org.ohdsi.webapi.feanalysis.domain;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;

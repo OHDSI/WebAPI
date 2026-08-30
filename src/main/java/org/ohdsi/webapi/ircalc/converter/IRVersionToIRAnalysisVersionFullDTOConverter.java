@@ -8,9 +8,9 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.ircalc.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
-import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.IRVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -18,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.ws.rs.InternalServerErrorException;
 
 @Component
 public class IRVersionToIRAnalysisVersionFullDTOConverter
@@ -37,7 +35,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
 
     @Override
     public IRVersionFullDTO convert(IRVersion source) {
-        IncidenceRateAnalysis def = this.analysisRepository.findOne(source.getAssetId().intValue());
+        IncidenceRateAnalysis def = this.analysisRepository.findById(source.getAssetId().intValue()).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no incidence rate analysis with id = %d.", source.getAssetId()));
 
@@ -64,7 +62,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
             }
         } catch (JsonProcessingException e) {
             log.error("Error converting expression to object", e);
-            throw new InternalServerErrorException();
+            throw new RuntimeException(e);
         }
         details.setExpression(source.getAssetJson());
 

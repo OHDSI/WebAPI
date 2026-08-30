@@ -7,8 +7,14 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.ohdsi.webapi.security.identity.WebApiPrincipal;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +38,30 @@ import static org.junit.Assert.fail;
 @TestPropertySource(locations = "/application-test.properties")
 public abstract class AbstractDatabaseTest {
 
+  @Value("${datasource.ohdsi.schema:public}")
+  protected String ohdsiSchema;
+
+  @org.junit.Before
+  public void setUpSecurityContext() {
+    // Set up anonymous principal so @PreAuthorize checks can evaluate
+    TestingAuthenticationToken auth = new TestingAuthenticationToken(
+        WebApiPrincipal.ANONYMOUS, null, "ROLE_ANONYMOUS");
+    auth.setAuthenticated(true);
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    // Ensure anonymous user has admin role for test permissions
+    // (idempotent — ON CONFLICT does nothing if already assigned)
+    jdbcTemplate.execute(
+        "INSERT INTO " + ohdsiSchema + ".sec_user_role (id, user_id, role_id, origin) " +
+        "SELECT nextval('" + ohdsiSchema + ".sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+        "WHERE NOT EXISTS (SELECT 1 FROM " + ohdsiSchema + ".sec_user_role WHERE user_id = -1 AND role_id = 2)");
+  }
+
+  @org.junit.After
+  public void clearSecurityContext() {
+    SecurityContextHolder.clearContext();
+  }
+
   static class JdbcTemplateTestWrapper extends ExternalResource {
 
     @Override
@@ -40,8 +70,9 @@ public abstract class AbstractDatabaseTest {
       try {
         // note for future reference: should probably either define a TestContext DataSource with these params
         // or make it so this proparty is only set once (during database initialization) since the below will run for each test class (but only be effective once)
-        System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
-        System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
+        String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
+        System.setProperty("datasource.url", jdbcUrl);
+        System.setProperty("spring.flyway.url", jdbcUrl);
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -77,6 +108,17 @@ public abstract class AbstractDatabaseTest {
   protected static PostgresSingletonRule pg;
 
   protected static JdbcTemplate jdbcTemplate;
+
+  @DynamicPropertySource
+  public static void configureTestDatabase(DynamicPropertyRegistry registry) {
+    try {
+      String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
+      registry.add("datasource.url", () -> jdbcUrl);
+      registry.add("spring.flyway.url", () -> jdbcUrl);
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to configure test database URL", ex);
+    }
+  }
 
   protected static DataSource getDataSource() {
     return pg.getEmbeddedPostgres().getPostgresDatabase();

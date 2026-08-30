@@ -5,16 +5,22 @@ import static org.springframework.test.context.TestExecutionListeners.MergeMode.
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
+import com.github.springtestdbunit.bean.DatabaseConfigBean;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.springtestdbunit.bean.DatabaseDataSourceConnectionFactoryBean;
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import org.flywaydb.core.Flyway;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -24,8 +30,10 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -37,8 +45,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-
-import javax.sql.DataSource;
+import org.ohdsi.webapi.security.authc.JwtService;
+import org.ohdsi.webapi.security.session.SessionService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {WebApi.class, WebApiIT.DbUnitConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -51,6 +59,24 @@ public abstract class WebApiIT {
     protected final String SOURCE_KEY = "Embedded_PG";
     protected static final String CDM_SCHEMA_NAME = "cdm";
     protected static final String RESULT_SCHEMA_NAME = "results";
+
+    @Value("${datasource.ohdsi.schema:public}")
+    private String ohdsiSchema;
+
+    @Value("${spring.flyway.locations:classpath:db/migration/postgresql}")
+    private String flywayLocations;
+
+    @Value("${spring.flyway.table:schema_version}")
+    private String flywayTable;
+
+    @Value("${spring.flyway.baseline-on-migrate:true}")
+    private boolean flywayBaselineOnMigrate;
+
+    @Value("${spring.flyway.out-of-order:true}")
+    private boolean flywayOutOfOrder;
+
+    private static final AtomicBoolean OHDSI_SCHEMA_INITIALIZED = new AtomicBoolean(false);
+    private static final Object OHDSI_SCHEMA_LOCK = new Object();
 
     private static final Collection<String> CDM_DDL_FILE_PATHS = Arrays.asList("/cdm-postgresql-ddl.sql");
     private static final Collection<String> RESULTS_DDL_FILE_PATHS = Arrays.asList(
@@ -74,13 +100,29 @@ public abstract class WebApiIT {
 
 		@TestConfiguration
 		public static class DbUnitConfiguration {
-			@Bean
-			DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection(DataSource primaryDataSource) {
-				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(primaryDataSource);
-				dbUnitDatabaseConnection.setSchema("public");
+            @Bean
+            DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection(DatabaseConfigBean dbUnitDatabaseConfig,
+                                                                             @Value("${datasource.ohdsi.schema:public}") String ohdsiSchema) {
+				// Use the embedded PostgreSQL datasource from ITStarter
+				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(ITStarter.getDataSource());
+                dbUnitDatabaseConnection.setSchema(ohdsiSchema);
+                dbUnitDatabaseConnection.setDatabaseConfig(dbUnitDatabaseConfig);
 				return dbUnitDatabaseConnection;
 			}
+
+            @Bean
+            DatabaseConfigBean dbUnitDatabaseConfig() {
+                DatabaseConfigBean config = new DatabaseConfigBean();
+                config.setDatatypeFactory(new PostgresqlDataTypeFactory());
+                return config;
+            }
 		}
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private SessionService sessionService;
 
     @Value("${baseUri}")
     private String baseUri;
@@ -94,6 +136,39 @@ public abstract class WebApiIT {
         TomcatURLStreamHandlerFactory.disable();
         ITStarter.before();
         jdbcTemplate = new JdbcTemplate(ITStarter.getDataSource());
+    }
+
+    @Before
+    public void setUpAuthentication() {
+        // Ensure anonymous user has admin role for test permissions
+        jdbcTemplate.execute(
+            "INSERT INTO " + ohdsiSchema + ".sec_user_role (id, user_id, role_id, origin) " +
+            "SELECT nextval('" + ohdsiSchema + ".sec_user_role_sequence'), -1, 2, 'SYSTEM' " +
+            "WHERE NOT EXISTS (SELECT 1 FROM " + ohdsiSchema + ".sec_user_role WHERE user_id = -1 AND role_id = 2)");
+
+        // Generate a JWT for the anonymous user so HTTP requests are authenticated
+        java.util.UUID sessionId = sessionService.createSession("anonymous");
+        java.time.Instant expiresAt = java.time.Instant.now().plusSeconds(3600);
+        String jwt = jwtService.generateToken("anonymous", sessionId.toString(), java.util.Date.from(expiresAt));
+        restTemplate.getRestTemplate().getInterceptors().clear();
+        restTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().set("Authorization", "Bearer " + jwt);
+            return execution.execute(request, body);
+        });
+    }
+
+    @Before
+    public void ensureOhdsiSchemaInitialized() {
+        if (OHDSI_SCHEMA_INITIALIZED.get()) {
+            return;
+        }
+        synchronized (OHDSI_SCHEMA_LOCK) {
+            if (OHDSI_SCHEMA_INITIALIZED.get()) {
+                return;
+            }
+            initializeOhdsiSchemaIfNeeded();
+            OHDSI_SCHEMA_INITIALIZED.set(true);
+        }
     }
 
     @AfterClass
@@ -124,11 +199,22 @@ public abstract class WebApiIT {
         }
     }
 
-    protected void truncateTable(final String tableName) {
-        jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE",tableName));
+    protected String getOhdsiSchema() {
+        return ohdsiSchema;
     }
+
+    protected String qualifyOhdsiTable(String tableName) {
+        return String.format("%s.%s", ohdsiSchema, tableName);
+    }
+
+    protected void truncateTable(final String tableName) {
+        String qualifiedName = tableName.contains(".") ? tableName : String.format("%s.%s", ohdsiSchema, tableName);
+        jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE", qualifiedName));
+    }
+
     protected void resetSequence(final String sequenceName) {
-        jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", sequenceName));
+        String qualifiedName = sequenceName.contains(".") ? sequenceName : String.format("%s.%s", ohdsiSchema, sequenceName);
+        jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", qualifiedName));
     }
 
     protected Source getCdmSource() throws SQLException {
@@ -181,5 +267,41 @@ public abstract class WebApiIT {
         String resultSql = SqlRender.renderSql(ddl.toString(), new String[]{schemaToken}, new String[]{schemaName});
         String ddlSql = SqlTranslate.translateSql(resultSql, DBMSType.POSTGRESQL.getOhdsiDB());
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(ddlSql));
+    }
+
+    private void initializeOhdsiSchemaIfNeeded() {
+        if (tableExists(ohdsiSchema, "source")) {
+            return;
+        }
+        runFlywayMigrationsWithPrefix("B");
+        runFlywayMigrationsWithPrefix("V");
+    }
+
+    private void runFlywayMigrationsWithPrefix(String migrationPrefix) {
+        Map<String, String> placeholders = Collections.singletonMap("ohdsiSchema", ohdsiSchema);
+        Flyway.configure()
+                .dataSource(ITStarter.getDataSource())
+                .locations(resolveFlywayLocations())
+                .schemas(ohdsiSchema)
+                .table(flywayTable)
+                .baselineOnMigrate(flywayBaselineOnMigrate)
+                .outOfOrder(flywayOutOfOrder)
+                .placeholders(placeholders)
+                .sqlMigrationPrefix(migrationPrefix)
+                .load()
+                .migrate();
+    }
+
+    private String[] resolveFlywayLocations() {
+        return Arrays.stream(flywayLocations.split(","))
+                .map(String::trim)
+                .filter(location -> !location.isEmpty())
+                .toArray(String[]::new);
+    }
+
+    private boolean tableExists(String schema, String tableName) {
+        String sql = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = ? AND table_name = ?)";
+        Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, schema, tableName);
+        return Boolean.TRUE.equals(exists);
     }
 }

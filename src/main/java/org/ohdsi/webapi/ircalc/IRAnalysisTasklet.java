@@ -16,8 +16,6 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
@@ -72,7 +70,7 @@ public class IRAnalysisTasklet extends CancelableTasklet {
     Integer analysisId = Integer.valueOf(jobParams.get(ANALYSIS_ID).toString());
     String sessionId = jobParams.get(SESSION_ID).toString();
     try {
-      IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
+      IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findById(analysisId).orElseThrow();
       IncidenceRateAnalysisExpression expression = objectMapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
@@ -100,7 +98,6 @@ public class IRAnalysisTasklet extends CancelableTasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      
 
       String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);

@@ -9,8 +9,6 @@ public interface Constants {
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String GENERATE_IR_ANALYSIS = "irAnalysis";
-  String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
-  String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
   String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
@@ -24,23 +22,21 @@ public interface Constants {
   Float DEFAULT_THRESHOLD = 0.01f;
 
   ImmutableList<String> ALLOWED_JOB_EXECUTION_PARAMETERS = ImmutableList.of(
-          "jobName",
-          "jobAuthor",
-          "cohort_definition_id",
+          Params.JOB_NAME,
+          Params.JOB_AUTHOR,
+          Params.COHORT_DEFINITION_ID,
           "cohortId",
           "cohortDefinitionIds",
-          "source_id",
-          "source_key",
+          Params.SOURCE_ID,
+          Params.SOURCE_KEY,
           "scriptType",
-          "analysis_id",
+          Params.ANALYSIS_ID,
           "concept_set_id",
-          "cohort_characterization_id",
-          "pathway_analysis_id",
-          "estimation_analysis_id",
-          "prediction_analysis_id"
+          Params.PATHWAY_ANALYSIS_ID,
+          Params.COHORT_CHARACTERIZATION_ID
   );
 
-  String SESSION_ID = "Session-ID";
+  String SESSION_ID = "sid";
 
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
@@ -55,9 +51,6 @@ public interface Constants {
     String COHORT_DEFINITION_ID = "cohort_definition_id";
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
-    String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
-    String PREDICTION_SKELETON_VERSION = "v0.0.1";
-    String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
     String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
     String SOURCE_KEY = "source_key";
@@ -116,10 +109,5 @@ public interface Constants {
     String COHORT_INCLUSION_STATS_CACHE = "cohort_inclusion_stats_cache";
     String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
     String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats_cache";
-  }
-
-  interface CallbackUrlResolvers {
-    String QUERY = "query";
-    String PATH = "path";
   }
 }

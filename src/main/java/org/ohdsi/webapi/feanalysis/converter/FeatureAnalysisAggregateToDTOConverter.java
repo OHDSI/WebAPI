@@ -1,8 +1,9 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import com.odysseusinc.arachne.commons.converter.BaseConvertionServiceAwareConverter;
+
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.webapi.arachne.commons.converter.BaseConvertionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.springframework.stereotype.Component;

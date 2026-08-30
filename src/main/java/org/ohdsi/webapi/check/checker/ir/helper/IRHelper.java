@@ -4,7 +4,7 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
-import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.ircalc.dto.IRAnalysisDTO;
 
 import java.util.function.Function;
 

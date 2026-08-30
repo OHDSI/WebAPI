@@ -6,11 +6,11 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.exception.ConversionAtlasException;
-import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
 
     @Override
     public CcVersionFullDTO convert(CharacterizationVersion source) {
-        CohortCharacterizationEntity def = ccRepository.findOne(source.getAssetId());
+        CohortCharacterizationEntity def = ccRepository.findById(source.getAssetId()).orElseThrow();
         CohortCharacterizationImpl characterizationImpl =
                 Utils.deserialize(source.getAssetJson(), CohortCharacterizationImpl.class);
         CohortCharacterizationEntity entity = conversionService.convert(characterizationImpl, CohortCharacterizationEntity.class);
@@ -46,7 +46,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
         List<Integer> ids = characterizationImpl.getCohorts().stream()
                 .map(CohortMetadataDTO::getId)
                 .collect(Collectors.toList());
-        List<CohortDefinition> cohorts = cohortService.getCohorts(ids);
+        List<CohortDefinitionEntity> cohorts = cohortService.getCohorts(ids);
         if (cohorts.size() != ids.size()) {
             throw new ConversionAtlasException("Could not load version because it contains deleted cohorts");
         }

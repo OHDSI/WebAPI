@@ -99,6 +99,12 @@ public class AchillesCacheAspect {
     private Map<String, String> getParams(JoinPoint joinPoint) {
         String[] names = ((MethodSignature) joinPoint.getSignature()).getParameterNames();
         Object[] objects = joinPoint.getArgs();
+        
+        // Handle case when parameter names are not available (null)
+        if (names == null || objects == null || names.length == 0) {
+            return Map.of();
+        }
+        
         return IntStream.range(0, names.length)
                 .boxed()
                 .collect(Collectors.toMap(i -> names[i],

@@ -1,10 +1,11 @@
 package org.ohdsi.webapi;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
-import com.odysseusinc.datasourcemanager.encryption.EncryptorUtils;
-import com.odysseusinc.datasourcemanager.encryption.NotEncrypted;
+import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
+import org.ohdsi.webapi.arachne.encryption.NotEncrypted;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
-import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.orm.hibernate5.SpringBeanContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,19 +13,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes;
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypesScanner;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -35,6 +42,7 @@ import java.util.Properties;
  *
  */
 @Configuration
+@Lazy(false)
 @EnableTransactionManagement
 @EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
 public class DataAccessConfig {
@@ -48,17 +56,24 @@ public class DataAccessConfig {
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
-        properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
-        properties.setProperty("hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
-        properties.setProperty("hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
-        properties.setProperty("hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));
+        // Only set optional Hibernate properties when present to avoid null values
+        putIfPresent(properties, "hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        putIfPresent(properties, "hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        putIfPresent(properties, "hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
+        putIfPresent(properties, "hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
+        putIfPresent(properties, "hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));
         properties.setProperty("hibernate.id.new_generator_mappings", "true");
         return properties;
     }
+
+    private static void putIfPresent(Properties target, String key, String value) {
+        if (value != null) {
+            target.setProperty(key, value);
+        }
+    }
       
-    @Bean
-		@DependsOn("defaultStringEncryptor")
+    @Bean({"primaryDataSource", "dataSource"})
+	@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
         logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
@@ -66,20 +81,22 @@ public class DataAccessConfig {
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
-        boolean autoCommit = false;
 
-				//pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
-        //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
-        /*final PoolConfiguration pc = new org.apache.tomcat.jdbc.pool.PoolProperties();
-     pc.setDriverClassName(driver);
-     pc.setUrl(url);
-     pc.setUsername(user);
-     pc.setPassword(pass);
-     pc.setDefaultAutoCommit(autoCommit);*/
-        //non-pooling
-        DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
-        ds.setDriverClassName(driver);
-        //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
+        // Use HikariCP for connection pooling
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setDriverClassName(driver);
+        hikariConfig.setJdbcUrl(url);
+        hikariConfig.setUsername(user);
+        hikariConfig.setPassword(pass);
+        
+        // Apply Hikari configuration from properties
+        hikariConfig.setMaximumPoolSize(env.getProperty("spring.datasource.hikari.maximum-pool-size", Integer.class, 10));
+        hikariConfig.setMinimumIdle(env.getProperty("spring.datasource.hikari.minimum-idle", Integer.class, 0));
+        hikariConfig.setConnectionTimeout(env.getProperty("spring.datasource.hikari.connection-timeout", Long.class, 30000L));
+        hikariConfig.setConnectionTestQuery(env.getProperty("spring.datasource.hikari.connection-test-query", "SELECT 1"));
+        hikariConfig.setAutoCommit(false);
+        
+        HikariDataSource ds = new HikariDataSource(hikariConfig);
 
         String[] supportedDrivers;
         supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver", "net.snowflake.client.jdbc.SnowflakeDriver", "com.databricks.client.jdbc.Driver", "com.intersystems.jdbc.IRISDriver"};
@@ -109,7 +126,6 @@ public class DataAccessConfig {
         }
 
         return ds;
-        //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }
 
     @Bean
@@ -119,15 +135,18 @@ public class DataAccessConfig {
                 EncryptorUtils.buildStringEncryptor(env) :
                 new NotEncrypted();
 
-        HibernatePBEEncryptorRegistry
-                .getInstance()
-                .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
-
         return stringEncryptor;
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
+    public PersistenceManagedTypes persistenceManagedTypes(ResourceLoader resourceLoader) {
+        return new PersistenceManagedTypesScanner(resourceLoader).scan("org.ohdsi.webapi");
+    }
+
+    @Bean
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource,
+            ConfigurableListableBeanFactory beanFactory,
+            PersistenceManagedTypes persistenceManagedTypes) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -137,15 +156,26 @@ public class DataAccessConfig {
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setJpaProperties(getJPAProperties());
-        factory.setPackagesToScan("org.ohdsi.webapi");
+
+        Properties props = getJPAProperties();
+        // Spring/Hibernate integration: register SpringBeanContainer so that Hibernate
+        // resolves @Converter and other managed beans from the Spring ApplicationContext
+        // instead of instantiating them via reflection. This allows @Autowired injection
+        // to work on EncryptedStringConverter (and any other JPA AttributeConverters),
+        // which is how the Jasypt PBEStringEncryptor gets wired into the converter.
+        // Without this, Hibernate calls new EncryptedStringConverter() directly and the
+        // encryptor field remains null.
+        props.put(org.hibernate.cfg.AvailableSettings.BEAN_CONTAINER, new SpringBeanContainer(beanFactory));
+        factory.setJpaProperties(props);
+
+        factory.setManagedTypes(persistenceManagedTypes);
         factory.setDataSource(dataSource);
         factory.afterPropertiesSet();
 
         return factory.getObject();
     }
 
-    @Bean
+    @Bean({"jpaTransactionManager", "transactionManager"})
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
     public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {

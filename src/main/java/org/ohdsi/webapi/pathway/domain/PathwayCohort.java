@@ -1,16 +1,17 @@
 package org.ohdsi.webapi.pathway.domain;
 
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import jakarta.persistence.Id;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class PathwayCohort {
@@ -32,7 +33,7 @@ public abstract class PathwayCohort {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_definition_id")
-    protected CohortDefinition cohortDefinition;
+    protected CohortDefinitionEntity cohortDefinition;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pathway_analysis_id")
@@ -79,12 +80,12 @@ public abstract class PathwayCohort {
         this.name = name;
     }
 
-    public CohortDefinition getCohortDefinition() {
+    public CohortDefinitionEntity getCohortDefinition() {
 
         return cohortDefinition;
     }
 
-    public void setCohortDefinition(CohortDefinition cohortDefinition) {
+    public void setCohortDefinition(CohortDefinitionEntity cohortDefinition) {
 
         this.cohortDefinition = cohortDefinition;
     }

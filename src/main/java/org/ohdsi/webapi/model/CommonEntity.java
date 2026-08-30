@@ -1,11 +1,11 @@
 package org.ohdsi.webapi.model;
 
 import org.ohdsi.analysis.WithId;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @MappedSuperclass
 public abstract class CommonEntity<T extends Number> implements Serializable, WithId<T> {

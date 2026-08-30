@@ -1,0 +1,3 @@
+claim,role_name,description
+"CN=Analysts,OU=Groups,DC=corp,DC=local",Analyst,LDAP Analysts group
+"CN=DataSteward,OU=Groups,DC=corp,DC=local",DataSteward,LDAP DataSteward group

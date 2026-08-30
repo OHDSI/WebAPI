@@ -7,7 +7,6 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.PathwayVersion;
@@ -29,7 +28,7 @@ public interface PathwayService extends HasTags<Integer> {
     
     String getNameWithSuffix(String dtoName);
 
-    Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
+    Page<org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO> getPage(final Pageable pageable);
 
     int getCountPAWithSameName(Integer id, String name);
 
@@ -55,7 +54,7 @@ public interface PathwayService extends HasTags<Integer> {
 
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
 
-    String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id);
+    String findDesignByGenerationId(final Long id);
 
     List<VersionDTO> getVersions(long id);
 

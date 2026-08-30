@@ -142,6 +142,46 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle rejected arguments.
+     *
+     * <p>The service layer uses {@link IllegalArgumentException} for conditions
+     * the caller caused and can act on: a generation, characterization, analysis
+     * or preset that does not exist. Without a handler these reached the generic
+     * fallback, which reports 500 and replaces the message with the exception's
+     * class name, so a request naming a missing generation came back as
+     * {@code {"message":"An exception occurred: java.lang.IllegalArgumentException"}}
+     * and the caller could not tell what had been rejected, or that the fault was
+     * theirs. Reported in OHDSI/Atlas3#291.
+     *
+     * <p>These messages are written by this codebase for exactly this purpose, so
+     * they are passed through. Everything the service layer does not raise
+     * deliberately still ends up at the generic handler and is still sanitised.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorMessage> handleIllegalArgument(IllegalArgumentException ex) {
+        logException(ex);
+        return badRequest(ex);
+    }
+
+    private static ResponseEntity<ErrorMessage> badRequest(Throwable ex) {
+        RuntimeException sanitizedException = new RuntimeException(describeRejection(ex));
+        sanitizedException.setStackTrace(new StackTraceElement[0]);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(sanitizedException));
+    }
+
+    /**
+     * An argument rejection is only worth reporting if it says what was rejected.
+     * A message-less exception would otherwise produce a null body, which tells
+     * the caller even less than the class name did.
+     */
+    private static String describeRejection(Throwable ex) {
+        String message = ex.getMessage();
+        return message != null && !message.trim().isEmpty()
+                ? message
+                : "Request rejected: " + ex.getClass().getName();
+    }
+
+    /**
      * Handle concept not installed exceptions
      */
     @ExceptionHandler(ConceptRecommendedNotInstalledException.class)
@@ -174,9 +214,14 @@ public class GlobalExceptionHandler {
                 status = HttpStatus.BAD_REQUEST;
                 // New exception must be created or direct self-reference exception will be thrown
                 responseException = new RuntimeException(throwable.getMessage());
+            } else if (throwable instanceof IllegalArgumentException) {
+                status = HttpStatus.BAD_REQUEST;
+                responseException = new RuntimeException(describeRejection(throwable));
             } else {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
-                responseException = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+                // The wrapper's own class name says only that a proxy was involved,
+                // which is never the exception the caller needs named.
+                responseException = new RuntimeException("An exception occurred: " + throwable.getClass().getName());
             }
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;

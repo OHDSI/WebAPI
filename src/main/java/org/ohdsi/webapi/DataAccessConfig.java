@@ -3,6 +3,7 @@ package org.ohdsi.webapi;
 import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
 import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
 import org.ohdsi.webapi.arachne.encryption.NotEncrypted;
+import org.ohdsi.webapi.source.EncryptedStringConverter;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.orm.hibernate5.SpringBeanContainer;
@@ -134,6 +135,7 @@ public class DataAccessConfig {
         PBEStringEncryptor stringEncryptor = encryptorEnabled ?
                 EncryptorUtils.buildStringEncryptor(env) :
                 new NotEncrypted();
+        EncryptedStringConverter.setDefaultEncryptor(stringEncryptor);
 
         return stringEncryptor;
     }

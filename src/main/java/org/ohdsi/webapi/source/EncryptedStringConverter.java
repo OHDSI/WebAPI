@@ -15,20 +15,27 @@ import org.springframework.stereotype.Component;
  *
  * Spring/Hibernate integration note:
  * By default, Hibernate instantiates @Converter classes via reflection (newInstance()),
- * bypassing Spring dependency injection entirely. To solve this, DataAccessConfig registers
- * a SpringBeanContainer via the "hibernate.resource.beans.container" property on the
- * EntityManagerFactory. This tells Hibernate to resolve managed beans (including this
- * converter) from the Spring ApplicationContext, so @Autowired injection works naturally.
+ * bypassing Spring dependency injection entirely. DataAccessConfig registers a
+ * SpringBeanContainer so Hibernate resolves the converter from the ApplicationContext, but
+ * that is not guaranteed to run @Autowired either: in the GraalVM native image the setter
+ * is never invoked and the encryptor stayed null, so encrypted ENC(...) credentials were
+ * handed to the JDBC driver as-is. The encryptor is therefore held statically and set
+ * directly by the defaultStringEncryptor bean, so every instance sees it however it was
+ * created. A missing encryptor fails loudly instead of silently skipping encryption.
  */
 @Component
 @Converter
 public class EncryptedStringConverter implements AttributeConverter<String, String> {
 
-    private PBEStringEncryptor encryptor;
+    private static volatile PBEStringEncryptor encryptor;
+
+    public static void setDefaultEncryptor(PBEStringEncryptor defaultStringEncryptor) {
+        encryptor = defaultStringEncryptor;
+    }
 
     @Autowired
     public void setEncryptor(PBEStringEncryptor defaultStringEncryptor) {
-        this.encryptor = defaultStringEncryptor;
+        setDefaultEncryptor(defaultStringEncryptor);
     }
 
     @Override
@@ -36,7 +43,7 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
         if (attribute == null) {
             return null;
         }
-        return EncryptorUtils.encrypt(encryptor, attribute);
+        return EncryptorUtils.encrypt(requireEncryptor(), attribute);
     }
 
     @Override
@@ -44,6 +51,14 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
         if (dbData == null) {
             return null;
         }
-        return EncryptorUtils.decrypt(encryptor, dbData);
+        return EncryptorUtils.decrypt(requireEncryptor(), dbData);
+    }
+
+    private static PBEStringEncryptor requireEncryptor() {
+        PBEStringEncryptor current = encryptor;
+        if (current == null) {
+            throw new IllegalStateException("EncryptedStringConverter has no encryptor: the defaultStringEncryptor bean has not been created");
+        }
+        return current;
     }
 }

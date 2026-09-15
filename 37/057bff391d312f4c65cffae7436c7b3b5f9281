@@ -1,0 +1,56 @@
+src/main/java/org/ohdsi/webapi/ircalc/IRAnalysisInfoListener.java
+  s_ed4bebc613d84a::t_36366b997c4389 6,25
+src/main/java/org/ohdsi/webapi/service/JobService.java
+  s_ed4bebc613d84a::t_1314950fa6b637 9
+src/main/java/org/ohdsi/webapi/job/JdbcSearchableJobInstanceDao.java
+  s_ed4bebc613d84a::t_78e20947464a45 1-58
+src/main/java/org/ohdsi/webapi/JobConfig.java
+  s_ed4bebc613d84a::t_0816f0fab7c8a4 10-11,13-14
+src/main/java/org/ohdsi/webapi/security/SSOController.java
+  s_ed4bebc613d84a::t_b1dbf0691d9442 91
+src/main/java/org/ohdsi/webapi/estimation/EstimationServiceImpl.java
+  s_ed4bebc613d84a::t_36366b997c4389 90
+src/main/java/org/ohdsi/webapi/util/EntityUtils.java
+  s_ed4bebc613d84a::t_4e9de9d21d2f7f 3,5-7,9-15,21,24-30
+src/main/java/org/ohdsi/webapi/job/JdbcSearchableJobExecutionDao.java
+  s_ed4bebc613d84a::t_06a5243eeafbd2 1-250
+src/main/java/org/ohdsi/webapi/generationcache/GenerationCacheServiceImpl.java
+  s_ed4bebc613d84a::t_36366b997c4389 5,46,92
+src/main/java/org/ohdsi/webapi/user/importer/service/UserImportJobServiceImpl.java
+  s_ed4bebc613d84a::t_36366b997c4389 17,50
+src/main/java/org/ohdsi/webapi/job/SearchableJobExecutionDao.java
+  s_ed4bebc613d84a::t_e62c8db8a02d85 1-72
+src/main/java/org/ohdsi/webapi/security/PermissionService.java
+  s_ed4bebc613d84a::t_36366b997c4389 22,68
+src/main/java/org/ohdsi/webapi/service/IRAnalysisService.java
+  s_ed4bebc613d84a::t_36366b997c4389 81,141
+src/main/java/org/ohdsi/webapi/prediction/PredictionServiceImpl.java
+  s_ed4bebc613d84a::t_36366b997c4389 63
+src/main/java/org/ohdsi/webapi/generationcache/CleanupScheduler.java
+  s_ed4bebc613d84a::t_36366b997c4389 10,32
+src/main/java/org/ohdsi/webapi/JobInvalidator.java
+  s_ed4bebc613d84a::t_1314950fa6b637 6
+src/main/java/org/ohdsi/webapi/job/SearchableJobInstanceDao.java
+  s_ed4bebc613d84a::t_9c39d8be796798 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "37057bff391d312f4c65cffae7436c7b3b5f9281",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_ed4bebc613d84a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "afc51e55-2b4a-4418-a615-62f526589a6e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "konstjar <user@example.com>"
+    }
+  }
+}

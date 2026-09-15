@@ -3,6 +3,7 @@ package org.ohdsi.webapi;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
 import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
@@ -29,6 +30,8 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.ExecutionContextSerializer;
+import org.springframework.batch.core.repository.dao.XStreamExecutionContextStringSerializer;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
@@ -216,6 +219,7 @@ public class JobConfig {
                     final JobExplorerFactoryBean jobExplorerFactoryBean = new JobExplorerFactoryBean();
                     jobExplorerFactoryBean.setDataSource(this.dataSource);
                     jobExplorerFactoryBean.setTablePrefix(JobConfig.this.tablePrefix);
+                    jobExplorerFactoryBean.setSerializer(createExecutionContextSerializer());
                     jobExplorerFactoryBean.afterPropertiesSet();
                     this.jobExplorer = jobExplorerFactoryBean.getObject();
                 }
@@ -244,8 +248,24 @@ public class JobConfig {
             factory.setTablePrefix(JobConfig.this.tablePrefix);
             factory.setTransactionManager(getTransactionManager());
             factory.setValidateTransactionState(false);
+            factory.setSerializer(createExecutionContextSerializer());
             factory.afterPropertiesSet();
             return factory.getObject();
+        }
+
+        /**
+         * The default Spring Batch serializer (XStream + Jettison), configured so that Jettison 1.4.1+ reads and
+         * writes execution contexts exactly as Jettison 1.2 did: without the root element array wrapper
+         * (what XStream's default driver sets) and keeping the string "null" instead of turning it into null.
+         */
+        private ExecutionContextSerializer createExecutionContextSerializer() throws Exception {
+            final org.codehaus.jettison.mapped.Configuration jettisonConfig = new org.codehaus.jettison.mapped.Configuration();
+            jettisonConfig.setRootElementArrayWrapper(false);
+            jettisonConfig.setReadNullAsString(true);
+            final XStreamExecutionContextStringSerializer serializer = new XStreamExecutionContextStringSerializer();
+            serializer.setHierarchicalStreamDriver(new JettisonMappedXmlDriver(jettisonConfig));
+            serializer.afterPropertiesSet();
+            return serializer;
         }
     }
 }

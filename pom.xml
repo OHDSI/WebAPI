@@ -13,27 +13,30 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
-    <log4j2.version>2.17.1</log4j2.version>
+    <log4j2.version>2.25.5</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.2.Final</hibernate.version>
-    <postgresql.version>42.3.10</postgresql.version>
-    <bouncycastle.version>1.69</bouncycastle.version>
+    <hibernate.version>5.4.33.Final</hibernate.version>
+    <postgresql.version>42.7.13</postgresql.version>
+    <bouncycastle.version>1.84</bouncycastle.version>
     <shiro.version>1.13.0</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.8.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.87</tomcat.embed.version>
+    <!-- Applied to all Tomcat artifacts via dependencyManagement; Spring Boot 1.5 would otherwise bring 8.5.43.
+         Do not go above 8.5.98: since 8.5.99 StandardServer.findServices() is synchronized, which deadlocks
+         Spring Boot 1.5's embedded container on startup (TomcatEmbeddedServletContainer.removeServiceConnectors). -->
+    <tomcat.embed.version>8.5.98</tomcat.embed.version>
 
-    <commons-fileupload.version>1.5</commons-fileupload.version>
+    <commons-fileupload.version>1.6.0</commons-fileupload.version>
 
     <circe.version>1.12.1</circe.version>
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.12.7</jackson.version>
+    <pac4j.version>4.5.10</pac4j.version>
+    <jackson.version>2.18.10</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -573,6 +576,153 @@
         <artifactId>log4j-slf4j-impl</artifactId>
         <version>${log4j2.version}</version>
       </dependency>
+
+      <!-- Security overrides of versions managed by Spring Boot 1.5 or brought in transitively.
+           They must be declared before the spring-boot-dependencies import to take precedence. -->
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-el</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-websocket</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>tomcat-jdbc</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>tomcat-juli</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>tomcat-annotations-api</artifactId>
+        <version>${tomcat.embed.version}</version>
+      </dependency>
+      <dependency>
+        <!-- arachne-commons declares messaging, file type detection and Swagger libraries WebAPI does not use -->
+        <groupId>com.odysseusinc.arachne</groupId>
+        <artifactId>arachne-commons</artifactId>
+        <version>${arachne.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.springfox</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <!-- Spring Batch 3 serializes the execution context with XStream + Jettison -->
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>1.5.4</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.11.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.santuario</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>2.3.4</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.woodstox</groupId>
+        <artifactId>woodstox-core</artifactId>
+        <version>6.7.0</version>
+      </dependency>
+      <dependency>
+        <groupId>xalan</groupId>
+        <artifactId>xalan</artifactId>
+        <version>2.7.3</version>
+      </dependency>
+      <dependency>
+        <groupId>xalan</groupId>
+        <artifactId>serializer</artifactId>
+        <version>2.7.3</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.4.8-jre</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.13.1</version>
+      </dependency>
+      <dependency>
+        <!-- 2.3 (from pac4j-saml) bundles a vulnerable commons-io -->
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-engine-core</artifactId>
+        <version>2.4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>net.lingala.zip4j</groupId>
+        <artifactId>zip4j</artifactId>
+        <version>2.11.5</version>
+      </dependency>
+      <dependency>
+        <!-- buji-pac4j would otherwise bring pac4j-core 4.0.1, mismatching the other pac4j modules -->
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-core</artifactId>
+        <version>${pac4j.version}</version>
+      </dependency>
+      <dependency>
+        <!-- nimbus-jose-jwt 8.x pins json-smart to a vulnerable range; json-smart is declared directly instead -->
+        <groupId>com.nimbusds</groupId>
+        <artifactId>nimbus-jose-jwt</artifactId>
+        <version>8.22.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <!-- same json-smart range restriction as nimbus-jose-jwt -->
+        <groupId>com.nimbusds</groupId>
+        <artifactId>oauth2-oidc-sdk</artifactId>
+        <version>8.23.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <dependency>
         <!-- Import dependency management from Spring Boot -->
         <groupId>org.springframework.boot</groupId>
@@ -600,7 +750,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.12.7.1</version>
+      <version>${jackson.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -683,7 +833,7 @@
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.19</version>
+      <version>1.4.21</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -788,11 +938,11 @@
     </dependency>
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
+    <!-- com.nimbusds:nimbus-jose-jwt has hard bounds on json-smart, so it is excluded there in dependencyManagement -->
     <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
-      <version>2.4.9</version>
+      <version>2.5.2</version>
     </dependency>
     <dependency>
       <groupId>net.minidev</groupId>
@@ -803,7 +953,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
+      <version>3.18.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -820,35 +970,32 @@
       <artifactId>httpclient</artifactId>
       <version>4.5.13</version>
     </dependency>
+    <!-- Formerly provided transitively by spring-batch-admin-manager, whose DAOs now live in org.ohdsi.webapi.job -->
     <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-admin-manager</artifactId>
-      <version>2.0.0.M1</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>freemarker</artifactId>
-          <groupId>org.freemarker</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-dbcp</artifactId>
-          <groupId>commons-dbcp</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-messaging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
+    </dependency>
+    <!-- xalan 2.7.3 (via pac4j-saml) no longer declares its serializer, which it needs at runtime -->
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>serializer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.retry</groupId>
+      <artifactId>spring-retry</artifactId>
+      <scope>test</scope>
     </dependency>
 
-    <!-- overriding commons-fileupload version from the plug-in above -->
+    <!-- overriding commons-fileupload version -->
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
@@ -864,7 +1011,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>10.2.1.jre8</version>
+      <version>10.2.4.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.azure</groupId>
@@ -991,6 +1138,13 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
       <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <!-- replaced by bcprov-jdk18on -->
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1041,7 +1195,7 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
+      <version>5.8.16</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
@@ -1055,7 +1209,12 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
       <version>${bouncycastle.version}</version>
     </dependency>
     <dependency>
@@ -1102,6 +1261,11 @@
           <artifactId>org.hibernate</artifactId>
           <groupId>hibernate-validator</groupId>
         </exclusion>
+        <exclusion>
+          <!-- the EL implementation is provided by tomcat-embed-el -->
+          <groupId>org.glassfish</groupId>
+          <artifactId>javax.el</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -1122,6 +1286,11 @@
         <exclusion>
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+        <exclusion>
+          <!-- replaced by bcprov-jdk18on -->
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15on</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -1191,6 +1360,11 @@
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <!-- replaced by bcpkix-jdk18on -->
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcpkix-jdk15on</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

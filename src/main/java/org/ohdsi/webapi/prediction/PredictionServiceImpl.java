@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.prediction;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +60,7 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_SKELETON_VERSION;
 @Transactional
 public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService, GeneratesNotification {
 
-    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
+    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",

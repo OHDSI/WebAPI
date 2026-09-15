@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class IRAnalysisInfoListener implements JobExecutionListener {
 
     private static final int MAX_MESSAGE_LENGTH = 2000;
-    private static final EntityGraph IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
+    private static final EntityGraph IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH = EntityUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
 
     private final TransactionTemplate transactionTemplate;
     private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;

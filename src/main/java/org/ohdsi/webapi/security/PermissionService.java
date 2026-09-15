@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.security;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.model.EntityPermissionSchema;
@@ -20,6 +19,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
@@ -65,7 +65,7 @@ public class PermissionService {
 	@Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
-    private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
+    private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
 
     public PermissionService(
             WebApplicationContext appContext,

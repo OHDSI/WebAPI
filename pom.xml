@@ -641,6 +641,13 @@
         </exclusions>
       </dependency>
       <dependency>
+        <!-- 4.2.0 (via arachne-common-utils) bundles commons-text 1.6 (CVE-2022-42889).
+             4.3.1 is the last release built for Java 8; 4.4.0 and later require Java 17. -->
+        <groupId>com.github.jknack</groupId>
+        <artifactId>handlebars</artifactId>
+        <version>4.3.1</version>
+      </dependency>
+      <dependency>
         <!-- Spring Batch 3 serializes the execution context with XStream + Jettison -->
         <groupId>org.codehaus.jettison</groupId>
         <artifactId>jettison</artifactId>

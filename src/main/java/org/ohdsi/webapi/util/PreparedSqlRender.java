@@ -86,6 +86,11 @@ public class PreparedSqlRender {
 			returnVal = 2000;
 		} else if (sourceDialect.equals(DBMSType.BIGQUERY.getOhdsiDB()) || sourceDialect.equals(DBMSType.SNOWFLAKE.getOhdsiDB())) {
 			returnVal = 10000;
+		} else if (sourceDialect.equals(DBMSType.SPARK.getOhdsiDB())) {
+			// Databricks (and Spark Thrift) sources use the spark dialect and reject a statement with more
+			// than 10000 parameter markers: "BAD_REQUEST: Parameterized query has too many parameters".
+			// Without this the default 30000 is used and every batched IN query fails with HTTP 400.
+			returnVal = 10000;
 		}
 		return returnVal;
 	}

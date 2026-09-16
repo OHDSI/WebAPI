@@ -24,8 +24,12 @@ public class FeAnalysisAggregateDTOToEntityConverter extends BaseConversionServi
   @Override
   public FeAnalysisAggregateEntity convert(FeAnalysisAggregateDTO dto) {
 
+    // Fetch eagerly rather than getOne()/getReference(): the resulting entity may be read back out
+    // (e.g. converted to a response DTO) after the request's transaction/session has already closed,
+    // and an uninitialized proxy would throw LazyInitializationException at that point.
     if (Objects.nonNull(dto.getId())) {
-      return aggregateRepository.getOne(dto.getId());
+      return aggregateRepository.findById(dto.getId())
+              .orElseThrow(() -> new IllegalArgumentException(String.format("There is no feature analysis aggregate with id = %d.", dto.getId())));
     } else {
       return aggregateRepository.findDefault().orElse(null);
     }

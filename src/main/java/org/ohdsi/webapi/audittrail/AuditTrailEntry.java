@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.audittrail;
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 public class AuditTrailEntry {
     private String currentUser;

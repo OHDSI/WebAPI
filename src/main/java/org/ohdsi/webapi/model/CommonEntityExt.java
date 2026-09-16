@@ -2,7 +2,7 @@ package org.ohdsi.webapi.model;
 
 import org.ohdsi.webapi.tag.domain.Tag;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 import java.util.List;
 import java.util.Set;
 

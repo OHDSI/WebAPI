@@ -5,34 +5,38 @@ import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCH
 
 import java.util.Collections;
 import java.util.Map;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  *
  * @author Lee Evans
  */
-@Path("/sqlrender/")
+@RestController
+@RequestMapping("/sqlrender")
 public class SqlRenderService {
     /**
      * Translate an OHDSI SQL to a supported target SQL dialect
      * @param sourceStatement JSON with parameters, source SQL, and target dialect
      * @return rendered and translated SQL
      */
-    @Path("translate")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public TranslatedStatement translateSQLFromSourceStatement(SourceStatement sourceStatement) {
+    @PreAuthorize("isPermitted('list')")
+    @PostMapping(
+        value = "/translate",
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public TranslatedStatement translateSQLFromSourceStatement(@RequestBody SourceStatement sourceStatement) {
         if (sourceStatement == null) {
             return new TranslatedStatement();
         }

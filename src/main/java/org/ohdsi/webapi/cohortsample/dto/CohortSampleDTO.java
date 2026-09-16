@@ -1,7 +1,8 @@
 package org.ohdsi.webapi.cohortsample.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.ohdsi.webapi.user.dto.UserDTO;
+
+import org.ohdsi.webapi.security.authz.User;
 
 import java.util.Date;
 import java.util.List;
@@ -26,7 +27,7 @@ public class CohortSampleDTO {
 	/**
 	 * User that created the sample. If no login system is used, this is null.
 	 */
-	private UserDTO createdBy;
+	private User createdBy;
 
 	/**
 	 * Cohort definition ID that was sampled.
@@ -68,11 +69,11 @@ public class CohortSampleDTO {
 		this.createdDate = createdDate;
 	}
 
-	public UserDTO getCreatedBy() {
+	public User getCreatedBy() {
 		return createdBy;
 	}
 
-	public void setCreatedBy(UserDTO createdBy) {
+	public void setCreatedBy(User createdBy) {
 		this.createdBy = createdBy;
 	}
 

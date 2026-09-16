@@ -17,7 +17,7 @@ package org.ohdsi.webapi.cohortdefinition.dto;
 
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoId;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.security.authz.User;
 
 import java.util.Date;
 
@@ -43,7 +43,7 @@ public class CohortGenerationInfoDTO {
 
     private Long recordCount;
 
-    private UserDTO createdBy;
+    private User createdBy;
     
     private Long ccGenerateId;
     private boolean isDemographic;
@@ -129,11 +129,11 @@ public class CohortGenerationInfoDTO {
         this.recordCount = recordCount;
     }
 
-    public UserDTO getCreatedBy() {
+    public User getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(UserDTO createdBy) {
+    public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
     }
     

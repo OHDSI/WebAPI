@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.fe_analysis modify (id INTEGER);

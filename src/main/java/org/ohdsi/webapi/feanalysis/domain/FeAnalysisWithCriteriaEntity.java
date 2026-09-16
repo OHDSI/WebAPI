@@ -3,7 +3,7 @@ package org.ohdsi.webapi.feanalysis.domain;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -11,8 +11,10 @@ import java.util.Objects;
 @Entity
 public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaEntity> extends FeAnalysisEntity<List<T>> implements FeatureAnalysisWithCriteria<T, Integer> {
     
+    // PERSIST is required so new criteria rows are saved when the parent is new (id omitted -> entityManager.persist()),
+    // not just when it goes through merge() (e.g. client sends id:0).
     @OneToMany(targetEntity = FeAnalysisCriteriaEntity.class, fetch = FetchType.EAGER, mappedBy = "featureAnalysis",
-            cascade = {CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH})
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH})
     private List<T> design;
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)

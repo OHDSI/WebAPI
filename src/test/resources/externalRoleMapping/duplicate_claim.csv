@@ -1,0 +1,3 @@
+claim,role_name,description
+"CN=Test,OU=Groups,DC=local",Analyst,First entry
+"CN=Test,OU=Groups,DC=local",Viewer,Duplicate claim

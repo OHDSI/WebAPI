@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    
+    <!-- Read filter packages from application.yaml -->
+    <springProperty scope="context" name="filterPackages" source="logging.stacktrace.filter-packages" defaultValue=""/>
+    
+    <!-- Register custom exception converter that filters framework packages -->
+    <conversionRule conversionWord="fex" 
+                    converterClass="org.ohdsi.webapi.util.PackageFilteringThrowableProxyConverter"/>
+    
+    <!-- Console Appender with Filtered Stack Traces -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} - %msg%n%fex{${filterPackages}}</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- File Appender with Full Stack Traces (for debugging when needed) -->
+    <appender name="FILE_FULL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/webapi-full.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{50} - %msg%n%ex{full}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/webapi-full-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- File Appender for Errors Only -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/webapi-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{50} - %msg%n%fex{${filterPackages}}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/webapi-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- Root logger configuration -->
+    <!-- Note: Log levels are managed in application.yaml under logging.level.* -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_FULL"/>
+        <appender-ref ref="FILE_ERROR"/>
+    </root>
+    
+</configuration>

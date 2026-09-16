@@ -1,0 +1,26 @@
+{
+  "mappings.afterAdd": [
+    { "origin": "LDAP", "external_claim": "CN=Admins,OU=Groups,DC=corp,DC=local", "role_id": 50002 },
+    { "origin": "LDAP", "external_claim": "CN=Analysts,OU=Groups,DC=corp,DC=local", "role_id": 50001 },
+    { "origin": "LDAP", "external_claim": "CN=Developers,OU=Groups,DC=corp,DC=local", "role_id": 50003 },
+    { "origin": "LDAP", "external_claim": "CORP\\Auditors", "role_id": 50006 },
+    { "origin": "LDAP", "external_claim": "realm_viewer", "role_id": 50003 },
+    { "origin": "OIDC", "external_claim": "data_steward", "role_id": 50005 },
+    { "origin": "OIDC", "external_claim": "realm_analyst", "role_id": 50001 },
+    { "origin": "WINDOWS", "external_claim": "CORP\\Designers", "role_id": 50004 }
+  ],
+  "mappings.afterDelete": [
+    { "origin": "LDAP", "external_claim": "CN=Admins,OU=Groups,DC=corp,DC=local", "role_id": 50002 },
+    { "origin": "LDAP", "external_claim": "CN=Analysts,OU=Groups,DC=corp,DC=local", "role_id": 50001 },
+    { "origin": "OIDC", "external_claim": "data_steward", "role_id": 50005 },
+    { "origin": "OIDC", "external_claim": "realm_analyst", "role_id": 50001 },
+    { "origin": "WINDOWS", "external_claim": "CORP\\Designers", "role_id": 50004 }
+  ],
+  "mappings.afterOverwrite": [
+    { "origin": "LDAP", "external_claim": "CN=Analysts,OU=Groups,DC=corp,DC=local", "role_id": 50001 },
+    { "origin": "LDAP", "external_claim": "CN=DataSteward,OU=Groups,DC=corp,DC=local", "role_id": 50005 },
+    { "origin": "OIDC", "external_claim": "data_steward", "role_id": 50005 },
+    { "origin": "OIDC", "external_claim": "realm_analyst", "role_id": 50001 },
+    { "origin": "WINDOWS", "external_claim": "CORP\\Designers", "role_id": 50004 }
+  ]
+}

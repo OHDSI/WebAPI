@@ -1,11 +1,11 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationService;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
-import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
@@ -43,7 +42,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
     private final CancelableJdbcTemplate cancelableJdbcTemplate;
     protected final CohortGenerationService cohortGenerationService;
     protected final SourceService sourceService;
-    protected final Function<ChunkContext, Collection<CohortDefinition>> cohortGetter;
+    protected final Function<ChunkContext, Collection<CohortDefinitionEntity>> cohortGetter;
     private final GenerationCacheHelper generationCacheHelper;
     private boolean useAsyncCohortGeneration;
     private Set<StatementCancel> statementCancels = ConcurrentHashMap.newKeySet();
@@ -53,7 +52,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                       CancelableJdbcTemplate cancelableJdbcTemplate,
                                       CohortGenerationService cohortGenerationService,
                                       SourceService sourceService,
-                                      Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
+                                      Function<ChunkContext, Collection<CohortDefinitionEntity>> cohortGetter,
                                       GenerationCacheHelper generationCacheHelper,
                                       boolean useAsyncCohortGeneration) {
 
@@ -86,7 +85,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         String resultSchema = SourceUtils.getResultsQualifier(source);
         String targetTable = jobParameters.get(TARGET_TABLE).toString();
 
-        Collection<CohortDefinition> cohortDefinitions = cohortGetter.apply(chunkContext);
+        Collection<CohortDefinitionEntity> cohortDefinitions = cohortGetter.apply(chunkContext);
 
         if (useAsyncCohortGeneration) {
             List<CompletableFuture> executions = cohortDefinitions.stream()
@@ -106,7 +105,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private Object generateCohort(CohortDefinition cd, Source source, String resultSchema, String targetTable) {
+    private Object generateCohort(CohortDefinitionEntity cd, Source source, String resultSchema, String targetTable) {
         if (stopped) {
             return null;
         }
@@ -115,7 +114,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                 sessionId,
                 resultSchema
         );
-        CohortDefinitionDetails details = cd.getDetails();
+        CohortDefinitionDetailsEntity details = cd.getDetails();
         int designHash = this.generationCacheHelper.computeHash(details.getExpression());
         CohortGenerationUtils.insertInclusionRules(cd, source, designHash, resultSchema, sessionId, cancelableJdbcTemplate);
 

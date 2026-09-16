@@ -3,7 +3,8 @@ package org.ohdsi.webapi.cohortsample.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import javax.ws.rs.BadRequestException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,13 +31,13 @@ public class SampleParametersDTO {
 	 */
 	public void validate() {
 		if (name == null) {
-			throw new BadRequestException("Sample must have a name");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sample must have a name");
 		}
 		if (size <= 0) {
-			throw new BadRequestException("sample parameter size must fall in the range (1, " + SIZE_MAX + ")");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sample parameter size must fall in the range (1, " + SIZE_MAX + ")");
 		}
 		if (size > SIZE_MAX) {
-			throw new BadRequestException("sample parameter size must fall in the range (1, " + SIZE_MAX + ")");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sample parameter size must fall in the range (1, " + SIZE_MAX + ")");
 		}
 		if (age != null && !age.validate()) {
 			age = null;
@@ -182,7 +183,7 @@ public class SampleParametersDTO {
 		public boolean validate() {
 			if (mode == null) {
 				if (min != null || max != null || value != null) {
-					throw new BadRequestException("Cannot specify age without a mode to use age with.");
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot specify age without a mode to use age with.");
 				} else {
 					return false;
 				}
@@ -194,28 +195,28 @@ public class SampleParametersDTO {
 				case GREATER_THAN_OR_EQUAL:
 				case EQUAL_TO:
 					if (value == null) {
-						throw new BadRequestException("Cannot use single age comparison mode " + mode.getSerialName() + " without age property.");
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot use single age comparison mode " + mode.getSerialName() + " without age property.");
 					}
 					if (min != null || max != null) {
-						throw new BadRequestException("Cannot use age range property with comparison mode " + mode.getSerialName() + ".");
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot use age range property with comparison mode " + mode.getSerialName() + ".");
 					}
 					break;
 				case BETWEEN:
 				case NOT_BETWEEN:
 					if (min == null || max == null) {
-						throw new BadRequestException("Cannot use age range comparison mode " + mode.getSerialName() + " without ageMin and ageMax properties.");
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot use age range comparison mode " + mode.getSerialName() + " without ageMin and ageMax properties.");
 					}
 					if (value != null) {
-						throw new BadRequestException("Cannot use single age property with comparison mode " + mode.getSerialName() + ".");
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot use single age property with comparison mode " + mode.getSerialName() + ".");
 					}
 					if (min < 0) {
-						throw new BadRequestException("Minimum age may not be less than 0");
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum age may not be less than 0");
 					}
 					if (max >= AGE_MAX) {
-						throw new BadRequestException("Maximum age must be smaller than " + AGE_MAX);
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum age must be smaller than " + AGE_MAX);
 					}
 					if (min > max) {
-						throw new BadRequestException("Maximum age " + max + " may not be less than minimum age " + min);
+						throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum age " + max + " may not be less than minimum age " + min);
 					}
 					break;
 			}

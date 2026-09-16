@@ -26,7 +26,6 @@
       <security.ssl.enabled>false</security.ssl.enabled>
       <security.cors.enabled>true</security.cors.enabled>
       <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
-      <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
       <security.oauth.google.apiKey></security.oauth.google.apiKey>
       <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
       <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>

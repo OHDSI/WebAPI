@@ -1,9 +1,6 @@
 package org.ohdsi.webapi.common.analyses;
 
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.user.dto.UserDTO;
-
-import java.util.Date;
 
 public class CommonAnalysisDTO extends CommonEntityDTO{
 

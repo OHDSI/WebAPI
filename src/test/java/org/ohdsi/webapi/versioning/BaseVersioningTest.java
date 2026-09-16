@@ -5,9 +5,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionFullDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
@@ -42,9 +42,11 @@ public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
 
     @Before
     public void createInitialData() throws IOException {
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
+        userRepository.findByLogin("anonymous").orElseGet(() -> {
+            UserEntity user = new UserEntity();
+            user.setLogin("anonymous");
+            return userRepository.save(user);
+        });
 
         doCreateInitialData();
     }
@@ -54,7 +56,12 @@ public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
     @After
     public void clear() {
         doClear();
-        userRepository.deleteAll();
+        // Preserve the anonymous user (id=-1) inserted by baseline migration
+        userRepository.findAll().forEach(user -> {
+            if (user.getId() != -1L) {
+                userRepository.delete(user);
+            }
+        });
     }
 
     @Test

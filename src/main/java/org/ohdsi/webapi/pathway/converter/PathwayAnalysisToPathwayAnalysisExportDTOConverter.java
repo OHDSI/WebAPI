@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.pathway.converter;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.webapi.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCohortExportDTO;

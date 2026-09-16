@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.source.Source;
 

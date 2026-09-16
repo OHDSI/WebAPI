@@ -20,18 +20,18 @@
  *
  */
 
-@TypeDefs({
-        @TypeDef(
-                name = "encryptedString",
-                typeClass = CheckedEncryptedStringType.class,
-                parameters = {
-                        @Parameter(name="encryptorRegisteredName", value="defaultStringEncryptor")
-                }
-        )
-})
+/*
+ * Hibernate 6 Migration Notes:
+ *
+ * Legacy Hibernate custom types (@TypeDef) have been replaced with JPA AttributeConverter.
+ *
+ * Encrypted String Fields:
+ * - Old approach (Hibernate 4/5): @TypeDef with custom type extending AbstractEncryptedAsStringType
+ * - New approach (Hibernate 6): @Convert(converter = EncryptedStringConverter.class)
+ * - See: EncryptedStringConverter.java
+ *
+ * All encrypted fields in Source.java now use the EncryptedStringConverter AttributeConverter,
+ * which uses Jasypt PBEStringEncryptor for encryption/decryption.
+ */
 package org.ohdsi.webapi.source;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 

@@ -1,48 +1,98 @@
 package org.ohdsi.webapi;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
-import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import com.zaxxer.hikari.HikariDataSource;
 
 
 /**
+ * Flyway configuration for database migrations (Flyway 11.7 / Spring Boot 3.x)
  *
+ * Spring Boot auto-configuration handles Flyway initialization.
+ * Java-based migrations can access Spring beans via the static ApplicationContextHolder.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "flyway", name = "enabled", matchIfMissing = true)
+@Lazy(false)
+@ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
- 
+
+    /**
+     * Static holder for ApplicationContext to be accessed by Flyway migrations.
+     * Set during bean initialization to avoid circular dependencies.
+     */
+    public static class ApplicationContextHolder {
+        private static ApplicationContext context;
+
+        public static void setApplicationContext(ApplicationContext ctx) {
+            context = ctx;
+        }
+
+        public static ApplicationContext getApplicationContext() {
+            return context;
+        }
+    }
+
+    @Value("${spring.flyway.url:#{null}}")
+    private String flywayUrl;
+
+    @Value("${spring.flyway.user:#{null}}")
+    private String flywayUsername;
+
+    @Value("${spring.flyway.password:#{null}}")
+    private String flywayPassword;
+
+    @Value("${spring.flyway.driver-class-name:org.postgresql.Driver}")
+    private String flywayDriverClassName;
+
     @Bean
-    @ConfigurationProperties(prefix="flyway.datasource")
+    public FlywayConfigurationCustomizer ohdsiSchemaPlaceholderCustomizer(
+            @Value("${datasource.ohdsi.schema:webapi}") String ohdsiSchema) {
+        return configuration -> {
+            Map<String, String> placeholders = new HashMap<>(configuration.getPlaceholders());
+            placeholders.putIfAbsent("ohdsiSchema", ohdsiSchema);
+            configuration.placeholders(placeholders);
+        };
+    }
+
+    /**
+     * DataSource for Flyway migrations.
+     * Can be different from the main application DataSource.
+     */
+    @Bean
     @FlywayDataSource
     public DataSource secondaryDataSource() {
-        return DataSourceBuilder.create().build();
+        HikariDataSource dataSource = new HikariDataSource();
+        if (flywayUrl != null) {
+            dataSource.setJdbcUrl(flywayUrl);
+        }
+        if (flywayUsername != null) {
+            dataSource.setUsername(flywayUsername);
+        }
+        if (flywayPassword != null) {
+            dataSource.setPassword(flywayPassword);
+        }
+        dataSource.setDriverClassName(flywayDriverClassName);
+        return dataSource;
     }
 
-    @Bean(initMethod = "migrate", name = "flyway")
-    @ConfigurationProperties(prefix="flyway")
-    public Flyway flyway() {
-      Flyway flyway = new Flyway();
-      flyway.setDataSource(secondaryDataSource());
-      return flyway;
-    }
-
+    /**
+     * Store ApplicationContext in static holder for Flyway migrations to access.
+     */
     @Bean
-    public FlywayMigrationInitializer flywayInitializer(ApplicationContext context, Flyway flyway) {
-
-        ApplicationContextAwareSpringJdbcMigrationResolver contextAwareResolver = new ApplicationContextAwareSpringJdbcMigrationResolver(context);
-        flyway.setResolvers(contextAwareResolver);
-
-        return new FlywayMigrationInitializer(flyway, null);
+    public ApplicationContextHolder applicationContextHolder(ApplicationContext applicationContext) {
+        ApplicationContextHolder.setApplicationContext(applicationContext);
+        return new ApplicationContextHolder();
     }
 
 }

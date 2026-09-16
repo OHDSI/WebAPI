@@ -1,0 +1,4 @@
+claim,role_name,description
+"CN=Developers,OU=Groups,DC=corp,DC=local",Viewer,
+"CORP\\Auditors",Auditor,
+realm_viewer,Viewer,

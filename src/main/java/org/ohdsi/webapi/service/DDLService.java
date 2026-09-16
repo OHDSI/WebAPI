@@ -20,28 +20,25 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
-@Path("/ddl/")
-@Component
+@RestController
+@RequestMapping("/ddl")
 public class DDLService {
 
 	public static final String VOCAB_SCHEMA = "vocab_schema";
@@ -63,16 +60,6 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result_cache.sql",
 		"/ddl/results/cohort_inclusion_stats_cache.sql",
 		"/ddl/results/cohort_summary_stats_cache.sql",
-		// cohort feasibility analysis
-		"/ddl/results/feas_study_inclusion_stats.sql",
-		"/ddl/results/feas_study_index_stats.sql",
-		"/ddl/results/feas_study_result.sql",
-		// cohort reports (heracles)
-		"/ddl/results/heracles_analysis.sql",
-		"/ddl/results/heracles_heel_results.sql",
-		"/ddl/results/heracles_results.sql",
-		"/ddl/results/heracles_results_dist.sql",
-		"/ddl/results/heracles_periods.sql",
 		// cohort sampling
 		"/ddl/results/cohort_sample_element.sql",
 		// incidence rates
@@ -87,16 +74,6 @@ public class DDLService {
 		"/ddl/results/pathway_analysis_events.sql",
 		"/ddl/results/pathway_analysis_paths.sql",
 		"/ddl/results/pathway_analysis_stats.sql"
-	);
-
-	private static final String INIT_HERACLES_PERIODS = "/ddl/results/init_heracles_periods.sql";
-
-	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-			"/ddl/results/init_heracles_analysis.sql", INIT_HERACLES_PERIODS
-	);
-
-	public static final Collection<String> HIVE_RESULT_INIT_FILE_PATHS = Arrays.asList(
-			"/ddl/results/init_hive_heracles_analysis.sql", INIT_HERACLES_PERIODS
 	);
 
 	public static final Collection<String> INIT_CONCEPT_HIERARCHY_FILE_PATHS = Arrays.asList(
@@ -132,15 +109,14 @@ public class DDLService {
 	 * @param tempSchema
 	 * @return SQL to create tables in results schema
 	 */
-	@GET
-	@Path("results")
-	@Produces("text/plain")
+	@PreAuthorize("isPermitted('list')")
+	@GetMapping(value = "/results", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateResultSQL(
-			@QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema,
-			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
-			@QueryParam("tempSchema") String tempSchema) {
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "vocabSchema", defaultValue = "vocab") String vocabSchema,
+			@RequestParam(value = "schema", defaultValue = "results") String resultSchema,
+			@RequestParam(value = "initConceptHierarchy", defaultValue = "true") Boolean initConceptHierarchy,
+			@RequestParam(value = "tempSchema", required = false) String tempSchema) {
 
 		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
 
@@ -158,11 +134,7 @@ public class DDLService {
 	}
 
 	private Collection<String> getResultInitFilePaths(String dialect) {
-		if (Objects.equals(DBMSType.HIVE.getOhdsiDB(), dialect)) {
-			return HIVE_RESULT_INIT_FILE_PATHS;
-		} else {
-			return RESULT_INIT_FILE_PATHS;
-		}
+		return new ArrayList<>();
 	}
 
 	/**
@@ -171,10 +143,11 @@ public class DDLService {
 	 * @param schema schema name
 	 * @return SQL
 	 */
-	@GET
-	@Path("cemresults")
-	@Produces("text/plain")
-	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
+	@PreAuthorize("isPermitted('list')")
+	@GetMapping(value = "/cemresults", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String generateCemResultSQL(
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "schema", defaultValue = "cemresults") String schema) {
 
 		Map<String, String> params = new HashMap<String, String>() {{
 			put(CEM_SCHEMA, schema);
@@ -190,13 +163,12 @@ public class DDLService {
 	 * @param resultSchema results schema
 	 * @return SQL
 	 */
-	@GET
-	@Path("achilles")
-	@Produces("text/plain")
+	@PreAuthorize("isPermitted('list')")
+	@GetMapping(value = "/achilles", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String generateAchillesSQL(
-            @QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema) {
+			@RequestParam(value = "dialect", required = false) String dialect,
+			@RequestParam(value = "vocabSchema", defaultValue = "vocab") String vocabSchema,
+			@RequestParam(value = "schema", defaultValue = "results") String resultSchema) {
 
 		final Collection<String> achillesDDLFilePaths = new ArrayList<>(ACHILLES_DDL_FILE_PATHS);
 

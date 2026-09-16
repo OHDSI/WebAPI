@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
+import org.ohdsi.webapi.report.HierarchicalConceptRecord;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

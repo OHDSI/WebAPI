@@ -1,0 +1,29 @@
+src/main/java/org/ohdsi/webapi/util/PreparedSqlRender.java
+  s_ed4bebc613d84a::t_49e05d5a9a53f0 89-93
+src/test/java/org/ohdsi/webapi/util/PreparedSqlRenderTest.java
+  s_ed4bebc613d84a::t_b6d39543226f28 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dc8f48ee823e1c141c72a0f32835fe228b55ea47",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    },
+    "h_e8f313570bc386": {
+      "author": "konstjar <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_ed4bebc613d84a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "afc51e55-2b4a-4418-a615-62f526589a6e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "konstjar <user@example.com>"
+    }
+  }
+}

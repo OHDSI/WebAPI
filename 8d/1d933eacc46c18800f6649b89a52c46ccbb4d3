@@ -1,0 +1,28 @@
+pom.xml
+  s_ed4bebc613d84a::t_ac7a33986ef39b 644-649
+  s_ed4bebc613d84a::t_fa39c5a6dd2e95 643
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8d1d933eacc46c18800f6649b89a52c46ccbb4d3",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    },
+    "h_e8f313570bc386": {
+      "author": "konstjar <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_ed4bebc613d84a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "afc51e55-2b4a-4418-a615-62f526589a6e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "konstjar <user@example.com>"
+    }
+  }
+}

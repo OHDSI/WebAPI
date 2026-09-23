@@ -238,6 +238,27 @@ public class AuthorizationService {
     this.roleService.addUserToRole(login, roleName, origin);
   }
 
+  /**
+   * Idempotently grants a role from one origin. The per-login advisory lock prevents
+   * concurrent logins from creating duplicate assignments.
+   *
+   * @return {@code true} only when this call created the assignment
+   */
+  @Transactional
+  public boolean ensureUserHasRole(String roleName, String login, UserOrigin origin) {
+    if (getRolesByOrigin(login, origin).contains(roleName)) {
+      return false;
+    }
+
+    lockRoleSync(login);
+    if (getRolesByOrigin(login, origin).contains(roleName)) {
+      return false;
+    }
+
+    roleService.addUserToRole(login, roleName, origin);
+    return true;
+  }
+
   // -------------------------
   // Permission & Entity Access Facade
   // -------------------------

@@ -1,9 +1,11 @@
 package org.ohdsi.webapi.security.authc;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,8 +39,10 @@ public class LoginService {
   private final SessionProperties sessionProps;
   private final AuthorizationService authorizationService;
   private final List<String> defaultRoles;
+  private final Set<String> adminLogins;
 
   private static final Logger log = LoggerFactory.getLogger(LoginService.class);
+  private static final String ADMIN_ROLE = "admin";
   public final static Result NO_SESSION = new Result(null, null, null, "No session.");
 
   public LoginService(
@@ -46,12 +50,17 @@ public class LoginService {
       AuthorizationService authorizationService,
       JwtService jwtService,
       @Value("${security.defaultRoles}") List<String> defaultRoles,
+      @Value("${security.admin-login:}") String[] adminLogins,
       SessionProperties sessionProps) {
     this.sessionService = sessionService;
     this.authorizationService = authorizationService;
     this.jwtService = jwtService;
     this.sessionProps = sessionProps;
     this.defaultRoles = defaultRoles.stream().filter(s -> !s.isBlank()).toList();
+    this.adminLogins = Arrays.stream(adminLogins)
+        .filter(login -> login != null && !login.isBlank())
+        .map(login -> login.trim().toLowerCase(Locale.ROOT))
+        .collect(java.util.stream.Collectors.toUnmodifiableSet());
   }
 
   /**
@@ -68,7 +77,7 @@ public class LoginService {
    */
   @Transactional
   public Result onSuccess(AuthenticatedLogin authenticatedLogin) {
-    String login = authenticatedLogin.getLogin().toLowerCase();
+    String login = authenticatedLogin.getLogin().toLowerCase(Locale.ROOT);
     String name = authenticatedLogin.getName();
     UserOrigin origin = authenticatedLogin.getOrigin();
     Set<String> targetRoles = authenticatedLogin.getRoles();
@@ -80,6 +89,13 @@ public class LoginService {
 
     // Sync roles: align database roles with target roles from this authentication source
     syncRoles(login, origin, targetRoles);
+
+    // This is intentionally a one-way grant. Clearing or changing admin-login does not
+    // revoke an existing assignment; that must be done explicitly by an administrator.
+    if (adminLogins.contains(login)
+        && authorizationService.ensureUserHasRole(ADMIN_ROLE, login, UserOrigin.SYSTEM)) {
+      log.info("SECURITY_AUDIT: admin-login granted role '{}' to user '{}'", ADMIN_ROLE, login);
+    }
 
     // Create session
     UUID sessionId = sessionService.createSession(login);

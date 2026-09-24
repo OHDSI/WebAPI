@@ -18,15 +18,10 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
-
-    @Autowired
-    private ObjectMapper objectMapper;
     
     // need to look around and find a way to override procedure of base mapping
     // and handle only a design field
@@ -36,6 +31,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
 
         ObjectCodec codec = parser.getCodec();
         JsonNode node = codec.readTree(parser);
+        ObjectMapper objectMapper = (ObjectMapper) codec;
 
         FeAnalysisDTO dto = createDto(node);
 
@@ -77,7 +73,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
                 }
                 final List<BaseFeAnalysisCriteriaDTO> list = new ArrayList<>();
                 for (final JsonNode jsonNode : design) {
-                    list.add(convert(jsonNode));
+                    list.add(convert(jsonNode, objectMapper));
                 }
                 dto.setDesign(list);
 
@@ -115,7 +111,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
         return analysisDTO;
     }
     
-    private BaseFeAnalysisCriteriaDTO convert(final JsonNode node) {
+    private BaseFeAnalysisCriteriaDTO convert(final JsonNode node, final ObjectMapper objectMapper) {
         try {
             return objectMapper.treeToValue(node, BaseFeAnalysisCriteriaDTO.class);
         } catch (JsonProcessingException e) {

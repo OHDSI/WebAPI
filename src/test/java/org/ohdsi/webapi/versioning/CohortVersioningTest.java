@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.versioning;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class CohortVersioningTest extends BaseVersioningTest<CohortDTO, CohortVe
         CohortRawDTO dto = fullDTO.getEntityDTO();
         checkEquality(dto);
         assertEquals(dto.getTags().size(), 0);
-        CohortDefinition def = conversionService.convert(initialDTO, CohortDefinition.class);
+        CohortDefinitionEntity def = conversionService.convert(initialDTO, CohortDefinitionEntity.class);
         CohortRawDTO rawDTO = conversionService.convert(def, CohortRawDTO.class);
         assertEquals(dto.getExpression(), rawDTO.getExpression());
     }
@@ -58,10 +58,10 @@ public class CohortVersioningTest extends BaseVersioningTest<CohortDTO, CohortVe
     protected void checkServerDTOEquality(CohortDTO dto) {
         checkEquality(dto);
         assertNull(dto.getTags());
-        CohortDefinition def = conversionService.convert(initialDTO, CohortDefinition.class);
+        CohortDefinitionEntity def = conversionService.convert(initialDTO, CohortDefinitionEntity.class);
         CohortRawDTO rawDTO = conversionService.convert(def, CohortRawDTO.class);
 
-        CohortDefinition newDef = conversionService.convert(dto, CohortDefinition.class);
+        CohortDefinitionEntity newDef = conversionService.convert(dto, CohortDefinitionEntity.class);
         CohortRawDTO newRawDTO = conversionService.convert(newDef, CohortRawDTO.class);
         assertEquals(newRawDTO.getExpression(), rawDTO.getExpression());
     }

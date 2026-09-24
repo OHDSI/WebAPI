@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.fe_analysis ALTER COLUMN design VARCHAR(MAX);

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.pathway.converter;
 
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -13,7 +13,7 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCohortDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
-import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.PathwayVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -35,7 +35,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
 
     @Override
     public PathwayVersionFullDTO convert(PathwayVersion source) {
-        PathwayAnalysisEntity def = this.analysisRepository.findOne(source.getAssetId().intValue());
+        PathwayAnalysisEntity def = this.analysisRepository.findById(source.getAssetId().intValue()).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no pathway analysis with id = %d.", source.getAssetId()));
 
@@ -66,7 +66,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
                         .map(c -> c.getCohortDefinition().getId())
                         .collect(Collectors.toList());
 
-        List<CohortDefinition> cohorts = cohortService.getCohorts(cohortIds);
+        List<CohortDefinitionEntity> cohorts = cohortService.getCohorts(cohortIds);
         if (cohorts.size() != cohortIds.size()) {
             throw new ConversionAtlasException("Could not load version because it contains deleted cohorts");
         }

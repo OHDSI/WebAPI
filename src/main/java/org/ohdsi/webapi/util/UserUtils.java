@@ -16,9 +16,9 @@
 
 package org.ohdsi.webapi.util;
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-
 import java.util.Objects;
+
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 public class UserUtils {
 

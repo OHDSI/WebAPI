@@ -1,0 +1,2 @@
+claim,role_name,description
+"CN=Test,OU=Groups,DC=local",,Empty role_name test

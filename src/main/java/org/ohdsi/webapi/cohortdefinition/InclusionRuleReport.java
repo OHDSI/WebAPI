@@ -17,8 +17,6 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
 
-import org.ohdsi.webapi.cohortcharacterization.report.Report;
-
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -44,10 +42,5 @@ public class InclusionRuleReport {
   public Summary summary;
   public List<InclusionRuleStatistic> inclusionRuleStats;
   public String treemapData;
-  public List<Report> demographicsStats;
-  
-  public Float prevalenceThreshold = 0.01f;
-  public Boolean showEmptyResults = false;
-  public int count = 0;
   
 }

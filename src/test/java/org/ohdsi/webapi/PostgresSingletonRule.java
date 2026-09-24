@@ -31,6 +31,7 @@ package org.ohdsi.webapi;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import org.junit.rules.ExternalResource;
@@ -65,7 +66,7 @@ public class PostgresSingletonRule extends ExternalResource {
   }
 
   private EmbeddedPostgres pg() throws IOException {
-    return EmbeddedPostgres.builder().start();
+    return EmbeddedPostgres.builder().setPGStartupWait(Duration.ofSeconds(60)).start();
   }
 
   public EmbeddedPostgres getEmbeddedPostgres() {

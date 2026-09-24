@@ -231,7 +231,7 @@ SELECT
   CAST(target_count.cnt AS BIGINT) AS target_cohort_count,
   CAST(pathway_count.cnt AS BIGINT) AS pathways_count
 FROM (
-  SELECT CAST(COUNT_BIG(*) as BIGINT) cnt
+  SELECT CAST(COUNT_BIG(DISTINCT subject_id) as BIGINT) cnt
   FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,

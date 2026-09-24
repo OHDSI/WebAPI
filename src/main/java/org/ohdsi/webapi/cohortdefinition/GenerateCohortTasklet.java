@@ -28,7 +28,7 @@ import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.google.common.collect.ImmutableList;
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -111,7 +111,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       CohortCharacterizationEntity cohortCharacterization = new CohortCharacterizationEntity();
 
       Integer cohortDefinitionId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
-      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
+      CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
 
       cohortCharacterization.setCohortDefinitions(new HashSet<>(Arrays.asList(cohortDefinition)));
 
@@ -131,10 +131,8 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       final Integer sourceId = Integer.valueOf(jobParams.get(SOURCE_ID).toString());
       final Source source = sourceService.findBySourceId(sourceId);
-
       final String cohortTable = String.format("%s.%s", SourceUtils.getTempQualifier(source), jobParams.get(TARGET_TABLE).toString());
       final String sessionId = jobParams.get(SESSION_ID).toString();
-
       final String tempSchema = SourceUtils.getTempQualifier(source);
 
       boolean includeAnnual = false;
@@ -163,7 +161,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
        *
        * Therefore, there are two ways: - either precisely group SQLs into
        * statements so that temp tables aren't re-used in a single statement, -
-       * or use ‘permanent temporary tables’
+       * or use 'permanent temporary tables'
        *
        * The second option looks better since such SQL could be exported and
        * executed manually, which is not the case with the first option.
@@ -183,7 +181,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
       String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
-      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
+      CohortDefinitionEntity cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
       Source source = sourceService.findBySourceId(sourceId);
 
       CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(sessionId,

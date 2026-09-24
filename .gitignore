@@ -14,6 +14,14 @@ sandbox/
 *~
 .DS_Store
 .factorypath
+*md
+specs/
+.specify
+docs
+.claude
+*.bak
+**/test-results/
+logs
 
 ### Developer's personal properties ###
 **/resources/config/application*-dev-*.properties

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.statistic.service;
 
+import com.opencsv.CSVWriter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ohdsi.webapi.statistic.dto.AccessTrendDto;
 import org.ohdsi.webapi.statistic.dto.AccessTrendsDto;
@@ -9,10 +10,23 @@ import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,6 +34,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +45,44 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
+/**
+ * Spring MVC service for statistics
+ *
+ * Endpoints: 2 POST endpoints
+ * Complexity: Medium - statistics with CSV generation
+ */
+@RestController
+@RequestMapping("/statistic")
 public class StatisticService {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
+
+    @Value("${audit.trail.enabled}")
+    private boolean auditTrailEnabled;
 
     @Value("${audit.trail.log.file}")
     private String absoluteLogFileName = "/tmp/atlas/audit/audit.log";
 
     private String logFileName;
+
+    public enum ResponseFormat {
+        CSV, JSON
+    }
+
+    private static final List<String[]> EXECUTION_STATISTICS_CSV_RESULT_HEADER = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Source", "Execution Type"});
+    }};
+
+    private static final List<String[]> EXECUTION_STATISTICS_CSV_RESULT_HEADER_WITH_USER_ID = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Source", "Execution Type", "User ID"});
+    }};
+
+    private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Endpoint"});
+    }};
+
+    private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER_WITH_USER_ID = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Endpoint", "User ID"});
+    }};
 
     @Value("${audit.trail.log.file.pattern}")
     private String absoluteLogFileNamePattern = "/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log";
@@ -64,12 +110,6 @@ public class StatisticService {
     private static final Pattern IR_GENERATION_REGEXP =
             Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
-    private static final Pattern PLE_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
-
-    private static final Pattern PLP_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
-
     private static final String ENDPOINT_REGEXP =
             "^.*(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}).*-\\s-\\s-\\s([\\w-]+)\\s.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
 
@@ -92,8 +132,6 @@ public class StatisticService {
         patternMap.put(CHARACTERIZATION_GENERATION_NAME, CHARACTERIZATION_GENERATION_REGEXP);
         patternMap.put(PATHWAY_GENERATION_NAME, PATHWAY_GENERATION_REGEXP);
         patternMap.put(IR_GENERATION_NAME, IR_GENERATION_REGEXP);
-        patternMap.put(PLE_GENERATION_NAME, PLE_GENERATION_REGEXP);
-        patternMap.put(PLP_GENERATION_NAME, PLP_GENERATION_REGEXP);
     }
 
     public StatisticService() {
@@ -221,6 +259,220 @@ public class StatisticService {
         } catch (ParseException | IndexOutOfBoundsException e) {
             // If we cannot check the date of a file, then assume that it is a file for the current date
             return LocalDate.now();
+        }
+    }
+
+    // REST Endpoints
+
+    /**
+     * Returns execution statistics
+     *
+     * @param executionStatisticsRequest filter settings for statistics
+     * @return execution statistics in JSON or CSV format
+     */
+    @PreAuthorize("isPermitted('admin')")
+    @PostMapping(
+        value = "/executions",
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> executionStatistics(@RequestBody ExecutionStatisticsRequest executionStatisticsRequest) {
+        if (!auditTrailEnabled) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        boolean showUserInformation = executionStatisticsRequest.isShowUserInformation();
+
+        SourceExecutionsDto sourceExecutions = getSourceExecutions(
+                LocalDate.parse(executionStatisticsRequest.getStartDate(), formatter),
+                LocalDate.parse(executionStatisticsRequest.getEndDate(), formatter),
+                executionStatisticsRequest.getSourceKey(),
+                showUserInformation);
+
+        if (ResponseFormat.CSV.equals(executionStatisticsRequest.getResponseFormat())) {
+            return prepareExecutionResultResponse(sourceExecutions.getExecutions(), "execution_statistics.zip", showUserInformation);
+        } else {
+            return ResponseEntity.ok(sourceExecutions);
+        }
+    }
+
+    /**
+     * Returns access trends statistics
+     *
+     * @param accessTrendsStatisticsRequest filter settings for statistics
+     * @return access trends statistics in JSON or CSV format
+     */
+    @PreAuthorize("isPermitted('admin')")
+    @PostMapping(
+        value = "/accesstrends",
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> accessStatistics(@RequestBody AccessTrendsStatisticsRequest accessTrendsStatisticsRequest) {
+        if (!auditTrailEnabled) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        boolean showUserInformation = accessTrendsStatisticsRequest.isShowUserInformation();
+
+        AccessTrendsDto trends = getAccessTrends(
+                LocalDate.parse(accessTrendsStatisticsRequest.getStartDate(), formatter),
+                LocalDate.parse(accessTrendsStatisticsRequest.getEndDate(), formatter),
+                accessTrendsStatisticsRequest.getEndpoints(),
+                showUserInformation);
+
+        if (ResponseFormat.CSV.equals(accessTrendsStatisticsRequest.getResponseFormat())) {
+            return prepareAccessTrendsResponse(trends.getTrends(), "execution_trends.zip", showUserInformation);
+        } else {
+            return ResponseEntity.ok(trends);
+        }
+    }
+
+    private ResponseEntity<Resource> prepareExecutionResultResponse(List<SourceExecutionDto> executions, String filename, boolean showUserInformation) {
+        List<String[]> data = executions.stream()
+                .map(execution -> showUserInformation
+                        ? new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName(), execution.getUserId()}
+                        : new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName()}
+                )
+                .collect(Collectors.toList());
+        return prepareResponse(data, filename, showUserInformation ? EXECUTION_STATISTICS_CSV_RESULT_HEADER_WITH_USER_ID : EXECUTION_STATISTICS_CSV_RESULT_HEADER);
+    }
+
+    private ResponseEntity<Resource> prepareAccessTrendsResponse(List<AccessTrendDto> trends, String filename, boolean showUserInformation) {
+        List<String[]> data = trends.stream()
+                .map(trend -> showUserInformation
+                        ? new String[]{trend.getExecutionDate().toString(), trend.getEndpointName(), trend.getUserID()}
+                        : new String[]{trend.getExecutionDate().toString(), trend.getEndpointName()}
+                )
+                .collect(Collectors.toList());
+        return prepareResponse(data, filename, showUserInformation ? ACCESS_TRENDS_CSV_RESULT_HEADER_WITH_USER_ID : ACCESS_TRENDS_CSV_RESULT_HEADER);
+    }
+
+    private ResponseEntity<Resource> prepareResponse(List<String[]> data, String filename, List<String[]> header) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             StringWriter sw = new StringWriter();
+             CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER)) {
+
+            csvWriter.writeAll(header);
+            csvWriter.writeAll(data);
+            csvWriter.flush();
+            baos.write(sw.getBuffer().toString().getBytes());
+
+            ByteArrayResource resource = new ByteArrayResource(baos.toByteArray());
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                    .body(resource);
+        } catch (Exception ex) {
+            LOG.error("An error occurred while building a response", ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    // Request DTOs
+
+    public static final class ExecutionStatisticsRequest {
+        // Format - yyyy-MM-dd
+        String startDate;
+        // Format - yyyy-MM-dd
+        String endDate;
+        String sourceKey;
+        ResponseFormat responseFormat;
+        boolean showUserInformation;
+
+        public String getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(String startDate) {
+            this.startDate = startDate;
+        }
+
+        public String getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(String endDate) {
+            this.endDate = endDate;
+        }
+
+        public String getSourceKey() {
+            return sourceKey;
+        }
+
+        public void setSourceKey(String sourceKey) {
+            this.sourceKey = sourceKey;
+        }
+
+        public ResponseFormat getResponseFormat() {
+            return responseFormat;
+        }
+
+        public void setResponseFormat(ResponseFormat responseFormat) {
+            this.responseFormat = responseFormat;
+        }
+
+        public boolean isShowUserInformation() {
+            return showUserInformation;
+        }
+
+        public void setShowUserInformation(boolean showUserInformation) {
+            this.showUserInformation = showUserInformation;
+        }
+    }
+
+    public static final class AccessTrendsStatisticsRequest {
+        // Format - yyyy-MM-dd
+        String startDate;
+        // Format - yyyy-MM-dd
+        String endDate;
+        // Key - method (POST, GET)
+        // Value - endpoint ("{}" can be used as a placeholder, will be converted to ".*" in regular expression)
+        List<EndpointDto> endpoints;
+        ResponseFormat responseFormat;
+        boolean showUserInformation;
+
+        public String getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(String startDate) {
+            this.startDate = startDate;
+        }
+
+        public String getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(String endDate) {
+            this.endDate = endDate;
+        }
+
+        public List<EndpointDto> getEndpoints() {
+            return endpoints;
+        }
+
+        public void setEndpoints(List<EndpointDto> endpoints) {
+            this.endpoints = endpoints;
+        }
+
+        public ResponseFormat getResponseFormat() {
+            return responseFormat;
+        }
+
+        public void setResponseFormat(ResponseFormat responseFormat) {
+            this.responseFormat = responseFormat;
+        }
+
+        public boolean isShowUserInformation() {
+            return showUserInformation;
+        }
+
+        public void setShowUserInformation(boolean showUserInformation) {
+            this.showUserInformation = showUserInformation;
         }
     }
 }

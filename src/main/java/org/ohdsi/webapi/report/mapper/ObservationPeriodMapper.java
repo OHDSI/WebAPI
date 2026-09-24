@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.ObservationPeriodRecord;
+import org.ohdsi.webapi.report.ObservationPeriodRecord;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

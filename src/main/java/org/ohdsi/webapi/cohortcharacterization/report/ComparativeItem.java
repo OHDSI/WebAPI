@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.report;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +27,8 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
     EMPTY_ITEM.setProportion(0.0d);
   }
 
-  public ComparativeItem(PrevalenceItem firstItem, PrevalenceItem secondItem, CohortDefinition firstCohortDef,
-          CohortDefinition secondCohortDef) {
+  public ComparativeItem(PrevalenceItem firstItem, PrevalenceItem secondItem, CohortDefinitionEntity firstCohortDef,
+          CohortDefinitionEntity secondCohortDef) {
     super(firstItem != null ? firstItem : secondItem);
     this.hasFirstItem = firstItem != null;
     this.hasSecondItem = secondItem != null;

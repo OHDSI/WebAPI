@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.audittrail.events;
 
-import com.odysseusinc.logging.LogLevel;
+import org.ohdsi.webapi.arachne.logging.LogLevel;
 import org.springframework.context.ApplicationEvent;
 
 public class AuditTrailSessionCreatedEvent extends ApplicationEvent {

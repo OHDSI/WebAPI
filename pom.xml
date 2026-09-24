@@ -25,7 +25,7 @@
     <postgresql.version>42.7.4</postgresql.version>
     <bouncycastle.version>1.83</bouncycastle.version>
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
-    <circe.version>1.14.0</circe.version>
+    <circe.version>1.14.1</circe.version>
     <featureExtraction.version>3.8.0</featureExtraction.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>

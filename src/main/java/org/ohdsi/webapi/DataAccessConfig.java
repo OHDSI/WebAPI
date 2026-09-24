@@ -99,7 +99,7 @@ public class DataAccessConfig {
         HikariDataSource ds = new HikariDataSource(hikariConfig);
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver", "net.snowflake.client.jdbc.SnowflakeDriver", "com.databricks.client.jdbc.Driver", "com.intersystems.jdbc.IRISDriver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "org.netezza.Driver", "com.google.cloud.bigquery.jdbc.BigQueryDriver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver", "net.snowflake.client.jdbc.SnowflakeDriver", "com.databricks.client.jdbc.Driver", "com.intersystems.jdbc.IRISDriver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);

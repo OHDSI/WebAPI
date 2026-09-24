@@ -269,6 +269,10 @@ security:
 
   defaultRoles: ""
 
+  # Comma-separated logins to grant the built-in admin role at authentication.
+  # Removing a login does not revoke a role already granted.
+  admin-login: ""
+
   duration:
     increment: 10
     initial: 10

@@ -36,6 +36,9 @@ public class UserRoleOriginTest extends AbstractDatabaseTest {
   @Autowired
   private UserService userService;
 
+  @Autowired
+  private AuthorizationService authorizationService;
+
   private static final Long USER_ID = 51001L;
   private static final Long ROLE_ID = 51002L;
   private static final String LOGIN = "origin_test_user";
@@ -115,5 +118,14 @@ public class UserRoleOriginTest extends AbstractDatabaseTest {
 
     roleService.removeUser(USER_ID, ROLE_ID);
     assertEquals("Removal should clear duplicates too", 0, countAssignments(null));
+  }
+
+  @Test
+  public void testEnsureUserHasRoleIsIdempotent() {
+    assertEquals("First grant should create an assignment", true,
+        authorizationService.ensureUserHasRole(ROLE_NAME, LOGIN, UserOrigin.SYSTEM));
+    assertEquals("Repeated grant should reuse the assignment", false,
+        authorizationService.ensureUserHasRole(ROLE_NAME, LOGIN, UserOrigin.SYSTEM));
+    assertEquals("Only one assignment should exist", 1, countAssignments("SYSTEM"));
   }
 }

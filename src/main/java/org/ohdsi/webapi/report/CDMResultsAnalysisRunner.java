@@ -284,7 +284,12 @@ public class CDMResultsAnalysisRunner {
                 }
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Error running drilldown query for domain {} and conceptId {}: {}", domain, conceptId, e.getMessage(), e);
+            // Do not swallow the failure: an empty (or partial) result returned here would be
+            // persisted in the Achilles cache by the @AchillesCache aspect (which also caches
+            // nulls), leaving users with empty drilldown reports and no way to re-trigger the query.
+            throw new RuntimeException(String.format(
+                    "Failed to run drilldown query for domain '%s' and conceptId '%s'", domain, conceptId), e);
         }
         return objectNode;
     }

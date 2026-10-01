@@ -101,6 +101,10 @@ public class TagService extends AbstractDaoService {
         return tagRepository.findAllTags(namePart);
     }
 
+    public List<Tag> listByName(String name) {
+        return tagRepository.findByName(name);
+    }
+
     public List<Tag> listInfo() {
         return tagRepository.findAll();
     }

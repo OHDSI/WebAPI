@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
+import org.ohdsi.webapi.report.PrevalenceRecord;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

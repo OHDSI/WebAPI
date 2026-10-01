@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.test;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,8 +44,8 @@ public class CDMResultsServiceIT extends WebApiIT {
 
     @Before
     public void init() throws Exception {
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+      truncateTable(String.format("%s.%s", getOhdsiSchema(), "source"));
+      resetSequence(String.format("%s.%s", getOhdsiSchema(), "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
         prepareCdmSchema();
         prepareResultSchema();
@@ -99,7 +99,7 @@ public class CDMResultsServiceIT extends WebApiIT {
         achillesService.clearCache();
 
         // Assert
-        String sql = "SELECT COUNT(*) FROM achilles_cache";
+        String sql = String.format("SELECT COUNT(*) FROM %s", qualifyOhdsiTable("achilles_cache"));
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         assertEquals(0, count.intValue());
     }
@@ -108,16 +108,16 @@ public class CDMResultsServiceIT extends WebApiIT {
     public void achillesService_clearCache_somethingInCache_clearsAllRowsForSource() {
 
       // Arrange
-      String insertSqlRow1 = "INSERT INTO achilles_cache (id, source_id, cache_name, cache) VALUES (1, 1, 'cache1', 'cache1')";  
+      String insertSqlRow1 = String.format("INSERT INTO %s (id, source_id, cache_name, cache) VALUES (1, 1, 'cache1', 'cache1')", qualifyOhdsiTable("achilles_cache"));  
       jdbcTemplate.execute(insertSqlRow1);
-      String insertSqlRow2 = "INSERT INTO achilles_cache (id, source_id, cache_name, cache) VALUES (2, 1, 'cache2', 'cache2')";
+      String insertSqlRow2 = String.format("INSERT INTO %s (id, source_id, cache_name, cache) VALUES (2, 1, 'cache2', 'cache2')", qualifyOhdsiTable("achilles_cache"));
       jdbcTemplate.execute(insertSqlRow2);
 
       // Act
       achillesService.clearCache();
 
       // Assert
-      String sql = "SELECT COUNT(*) FROM achilles_cache";
+      String sql = String.format("SELECT COUNT(*) FROM %s", qualifyOhdsiTable("achilles_cache"));
       Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
       assertEquals(0, count.intValue());
     }
@@ -131,7 +131,7 @@ public class CDMResultsServiceIT extends WebApiIT {
       cdmCacheService.clearCache();
 
       // Assert
-      String sql = "SELECT COUNT(*) FROM cdm_cache";
+      String sql = String.format("SELECT COUNT(*) FROM %s", qualifyOhdsiTable("cdm_cache"));
       Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
       assertEquals(0, count.intValue());
     }
@@ -140,16 +140,16 @@ public class CDMResultsServiceIT extends WebApiIT {
     public void cdmCacheService_clearCache_somethingInCache_clearsAllRowsForSource() {
 
       // Arrange
-      String insertSqlRow1 = "INSERT INTO cdm_cache (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (1, 1, 1, 100, 101, 102, 103)";
+      String insertSqlRow1 = String.format("INSERT INTO %s (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (1, 1, 1, 100, 101, 102, 103)", qualifyOhdsiTable("cdm_cache"));
       jdbcTemplate.execute(insertSqlRow1);
-      String insertSqlRow2 = "INSERT INTO cdm_cache (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (2, 2, 1, 200, 201, 202, 203)";
+      String insertSqlRow2 = String.format("INSERT INTO %s (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (2, 2, 1, 200, 201, 202, 203)", qualifyOhdsiTable("cdm_cache"));
       jdbcTemplate.execute(insertSqlRow2);
 
       // Act
       cdmCacheService.clearCache();
 
       // Assert
-      String sql = "SELECT COUNT(*) FROM cdm_cache";
+      String sql = String.format("SELECT COUNT(*) FROM %s", qualifyOhdsiTable("cdm_cache"));
       Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
       assertEquals(0, count.intValue());
     }

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.generationcache;
 
 import org.ohdsi.sql.SqlRender;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequest;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
@@ -11,6 +11,7 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.StatementCancel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class GenerationCacheHelper {
 
     private final GenerationCacheService generationCacheService;
 
-    public GenerationCacheHelper(GenerationCacheService generationCacheService, TransactionTemplate transactionTemplateRequiresNew) {
+    public GenerationCacheHelper(GenerationCacheService generationCacheService, @Qualifier("transactionTemplateRequiresNew") TransactionTemplate transactionTemplateRequiresNew) {
 
         this.generationCacheService = generationCacheService;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
@@ -39,7 +40,7 @@ public class GenerationCacheHelper {
     public Integer computeHash(String expression) {
         return generationCacheService.getDesignHash(CacheableGenerationType.COHORT, expression);
     }
-    public CacheResult computeCacheIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
+    public CacheResult computeCacheIfAbsent(CohortDefinitionEntity cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         Integer designHash = computeHash(cohortDefinition.getDetails().getExpression());

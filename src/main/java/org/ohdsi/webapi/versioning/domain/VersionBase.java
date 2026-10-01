@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.versioning.domain;
 
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-
 import java.util.Date;
+
+import org.ohdsi.webapi.security.authz.UserEntity;
 
 // Projection class
 public class VersionBase {

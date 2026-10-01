@@ -6,7 +6,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.springframework.core.convert.ConversionService;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 public class SerializedPathwayAnalysisToPathwayAnalysisConverter implements AttributeConverter<PathwayAnalysisEntity, String> {
 

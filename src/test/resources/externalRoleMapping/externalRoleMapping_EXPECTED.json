@@ -1,0 +1,7 @@
+{
+  "expected.mapping": [
+    { "user_id": 50001, "role_id": 50001, "origin": "LDAP" },
+    { "user_id": 50002, "role_id": 50004, "origin": "WINDOWS" },
+    { "user_id": 50003, "role_id": 50001, "origin": "OIDC" }
+  ]
+}

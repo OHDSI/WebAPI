@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CohortDefinitionToCohortVersionConverter
-        extends BaseConversionServiceAwareConverter<CohortDefinition, CohortVersion> {
+        extends BaseConversionServiceAwareConverter<CohortDefinitionEntity, CohortVersion> {
     @Override
-    public CohortVersion convert(CohortDefinition source) {
+    public CohortVersion convert(CohortDefinitionEntity source) {
         CohortVersion target = new CohortVersion();
         target.setAssetId(source.getId());
         target.setDescription(source.getDescription());

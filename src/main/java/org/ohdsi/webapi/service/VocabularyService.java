@@ -16,19 +16,6 @@ import java.util.stream.Stream;
 import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,8 +29,6 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.vocabulary.SearchProviderConfig;
-import org.ohdsi.webapi.activity.Activity.ActivityType;
-import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
@@ -72,25 +57,31 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
 
  /**
   * Provides REST services for working with
   * the OMOP standardized vocabularies
-  * 
+  *
   * @summary Vocabulary
   */
-@Path("vocabulary/")
-@Component
+@RestController
+@RequestMapping("/vocabulary")
 public class VocabularyService extends AbstractDaoService {
 
 	//create cache
@@ -135,6 +126,7 @@ public class VocabularyService extends AbstractDaoService {
   private SourceService sourceService;
   
   @Autowired
+  @Lazy
   private VocabularySearchService vocabSearchService;
 
   @Autowired
@@ -168,16 +160,11 @@ public class VocabularyService extends AbstractDaoService {
     return this.rowMapper;
   }
 
-  private String getDefaultVocabularySourceKey() {
-    Source vocabSource = sourceService.getPriorityVocabularySource();
-    return Objects.nonNull(vocabSource) ? vocabSource.getSourceKey() : null;
-  }
-
   public Source getPriorityVocabularySource() {
 
     Source source = sourceService.getPriorityVocabularySource();
     if (Objects.isNull(source)) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
     return source;
   }
@@ -193,22 +180,24 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Calculates the full set of ancestor and descendant concepts for a list of 
+   * Calculates the full set of ancestor and descendant concepts for a list of
    * ancestor and descendant concepts specified. This is used by ATLAS when
    * navigating the list of included concepts in a concept set - the full list
    * of ancestors (as defined in the concept set) and the descendants (those
-   * concepts included when resolving the concept set) are used to determine 
+   * concepts included when resolving the concept set) are used to determine
    * which descendant concepts share one or more ancestors.
-   * 
+   *
    * @summary Calculates ancestors for a list of concepts
    * @param ids Concepts identifiers from concept set
    * @return A map of the form: {id -> List<ascendant id>}
    */
-  @Path("{sourceKey}/lookup/identifiers/ancestors")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Map<Long, List<Long>> calculateAscendants(@PathParam("sourceKey") String sourceKey, Ids ids) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/lookup/identifiers/ancestors",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Map<Long, List<Long>> calculateAscendants(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody Ids ids) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     
@@ -252,7 +241,7 @@ public class VocabularyService extends AbstractDaoService {
             ); 
   }
   
-  private static class Ids {
+  public static class Ids {
     public List<Long> ancestors;
     public List<Long> descendants;
   }
@@ -270,7 +259,7 @@ public class VocabularyService extends AbstractDaoService {
   
   /**
    * Get concepts from concept identifiers (IDs) from a specific source
-   * 
+   *
    * @summary Perform a lookup of an array of concept identifiers returning the
    * matching concepts with their detailed properties.
    * @param sourceKey path parameter specifying the source key identifying the
@@ -278,13 +267,21 @@ public class VocabularyService extends AbstractDaoService {
    * @param identifiers an array of concept identifiers
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/lookup/identifiers")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/lookup/identifiers",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> executeIdentifierLookup(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody long[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     return executeIdentifierLookup(source, identifiers);
+  }
+
+  // Ungated variant for internal (non-HTTP) callers; HTTP access goes through the @PreAuthorize-gated overload.
+  public Collection<Concept> executeIdentifierLookupInternal(String sourceKey, long[] identifiers) {
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      return executeIdentifierLookup(source, identifiers);
   }
 
   protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
@@ -315,28 +312,6 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "identifiers", identifiers);
   }
   
-  /**
-   * Get concepts from concept identifiers (IDs) from the default vocabulary 
-   * source
-   * 
-   * @summary Perform a lookup of an array of concept identifiers returning the
-   * matching concepts with their detailed properties, using the default source.
-   * @param identifiers an array of concept identifiers
-   * @return A collection of concepts
-   */
-  @Path("lookup/identifiers")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeIdentifierLookup(long[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return executeIdentifierLookup(defaultSourceKey, identifiers);   
-  }  
-  
   public Collection<Concept> executeIncludedConceptLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -353,7 +328,7 @@ public class VocabularyService extends AbstractDaoService {
 
   /**
    * Get concepts from source codes from a specific source
-   * 
+   *
    * @summary Lookup source codes from the concept CONCEPT_CODE field
    * in the specified vocabulary
    * @param sourceKey path parameter specifying the source key identifying the
@@ -361,11 +336,13 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourcecodes array of source codes
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/lookup/sourcecodes")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSourcecodeLookup(@PathParam("sourceKey") String sourceKey, String[] sourcecodes) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/lookup/sourcecodes",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> executeSourcecodeLookup(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody String[] sourcecodes) {
     if (sourcecodes.length == 0) {
       return new ArrayList<>();
     }
@@ -385,43 +362,24 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get concepts from source codes from the default vocabulary source
-   * 
-   * @summary Lookup source codes from the concept CONCEPT_CODE field
-   * in the specified vocabulary
-   * @param sourcecodes array of source codes
-   * @return A collection of concepts
-   */
-  @Path("lookup/sourcecodes")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSourcecodeLookup(String[] sourcecodes) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return executeSourcecodeLookup(defaultSourceKey, sourcecodes);
-  }
-  
-  /**
-   * Get concepts mapped to the selected concept identifiers from a 
-   * specific source. Find all concepts mapped to the concept identifiers 
+   * Get concepts mapped to the selected concept identifiers from a
+   * specific source. Find all concepts mapped to the concept identifiers
    * provided. This end-point will check the CONCEPT, CONCEPT_RELATIONSHIP and
    * SOURCE_TO_CONCEPT_MAP tables.
-   * 
+   *
    * @summary Concepts mapped to other concepts
    * @param sourceKey path parameter specifying the source key identifying the
    * source to use for access to the set of vocabulary tables
    * @param identifiers an array of concept identifiers
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/lookup/mapped")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/lookup/mapped",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> executeMappedLookup(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody long[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     return executeMappedLookup(source, identifiers);
   }
@@ -455,29 +413,8 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, tqName, tqValue, "identifiers", identifiers);
   }
 
-  /**
-   * Get concepts mapped to the selected concept identifiers from a 
-   * specific source. Find all concepts mapped to the concept identifiers 
-   * provided. This end-point will check the CONCEPT, CONCEPT_RELATIONSHIP and
-   * SOURCE_TO_CONCEPT_MAP tables.
-   * 
-   * @summary Concepts mapped to other concepts
-   * @param identifiers an array of concept identifiers
-   * @return A collection of concepts
-   */
-  @Path("lookup/mapped")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeMappedLookup(long[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
 
-    return executeMappedLookup(defaultSourceKey, identifiers);
-  }
-  
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
   public Collection<Concept> executeMappedLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -494,17 +431,19 @@ public class VocabularyService extends AbstractDaoService {
 
   /**
    * Search for a concept on the selected source.
-   * 
+   *
    * @summary Search for a concept on the selected source
    * @param sourceKey The source key for the concept search
    * @param search The ConceptSearch parameters
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/search")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/search",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> executeSearch(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody ConceptSearch search) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
@@ -654,54 +593,40 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Search for a concept on the default vocabulary source.
-   * 
-   * @summary Search for a concept (default vocabulary source)
-   * @param search The ConceptSearch parameters
-   * @return A collection of concepts
-   */
-  @Path("search")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(ConceptSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return executeSearch(defaultSourceKey, search);    
-  }
- 
-  /**
    * Search for a concept based on a query using the selected vocabulary source.
-   * 
+   *
    * @summary Search for a concept using a query
    * @param sourceKey The source key holding the OMOP vocabulary
    * @param query The query to use to search for concepts
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/search/{query}")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/search/{query}",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> executeSearch(
+          @PathVariable("sourceKey") String sourceKey,
+          @PathVariable("query") String query) {
     return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
   }
   
   /**
    * Search for a concept based on a query using the default vocabulary source.
    * NOTE: This method uses the query as part of the URL query string
-   * 
+   *
    * @summary Search for a concept using a query (default vocabulary)
    * @param sourceKey The source key holding the OMOP vocabulary
    * @param query The query to use to search for concepts
    * @param rows The number of rows to return.
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/search")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @DefaultValue(DEFAULT_SEARCH_ROWS) @QueryParam("rows") String rows) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/search",
+              produces = MediaType.APPLICATION_JSON_VALUE,
+              params = "query")
+  public Collection<Concept> executeSearch(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestParam("query") String query,
+          @RequestParam(value = "rows", defaultValue = DEFAULT_SEARCH_ROWS) String rows) {
     // Verify that the rows parameter contains an integer and is > 0
     try {
         Integer r = Integer.parseInt(rows);
@@ -733,41 +658,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Search for a concept based on a query using the default vocabulary source.
-   * NOTE: This method uses the query as part of the URL and not the 
-   * query string
-   * 
-   * @summary Search for a concept using a query (default vocabulary)
-   * @param query The query to use to search for concepts
-   * @return A collection of concepts
-   */
-  @Path("search/{query}")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("query") String query) {
-    
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return executeSearch(defaultSourceKey, query);
-  }
-
-  /**
-   * Get a concept based on the concept identifier from the specified 
+   * Get a concept based on the concept identifier from the specified
    * source
-   * 
+   *
    * @summary Get concept details
    * @param sourceKey The source containing the vocabulary
    * @param id The concept ID to find
    * @return The concept details
    */
-  @GET
-  @Path("{sourceKey}/concept/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-	@Cacheable(cacheNames = CachingSetup.CONCEPT_DETAIL_CACHE, key = "#sourceKey.concat('/').concat(#id)")
-  public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/concept/{id}",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  @Cacheable(cacheNames = CachingSetup.CONCEPT_DETAIL_CACHE, key = "#sourceKey.concat('/').concat(#id)")
+  public Concept getConcept(
+          @PathVariable("sourceKey") final String sourceKey,
+          @PathVariable("id") final long id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getConcept.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -778,48 +683,29 @@ public class VocabularyService extends AbstractDaoService {
       concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), this.rowMapper);
     } catch (EmptyResultDataAccessException e) {
       log.error("Request for conceptId={} resulted in 0 results", id);
-      throw new NotFoundException(String.format("There is no concept with id = %d.", id));
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("There is no concept with id = %d.", id));
     }
     return concept;
   }
   
   /**
-   * Get a concept based on the concept identifier from the default
-   * vocabulary source
-   * 
-   * @summary Get concept details (default vocabulary source)
-   * @param id The concept ID to find
-   * @return The concept details
-   */
-  @GET
-  @Path("concept/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Concept getConcept(@PathParam("id") final long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getConcept(defaultSourceKey, id);
-    
-  }
-
-  /**
-   * Get related concepts for the selected concept identifier from a source. 
+   * Get related concepts for the selected concept identifier from a source.
    * Related concepts will include those concepts that have a relationship
-   * to the selected concept identifier in the CONCEPT_RELATIONSHIP and 
+   * to the selected concept identifier in the CONCEPT_RELATIONSHIP and
    * CONCEPT_ANCESTOR tables.
-   * 
+   *
    * @summary Get related concepts
    * @param sourceKey The source containing the vocabulary
    * @param id The concept ID to find
    * @return A collection of related concepts
    */
-  @GET
-  @Path("{sourceKey}/concept/{id}/related")
-  @Produces(MediaType.APPLICATION_JSON)
-	@Cacheable(cacheNames = CachingSetup.CONCEPT_RELATED_CACHE, key = "#sourceKey.concat('/').concat(#id)")
-  public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/concept/{id}/related",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  @Cacheable(cacheNames = CachingSetup.CONCEPT_RELATED_CACHE, key = "#sourceKey.concat('/').concat(#id)")
+  public Collection<RelatedConcept> getRelatedConcepts(
+          @PathVariable("sourceKey") String sourceKey,
+          @PathVariable("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getRelatedConcepts.sql";
@@ -833,11 +719,12 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
-
-   @POST
-   @Path("{sourceKey}/related-standard")
-   @Produces(MediaType.APPLICATION_JSON)
-   public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(@PathParam("sourceKey") String sourceKey, List<Long> allConceptIds) {
+   @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+   @PostMapping(value = "/{sourceKey}/related-standard",
+                produces = MediaType.APPLICATION_JSON_VALUE)
+   public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(
+           @PathVariable("sourceKey") String sourceKey,
+           @RequestBody List<Long> allConceptIds) {
      Source source = getSourceRepository().findBySourceKey(sourceKey);
      String relatedConceptsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts.sql";
      String relatedMappedFromIdsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts_getMappedFromIds.sql";
@@ -896,26 +783,28 @@ public class VocabularyService extends AbstractDaoService {
            resultCombinedMappedConcepts.put(standardConceptId,mappedRelatedConcept);
          } catch (JsonProcessingException e) {
            log.error("Could not convert RelatedConcept to MappedRelatedConcept", e);
-           throw new WebApplicationException(e);
+           throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
          }
       }
     });
    }
 
    /**
-   * Get ancestor and descendant concepts for the selected concept identifier 
-   * from a source. 
-   * 
+   * Get ancestor and descendant concepts for the selected concept identifier
+   * from a source.
+   *
    * @summary Get ancestors and descendants for a concept
    * @param sourceKey The source containing the vocabulary
    * @param id The concept ID
    * @return A collection of related concepts
    */
-  @GET
-  @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
-  @Produces(MediaType.APPLICATION_JSON)
-	@Cacheable(cacheNames = CachingSetup.CONCEPT_HIERARCHY_CACHE, key = "#sourceKey.concat('/').concat(#id)")
-  public Collection<RelatedConcept> getConceptAncestorAndDescendant(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/concept/{id}/ancestorAndDescendant",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  @Cacheable(cacheNames = CachingSetup.CONCEPT_HIERARCHY_CACHE, key = "#sourceKey.concat('/').concat(#id)")
+  public Collection<RelatedConcept> getConceptAncestorAndDescendant(
+          @PathVariable("sourceKey") String sourceKey,
+          @PathVariable("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getConceptAncestorAndDescendant.sql";
@@ -931,39 +820,21 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Get related concepts for the selected concept identifier from the
-   * default vocabulary source. 
-   * 
-   * @summary Get related concepts (default vocabulary)
-   * @param id The concept identifier
-   * @return A collection of related concepts
-   */
-  @GET
-  @Path("concept/{id}/related")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getRelatedConcepts(@PathParam("id") final Long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getRelatedConcepts(defaultSourceKey, id);
-  }
- 
-  /**
    * Get a list of common ancestor concepts for a selected list of concept
-   * identifiers using the selected vocabulary source. 
-   * 
+   * identifiers using the selected vocabulary source.
+   *
    * @summary Get common ancestor concepts
    * @param sourceKey The source containing the vocabulary
    * @param identifiers An array of concept identifiers
    * @return A collection of related concepts
    */
-  @POST
-  @Path("{sourceKey}/commonAncestors")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getCommonAncestors(@PathParam("sourceKey") String sourceKey, Object[] identifiers) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/commonAncestors",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<RelatedConcept> getCommonAncestors(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody Object[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetCommonAncestors(identifiers, source);
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
@@ -990,40 +861,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get a list of common ancestor concepts for a selected list of concept
-   * identifiers using the default vocabulary source. 
-   * 
-   * @summary Get common ancestor concepts (default vocabulary)
-   * @param identifiers An array of concept identifiers
-   * @return A collection of related concepts
-   */
-  @POST
-  @Path("/commonAncestors")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getCommonAncestors(Object[] identifiers) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getCommonAncestors(defaultSourceKey, identifiers);
-  }
-  
-  /**
-   * Resolve a concept set expression into a collection 
-   * of concept identifiers using the selected vocabulary source. 
-   * 
+   * Resolve a concept set expression into a collection
+   * of concept identifiers using the selected vocabulary source.
+   *
    * @summary Resolve concept set expression
    * @param sourceKey The source containing the vocabulary
    * @param conceptSetExpression A concept set expression
    * @return A collection of concept identifiers
    */
-  @POST
-  @Path("{sourceKey}/resolveConceptSetExpression")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/resolveConceptSetExpression",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Long> resolveConceptSetExpression(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
     final ArrayList<Long> identifiers = new ArrayList<>();
@@ -1038,40 +890,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Resolve a concept set expression into a collection 
-   * of concept identifiers using the default vocabulary source. 
-   * 
-   * @summary Resolve concept set expression (default vocabulary)
-   * @param conceptSetExpression A concept set expression
-   * @return A collection of concept identifiers
-   */
-  @POST
-  @Path("resolveConceptSetExpression")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Long> resolveConceptSetExpression(ConceptSetExpression conceptSetExpression) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
-  }
-
-  /**
    * Resolve a concept set expression to get the count
-   * of included concepts using the selected vocabulary source. 
-   * 
+   * of included concepts using the selected vocabulary source.
+   *
    * @summary Get included concept counts for concept set expression
    * @param sourceKey The source containing the vocabulary
    * @param conceptSetExpression A concept set expression
    * @return A count of included concepts
    */
-  @POST
-  @Path("{sourceKey}/included-concepts/count")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Integer countIncludedConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/included-concepts/count",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Integer countIncludedConceptSets(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody ConceptSetExpression conceptSetExpression) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String query = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, sql -> "select count(*) from (" + sql + ") Q;").getSql();
@@ -1079,59 +912,39 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Resolve a concept set expression to get the count
-   * of included concepts using the default vocabulary source. 
-   * 
-   * @summary Get included concept counts for concept set expression (default vocabulary)
-   * @param conceptSetExpression A concept set expression
-   * @return A count of included concepts
-   */
-  @POST
-  @Path("included-concepts/count")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Integer countIncludedConcepSets(ConceptSetExpression conceptSetExpression) {
-
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    if (Objects.isNull(defaultSourceKey)) {
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
-    }
-    return countIncludedConceptSets(defaultSourceKey, conceptSetExpression);
-  }
-
-
-  /**
    * Produces a SQL query to use against your OMOP CDM to create the
    * resolved concept set
-   * 
+   *
    * @summary Get SQL to resolve concept set expression
    * @param conceptSetExpression A concept set expression
    * @return SQL Statement as text
    */
-  @POST
-  @Path("conceptSetExpressionSQL")
-  @Produces(MediaType.TEXT_PLAIN)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public String getConceptSetExpressionSQL(ConceptSetExpression conceptSetExpression) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:conceptset','write:conceptset'))")
+  @PostMapping(value = "/conceptSetExpressionSQL",
+               produces = MediaType.TEXT_PLAIN_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public String getConceptSetExpressionSQL(@RequestBody ConceptSetExpression conceptSetExpression) {
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
-    
+
     return query;
   }
   
   /**
    * Get a collection of descendant concepts for the selected concept
    * identifier using the selected source key
-   * 
+   *
    * @summary Get descendant concepts for the selected concept identifier
    * @param sourceKey The source containing the vocabulary
    * @param id The concept identifier
    * @return A collection of concepts
    */
-  @GET
-  @Path("{sourceKey}/concept/{id}/descendants")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getDescendantConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/concept/{id}/descendants",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<RelatedConcept> getDescendantConcepts(
+          @PathVariable("sourceKey") String sourceKey,
+          @PathVariable("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getDescendantConcepts.sql";
@@ -1149,37 +962,17 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get a collection of descendant concepts for the selected concept
-   * identifier using the default vocabulary
-   * 
-   * @summary Get descendant concepts for the selected concept identifier (default vocabulary)
-   * @param id The concept identifier
-   * @return A collection of concepts
-   */
-  @GET
-  @Path("concept/{id}/descendants")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getDescendantConcepts(@PathParam("id") final Long id) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getDescendantConcepts(defaultSourceKey, id);
-  }
-  
-  /**
-   * Get a collection of domains from the domain table in the 
+   * Get a collection of domains from the domain table in the
    * vocabulary for the the selected source key.
-   * 
+   *
    * @summary Get domains
    * @param sourceKey The source containing the vocabulary
    * @return A collection of domains
    */
-  @GET
-  @Path("{sourceKey}/domains")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Domain> getDomains(@PathParam("sourceKey") String sourceKey) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/domains",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Domain> getDomains(@PathVariable("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     String sqlPath = "/resources/vocabulary/sql/getDomains.sql";
@@ -1198,36 +991,17 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Get a collection of domains from the domain table in the 
-   * default vocabulary.
-   * 
-   * @summary Get domains (default vocabulary)
-   * @return A collection of domains
-   */
-  @GET
-  @Path("domains")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Domain> getDomains() {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getDomains(defaultSourceKey);
-  }
-  
-  /**
-   * Get a collection of vocabularies from the vocabulary table in the 
+   * Get a collection of vocabularies from the vocabulary table in the
    * selected source key.
-   * 
+   *
    * @summary Get vocabularies
    * @param sourceKey The source containing the vocabulary
    * @return A collection of vocabularies
    */
-  @GET
-  @Path("{sourceKey}/vocabularies")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Vocabulary> getVocabularies(@PathParam("sourceKey") String sourceKey) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/vocabularies",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Vocabulary> getVocabularies(@PathVariable("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getVocabularies.sql";
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -1247,26 +1021,6 @@ public class VocabularyService extends AbstractDaoService {
     });
   }
   
-  /**
-   * Get a collection of vocabularies from the vocabulary table in the 
-   * default vocabulary
-   * 
-   * @summary Get vocabularies (default vocabulary)
-   * @param sourceKey The source containing the vocabulary
-   * @return A collection of vocabularies
-   */
-  @GET
-  @Path("vocabularies")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Vocabulary> getVocabularies() {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getVocabularies(defaultSourceKey);
-  }  
-
   private void addRelationships(final Map<Long, RelatedConcept> concepts, final ResultSet resultSet) throws SQLException {
     final Long concept_id = resultSet.getLong("CONCEPT_ID");
     if (!concepts.containsKey(concept_id)) {
@@ -1299,15 +1053,15 @@ public class VocabularyService extends AbstractDaoService {
   /**
    * Get the vocabulary version from the vocabulary table using
    * the selected source key
-   * 
+   *
    * @summary Get vocabulary version info
    * @param sourceKey The source containing the vocabulary
    * @return The vocabulary info
    */
-  @GET
-  @Path("{sourceKey}/info")
-  @Produces(MediaType.APPLICATION_JSON)
-  public VocabularyInfo getInfo(@PathParam("sourceKey") String sourceKey) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @GetMapping(value = "/{sourceKey}/info",
+              produces = MediaType.APPLICATION_JSON_VALUE)
+  public VocabularyInfo getInfo(@PathVariable("sourceKey") String sourceKey) {
     if (vocabularyInfoCache == null) {
       vocabularyInfoCache = new Hashtable<>();
     }
@@ -1346,22 +1100,23 @@ public class VocabularyService extends AbstractDaoService {
 	}
   
   /**
-   * Get the descendant concepts of the selected ancestor vocabulary and 
-   * concept class for the selected sibling vocabulary and concept class. 
+   * Get the descendant concepts of the selected ancestor vocabulary and
+   * concept class for the selected sibling vocabulary and concept class.
    * It is unclear how this endpoint is used so it may be a candidate to
    * deprecate.
-   * 
+   *
    * @summary Get descendant concepts by source
    * @param sourceKey The source containing the vocabulary
    * @param search The descendant of ancestor search object
    * @return A collection of concepts
    */
-  @POST
-  @Path("{sourceKey}/descendantofancestor")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> getDescendantOfAncestorConcepts(@PathParam("sourceKey") String sourceKey, DescendentOfAncestorSearch search) {
-    Tracker.trackActivity(ActivityType.Search, "getDescendantOfAncestorConcepts");
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/descendantofancestor",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> getDescendantOfAncestorConcepts(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody DescendentOfAncestorSearch search) {
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetDescendantOfAncestorConcepts(search, source);
@@ -1380,43 +1135,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get the descendant concepts of the selected ancestor vocabulary and 
-   * concept class for the selected sibling vocabulary and concept class. 
-   * It is unclear how this endpoint is used so it may be a candidate to
-   * deprecate.
-   * 
-   * @summary Get descendant concepts (default vocabulary)
-   * @param search The descendant of ancestor search object
-   * @return A collection of concepts
-   */
-  @POST
-  @Path("descendantofancestor")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> getDescendantOfAncestorConcepts(DescendentOfAncestorSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getDescendantOfAncestorConcepts(defaultSourceKey, search);
-  }
-  
-  /**
-   * Get the related concepts for a list of concept ids using the 
+   * Get the related concepts for a list of concept ids using the
    * concept_relationship table for the selected source key
-   * 
+   *
    * @summary Get related concepts
    * @param sourceKey The source containing the vocabulary
    * @param search The concept identifiers of interest
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/relatedconcepts")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, RelatedConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, "getRelatedConcepts");
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/relatedconcepts",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<Concept> getRelatedConcepts(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody RelatedConceptSearch search) {
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetRelatedConcepts(search, source);
@@ -1448,40 +1181,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Get the related concepts for a list of concept ids using the 
-   * concept_relationship table
-   * 
-   * @summary Get related concepts (default vocabulary)
-   * @param search The concept identifiers of interest
-   * @return A collection of concepts
-   */
-  @Path("relatedconcepts")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> getRelatedConcepts(RelatedConceptSearch search) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getRelatedConcepts(defaultSourceKey, search);
-  }
-  
-  /**
    * Get the descendant concepts for a selected list of concept ids for a
    * selected source key
-   * 
+   *
    * @summary Get descendant concepts for selected concepts
    * @param sourceKey The source containing the vocabulary
    * @param conceptList The list of concept identifiers
    * @return A collection of concepts
    */
-  @Path("{sourceKey}/conceptlist/descendants")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getDescendantConceptsByList(@PathParam("sourceKey") String sourceKey, String[] conceptList) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/conceptlist/descendants",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<RelatedConcept> getDescendantConceptsByList(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody String[] conceptList) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetDescendantConceptsByList(conceptList, source);
@@ -1496,26 +1210,6 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
   
-  /**
-   * Get the descendant concepts for a selected list of concept ids 
-   * 
-   * @summary Get descendant concepts for selected concepts (default vocabulary)
-   * @param conceptList The list of concept identifiers
-   * @return A collection of concepts
-   */
-  @Path("conceptlist/descendants")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<RelatedConcept> getDescendantConceptsByList(String[] conceptList) {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return getDescendantConceptsByList(defaultSourceKey, conceptList);
-  }    
-
   protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
     String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
     String tqName = "CDM_schema";
@@ -1527,17 +1221,19 @@ public class VocabularyService extends AbstractDaoService {
   /**
    * Get the recommended concepts for a selected list of concept ids for a
    * selected source key
-   * 
+   *
    * @summary Get recommended concepts for selected concepts
    * @param sourceKey The source containing the vocabulary
    * @param conceptList The list of concept identifiers
    * @return A collection of recommended concepts
    */
-  @Path("{sourceKey}/lookup/recommended")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<RecommendedConcept> getRecommendedConceptsByList(@PathParam("sourceKey") String sourceKey, long[] conceptList) {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/lookup/recommended",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<RecommendedConcept> getRecommendedConceptsByList(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody long[] conceptList) {
     if (conceptList.length == 0) {
       return new ArrayList<RecommendedConcept>(); // empty list of recommendations
     }
@@ -1586,17 +1282,19 @@ public class VocabularyService extends AbstractDaoService {
   /**
    * Compares two concept set expressions to find which concepts are
    * shared or unique to each concept set for the selected vocabulary source.
-   * 
+   *
    * @summary Compare concept sets
    * @param sourceKey The source containing the vocabulary
    * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
    * @return A collection of concept set comparisons
    */
-  @Path("{sourceKey}/compare")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetComparison> compareConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression[] conceptSetExpressionList) throws Exception {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/compare",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<ConceptSetComparison> compareConceptSets(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody ConceptSetExpression[] conceptSetExpressionList) throws Exception {
     if (conceptSetExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
     }
@@ -1622,13 +1320,13 @@ public class VocabularyService extends AbstractDaoService {
 
     return returnVal;
   }
-
-  @Path("{sourceKey}/compare-arbitrary")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
-                                                                final CompareArbitraryDto dto) throws Exception {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/compare-arbitrary",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Collection<ConceptSetComparison> compareConceptSetsCsv(
+          @PathVariable("sourceKey") final String sourceKey,
+          @RequestBody final CompareArbitraryDto dto) throws Exception {
     final ConceptSetExpression[] csExpressionList = dto.compareTargets;
     if (csExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
@@ -1654,63 +1352,21 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Compares two concept set expressions to find which concepts are
-   * shared or unique to each concept set.
-   * 
-   * @summary Compare concept sets (default vocabulary)
-   * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
-   * @return A collection of concept set comparisons
-   */
-  @Path("compare")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetComparison> compareConceptSets(ConceptSetExpression[] conceptSetExpressionList) throws Exception {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return compareConceptSets(defaultSourceKey, conceptSetExpressionList);
-  }
-  
-  
-  /**
-   * Optimizes a concept set expressions to find redundant concepts specified
-   * in a concept set expression.
-   * 
-   * @summary Optimize concept set (default vocabulary)
-   * @param sourceKey The source containing the vocabulary
-   * @param conceptSetExpression The concept set expression to optimize
-   * @return A concept set optimization
-   */
-  @Path("optimize")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public ConceptSetOptimizationResult optimizeConceptSet(ConceptSetExpression conceptSetExpression) throws Exception {
-    String defaultSourceKey = getDefaultVocabularySourceKey();
-    
-    if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
-
-    return optimizeConceptSet(defaultSourceKey, conceptSetExpression);
-  }
-
-  /**
    * Optimizes a concept set expressions to find redundant concepts specified
    * in a concept set expression for the selected source key.
-   * 
+   *
    * @summary Optimize concept set
    * @param sourceKey The source containing the vocabulary
    * @param conceptSetExpression The concept set expression to optimize
    * @return A concept set optimization
    */
-  @Path("{sourceKey}/optimize")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public ConceptSetOptimizationResult optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PostMapping(value = "/{sourceKey}/optimize",
+               produces = MediaType.APPLICATION_JSON_VALUE,
+               consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ConceptSetOptimizationResult optimizeConceptSet(
+          @PathVariable("sourceKey") String sourceKey,
+          @RequestBody ConceptSetExpression conceptSetExpression) throws Exception {
     // resolve the concept set to get included concepts
     Collection<Long> includedConcepts = this.resolveConceptSetExpression(sourceKey, conceptSetExpression);
     long[] includedConceptsArray = includedConcepts.stream().mapToLong(Long::longValue).toArray();

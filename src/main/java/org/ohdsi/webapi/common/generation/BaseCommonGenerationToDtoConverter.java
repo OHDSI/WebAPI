@@ -10,6 +10,12 @@ public abstract class BaseCommonGenerationToDtoConverter<E extends CommonGenerat
 
     resultObject.setId(source.getId());
     resultObject.setStatus(source.getStatus());
+    
+    // Handle null source (generation from soft-deleted source)
+    if (source.getSource() == null) {
+      throw new IllegalStateException("Cannot convert generation with null source. The source may have been deleted.");
+    }
+    
     resultObject.setSourceKey(source.getSource().getSourceKey());
     resultObject.setHashCode(source.getHashCode());
     resultObject.setStartTime(source.getStartTime());

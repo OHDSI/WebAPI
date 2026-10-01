@@ -5,8 +5,8 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
+import org.ohdsi.webapi.job.SearchableJobExecutionDao;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -16,6 +16,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.batch.core.scope.context.StepSynchronizationManager;
 import org.springframework.batch.core.step.StepLocator;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -25,17 +26,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -48,11 +47,11 @@ import java.util.function.Predicate;
 
 /**
  * REST Services related to working with the Spring Batch jobs
- * 
+ *
  * @summary Jobs
  */
-@Path("/job/")
-@Component
+@RestController
+@RequestMapping("/job")
 public class JobService extends AbstractDaoService {
 
   private final JobExplorer jobExplorer;
@@ -75,15 +74,14 @@ public class JobService extends AbstractDaoService {
 
   /**
    * Get the job information by job ID
-   * 
+   *
    * @summary Get job by ID
    * @param jobId The job ID
    * @return The job information
    */
-  @GET
-  @Path("{jobId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobInstanceResource findJob(@PathParam("jobId") final Long jobId) {
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(value = "/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobInstanceResource findJob(@PathVariable("jobId") final Long jobId) {
     final JobInstance job = this.jobExplorer.getJobInstance(jobId);
     if (job == null) {
       return null;//TODO #8 conventions under review
@@ -93,35 +91,36 @@ public class JobService extends AbstractDaoService {
 
   /**
    * Get the job execution information by job type and name
-   * 
+   *
    * @summary Get job by name and type
    * @param jobName The job name
    * @param jobType The job type
    * @return JobExecutionResource
    */
-    @GET
-    @Path("/type/{jobType}/name/{jobName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource findJobByName(@PathParam("jobName") final String jobName, @PathParam("jobType") final String jobType) {
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(value = "/type/{jobType}/name/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobByName(
+          @PathVariable("jobName") final String jobName,
+          @PathVariable("jobType") final String jobType) {
             final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
                     .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
                     .findFirst();
             return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
     }
 
-    /**
-     * Get the job execution information by execution ID and job ID
-     * 
-     * @summary Get job by job ID and execution ID
-     * @param jobId The job ID
-     * @param executionId The execution ID
-     * @return JobExecutionResource
-     */
-  @GET
-  @Path("{jobId}/execution/{executionId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobExecutionResource findJobExecution(@PathParam("jobId") final Long jobId,
-          @PathParam("executionId") final Long executionId) {
+  /**
+   * Get the job execution information by execution ID and job ID
+   *
+   * @summary Get job by job ID and execution ID
+   * @param jobId The job ID
+   * @param executionId The execution ID
+   * @return JobExecutionResource
+   */
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(value = "/{jobId}/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobExecution(
+          @PathVariable("jobId") final Long jobId,
+          @PathVariable("executionId") final Long executionId) {
     return service(jobId, executionId);
   }
 
@@ -132,10 +131,9 @@ public class JobService extends AbstractDaoService {
    * @param executionId The job execution ID
    * @return JobExecutionResource
    */
-  @GET
-  @Path("/execution/{executionId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobExecutionResource findJobExecution(@PathParam("executionId") final Long executionId) {
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(value = "/execution/{executionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public JobExecutionResource findJobExecutionById(@PathVariable("executionId") final Long executionId) {
     return service(null, executionId);
   }
 
@@ -150,14 +148,14 @@ public class JobService extends AbstractDaoService {
   /**
    * Get job names (unique names). Note: this path (GET /job) should really
    * return pages of job instances. This could be implemented should the need
-   * arise. See {@link JobService#list(String, Integer, Integer)} to obtain
+   * arise. See {@link JobService#list(String, Integer, Integer, boolean)} to obtain
    * executions and filter by job name.
    *
    * @summary Get list of jobs
    * @return A list of jobs
    */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<String> findJobNames() {
     return this.jobExplorer.getJobNames();
   }
@@ -178,13 +176,13 @@ public class JobService extends AbstractDaoService {
    * @return collection of JobExecutionInfo
    * @throws NoSuchJobException
    */
-  @GET
-  @Path("/execution")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Page<JobExecutionResource> list(@QueryParam("jobName") final String jobName,
-          @DefaultValue("0") @QueryParam("pageIndex") final Integer pageIndex,
-          @DefaultValue("20") @QueryParam("pageSize") final Integer pageSize,
-          @QueryParam("comprehensivePage") boolean comprehensivePage)
+  @PreAuthorize("isPermitted('list')")
+  @GetMapping(value = "/execution", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Page<JobExecutionResource> list(
+          @RequestParam(value = "jobName", required = false) final String jobName,
+          @RequestParam(value = "pageIndex", defaultValue = "0") final Integer pageIndex,
+          @RequestParam(value = "pageSize", defaultValue = "20") final Integer pageSize,
+          @RequestParam(value = "comprehensivePage", required = false, defaultValue = "false") boolean comprehensivePage)
           throws NoSuchJobException {
 
     List<JobExecutionResource> resources = null;
@@ -201,14 +199,14 @@ public class JobService extends AbstractDaoService {
           return JobUtils.toJobExecutionResource(rs);
         }
       });
-      return new PageImpl<>(resources, new PageRequest(0, pageSize), resources.size());
+      return new PageImpl<>(resources, PageRequest.of(0, pageSize), resources.size());
     } else {
       resources = new ArrayList<>();
       for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
               pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
         resources.add(JobUtils.toJobExecutionResource(jobExecution));
       }
-      return new PageImpl<>(resources, new PageRequest(pageIndex, pageSize),
+      return new PageImpl<>(resources, PageRequest.of(pageIndex, pageSize),
               this.jobExecutionDao.countJobExecutions());
     }
 

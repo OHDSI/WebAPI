@@ -16,7 +16,7 @@ public class AnalysisResultFileContent {
     @Column(name = "output_file_id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "output_file_id")
     @MapsId
     private AnalysisResultFile analysisResultFile;

@@ -30,8 +30,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.common.primitives.Longs;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
@@ -50,6 +52,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.cscompare.CompareArbitraryDto;
 import org.ohdsi.webapi.service.cscompare.ConceptSetCompareService;
 import org.ohdsi.webapi.service.cscompare.ExpressionFileUtils;
+import org.ohdsi.webapi.service.cscompare.ExpressionType;
+import org.ohdsi.webapi.service.dto.CompareConceptSetsResponse;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
@@ -82,8 +86,10 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
- /**
+/**
   * Provides REST services for working with
   * the OMOP standardized vocabularies
   * 
@@ -145,7 +151,9 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
-
+	
+	@Autowired
+	private ConceptSetExpressionResolver conceptSetExpressionResolver;
   @Value("${datasource.driverClassName}")
   private String driver;
 
@@ -1025,18 +1033,21 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
-    final ArrayList<Long> identifiers = new ArrayList<>();
-    getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
-      @Override
-      public void processRow(ResultSet rs) throws SQLException {
-        identifiers.add(rs.getLong("CONCEPT_ID"));
-      }
-    });
-
-    return identifiers;
+    return resolveConceptSetExpression(source, conceptSetExpression);
   }
+	protected Collection<Long> resolveConceptSetExpression(Source source, ConceptSetExpression conceptSetExpression) {
+		PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
+		final ArrayList<Long> identifiers = new ArrayList<>();
+		getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				identifiers.add(rs.getLong("CONCEPT_ID"));
+			}
+		});
 
+		return identifiers;
+	}
+	
   /**
    * Resolve a concept set expression into a collection 
    * of concept identifiers using the default vocabulary source. 
@@ -1252,7 +1263,6 @@ public class VocabularyService extends AbstractDaoService {
    * default vocabulary
    * 
    * @summary Get vocabularies (default vocabulary)
-   * @param sourceKey The source containing the vocabulary
    * @return A collection of vocabularies
    */
   @GET
@@ -1620,38 +1630,331 @@ public class VocabularyService extends AbstractDaoService {
     // Execute the query
     Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, CONCEPT_SET_COMPARISON_ROW_MAPPER);
 
-    return returnVal;
+    return returnVal.stream()
+			.map(c -> enrichComparisonWithVocabularyInfo(c, source, source))
+			.collect(Collectors.toList());
   }
+	@Path("compare-diff-vocab")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public CompareConceptSetsResponse compareConceptSetsOverDiffVocabs(@RequestBody CompareConceptSetsRequest compareConceptSetsRequest) {
+		String source1Key = compareConceptSetsRequest.source1Key;
+		String source2Key = compareConceptSetsRequest.source2Key;
+		Validate.notBlank(source1Key);
+		Validate.notBlank(source2Key);
 
-  @Path("{sourceKey}/compare-arbitrary")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
-                                                                final CompareArbitraryDto dto) throws Exception {
-    final ConceptSetExpression[] csExpressionList = dto.compareTargets;
-    if (csExpressionList.length != 2) {
-      throw new Exception("You must specify two concept set expressions in order to use this method.");
-    }
+		Source source1 = getSourceRepository().findBySourceKey(source1Key);
+		Source source2 = getSourceRepository().findBySourceKey(source2Key);
 
-    final Collection<ConceptSetComparison> returnVal = conceptSetCompareService.compareConceptSets(sourceKey, dto);
+		ConceptSetExpression expression1 = compareConceptSetsRequest.expression1;
+		ConceptSetExpression expression2 = compareConceptSetsRequest.expression2;
 
-    // maps for items "not found in DB from input1", "not found in DB from input2"
-    final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(csExpressionList[0].items, returnVal);
-    final Map<String, org.ohdsi.circe.vocabulary.Concept> input2ex = ExpressionFileUtils.toExclusionMap(csExpressionList[1].items, returnVal);
+		Validate.notNull(expression1);
+		Validate.notNull(expression2);
 
-    // compare/combine exclusion maps and add the result to the output
-    returnVal.addAll(ExpressionFileUtils.combine(input1Ex, input2ex));
+		// Resolve concept sets to get all descendant/mapped concepts in each vocabulary
+		Collection<Long> resolvedConceptIds1 = conceptSetExpressionResolver.resolveConceptSetExpression(source1, expression1);
+		Collection<Long> resolvedConceptIds2 = conceptSetExpressionResolver.resolveConceptSetExpression(source2, expression2);
 
-    // concept names to display mismatches
-    final Map<String, String> names = ExpressionFileUtils.toNamesMap(csExpressionList[0].items, csExpressionList[1].items);
-    returnVal.forEach(item -> {
-      final String name = names.get(ExpressionFileUtils.getKey(item));
-      item.nameMismatch = name != null && !name.equals(item.conceptName);
-    });
+		// Track counts
+		int cs1IncludedConceptsCount = resolvedConceptIds1.size();
+		int cs2IncludedConceptsCount = resolvedConceptIds2.size();
+		int cs1IncludedSourceCodesCount = 0;
+		int cs2IncludedSourceCodesCount = 0;
 
-    return returnVal;
-  }
+		// Convert to Sets for efficient lookup
+		Set<Long> resolvedSet1 = new HashSet<>(resolvedConceptIds1);
+		Set<Long> resolvedSet2 = new HashSet<>(resolvedConceptIds2);
+
+		// Look up concepts in each vocabulary
+		Collection<Concept> includedConcepts1 = conceptSetExpressionResolver.executeIdentifierLookup(source1, Longs.toArray(resolvedConceptIds1));
+		Collection<Concept> includedConcepts2 = conceptSetExpressionResolver.executeIdentifierLookup(source2, Longs.toArray(resolvedConceptIds2));
+
+		Map<Long, Concept> conceptMap1 = includedConcepts1.stream()
+			.collect(Collectors.toMap(c -> c.conceptId, c -> c));
+		Map<Long, Concept> conceptMap2 = includedConcepts2.stream()
+			.collect(Collectors.toMap(c -> c.conceptId, c -> c));
+
+		// Union of all unique concept IDs (from both resolved sets)
+		Set<Long> allConceptIds = new HashSet<>();
+		allConceptIds.addAll(resolvedConceptIds1);
+		allConceptIds.addAll(resolvedConceptIds2);
+
+		List<ConceptSetComparison> results = new ArrayList<>();
+
+		for (Long conceptId : allConceptIds) {
+			ConceptSetComparison sourceCodeComparison = compareSingleConcept(conceptId, conceptMap1, conceptMap2, resolvedSet1, resolvedSet2);
+			enrichComparisonWithVocabularyInfo(sourceCodeComparison, source1, source2);
+			results.add(sourceCodeComparison);
+		}
+
+		if(compareConceptSetsRequest.compareSourceCodes) {
+			Set<Long> includedConceptsIds1 = includedConcepts1.stream().map(concept -> concept.conceptId).collect(Collectors.toSet());
+			Set<Long> includedConceptsIds2 = includedConcepts2.stream().map(concept -> concept.conceptId).collect(Collectors.toSet());
+
+			// Look up source codes for all included concepts in each vocabulary
+			Collection<Concept> includedSourceCodes1 = executeMappedLookup(source1, Longs.toArray(includedConceptsIds1));
+			Collection<Concept> includedSourceCodes2 = executeMappedLookup(source2, Longs.toArray(includedConceptsIds2));
+
+			// Track source code counts
+			cs1IncludedSourceCodesCount = includedSourceCodes1.size();
+			cs2IncludedSourceCodesCount = includedSourceCodes2.size();
+
+			Map<Long, Concept> sourceConceptsMap1 = includedSourceCodes1.stream()
+				.collect(Collectors.toMap(c -> c.conceptId, c -> c));
+			Map<Long, Concept> sourceConceptsMap2 = includedSourceCodes2.stream()
+				.collect(Collectors.toMap(c -> c.conceptId, c -> c));
+
+			Set<Long> resolvedSourceConceptIdsSet1 = sourceConceptsMap1.keySet();
+			Set<Long> resolvedSourceConceptIdsSet2 = sourceConceptsMap2.keySet();
+
+			// Union of all unique source concept IDs (from both resolved sets)
+			Set<Long> allSourceConceptIds = new HashSet<>();
+			allSourceConceptIds.addAll(resolvedSourceConceptIdsSet1);
+			allSourceConceptIds.addAll(resolvedSourceConceptIdsSet2);
+
+			for (Long sourceConceptId : allSourceConceptIds) {
+				ConceptSetComparison sourceCodeComparison = compareSingleConcept(sourceConceptId, sourceConceptsMap1, sourceConceptsMap2, resolvedSourceConceptIdsSet1, resolvedSourceConceptIdsSet2);
+				sourceCodeComparison.isSourceCode = true;
+				enrichComparisonWithVocabularyInfo(sourceCodeComparison, source1, source2);
+				results.add(sourceCodeComparison);
+			}
+		}
+
+		return new CompareConceptSetsResponse(
+			results,
+			cs1IncludedConceptsCount,
+			cs1IncludedSourceCodesCount,
+			cs2IncludedConceptsCount,
+			cs2IncludedSourceCodesCount
+		);
+	}
+	
+	private ConceptSetComparison compareSingleConcept(Long conceptId, Map<Long, Concept> conceptMap1, Map<Long, Concept> conceptMap2, Set<Long> resolvedSet1, Set<Long> resolvedSet2){
+		ConceptSetComparison comparison = new ConceptSetComparison();
+		comparison.conceptId = conceptId;
+
+		Concept concept1 = conceptMap1.get(conceptId);
+		Concept concept2 = conceptMap2.get(conceptId);
+
+		// Determine CONCEPT SET membership based on RESOLVED expressions
+		boolean inCS1 = resolvedSet1.contains(conceptId);
+		boolean inCS2 = resolvedSet2.contains(conceptId);
+
+		comparison.conceptInCS1Only = (inCS1 && !inCS2) ? 1L : 0L;
+		comparison.conceptInCS2Only = (!inCS1 && inCS2) ? 1L : 0L;
+		comparison.conceptInCS1AndCS2 = (inCS1 && inCS2) ? 1L : 0L;
+
+		// Populate fields from vocab1
+		if (concept1 != null) {
+			comparison.vocab1ConceptName = concept1.conceptName;
+			comparison.vocab1StandardConcept = concept1.standardConcept;
+			comparison.vocab1InvalidReason = concept1.invalidReason;
+			comparison.vocab1ConceptCode = concept1.conceptCode;
+			comparison.vocab1DomainId = concept1.domainId;
+			comparison.vocab1VocabularyId = concept1.vocabularyId;
+			comparison.vocab1ConceptClassId = concept1.conceptClassId;
+
+			if (concept1 instanceof org.ohdsi.vocabulary.Concept) {
+				org.ohdsi.vocabulary.Concept extendedConcept1 = (org.ohdsi.vocabulary.Concept) concept1;
+				comparison.vocab1ValidStartDate = extendedConcept1.validStartDate != null ?
+					new java.sql.Date(extendedConcept1.validStartDate.getTime()) : null;
+				comparison.vocab1ValidEndDate = extendedConcept1.validEndDate != null ?
+					new java.sql.Date(extendedConcept1.validEndDate.getTime()) : null;
+			}
+		}
+
+		// Populate fields from vocab2
+		if (concept2 != null) {
+			comparison.vocab2ConceptName = concept2.conceptName;
+			comparison.vocab2StandardConcept = concept2.standardConcept;
+			comparison.vocab2InvalidReason = concept2.invalidReason;
+			comparison.vocab2ConceptCode = concept2.conceptCode;
+			comparison.vocab2DomainId = concept2.domainId;
+			comparison.vocab2VocabularyId = concept2.vocabularyId;
+			comparison.vocab2ConceptClassId = concept2.conceptClassId;
+
+			if (concept2 instanceof org.ohdsi.vocabulary.Concept) {
+				org.ohdsi.vocabulary.Concept extendedConcept2 = (org.ohdsi.vocabulary.Concept) concept2;
+				comparison.vocab2ValidStartDate = extendedConcept2.validStartDate != null ?
+					new java.sql.Date(extendedConcept2.validStartDate.getTime()) : null;
+				comparison.vocab2ValidEndDate = extendedConcept2.validEndDate != null ?
+					new java.sql.Date(extendedConcept2.validEndDate.getTime()) : null;
+			}
+		}
+
+		// Use concept from whichever source has it (prefer source1 if in both)
+		Concept conceptToUse = concept1 != null ? concept1 : concept2;
+
+		if (conceptToUse != null) {
+			comparison.standardConcept = conceptToUse.standardConcept;
+			comparison.invalidReason = conceptToUse.invalidReason;
+			comparison.conceptCode = conceptToUse.conceptCode;
+			comparison.domainId = conceptToUse.domainId;
+			comparison.vocabularyId = conceptToUse.vocabularyId;
+			comparison.conceptClassId = conceptToUse.conceptClassId;
+
+			if (conceptToUse instanceof org.ohdsi.vocabulary.Concept) {
+				org.ohdsi.vocabulary.Concept extendedConcept = (org.ohdsi.vocabulary.Concept) conceptToUse;
+				comparison.validStartDate = extendedConcept.validStartDate != null ?
+					new java.sql.Date(extendedConcept.validStartDate.getTime()) : null;
+				comparison.validEndDate = extendedConcept.validEndDate != null ?
+					new java.sql.Date(extendedConcept.validEndDate.getTime()) : null;
+			}
+		}
+
+		// Check for mismatches if concept exists in both vocabularies
+		if (concept1 != null && concept2 != null) {
+			comparison.nameMismatch = !Objects.equals(concept1.conceptName, concept2.conceptName);
+			comparison.standardConceptMismatch = !Objects.equals(concept1.standardConcept, concept2.standardConcept);
+			comparison.invalidReasonMismatch = !Objects.equals(concept1.invalidReason, concept2.invalidReason);
+			comparison.conceptCodeMismatch = !Objects.equals(concept1.conceptCode, concept2.conceptCode);
+			comparison.domainIdMismatch = !Objects.equals(concept1.domainId, concept2.domainId);
+			comparison.vocabularyIdMismatch = !Objects.equals(concept1.vocabularyId, concept2.vocabularyId);
+			comparison.conceptClassIdMismatch = !Objects.equals(concept1.conceptClassId, concept2.conceptClassId);
+
+			if (concept1 instanceof org.ohdsi.vocabulary.Concept && concept2 instanceof org.ohdsi.vocabulary.Concept) {
+				org.ohdsi.vocabulary.Concept ext1 = (org.ohdsi.vocabulary.Concept) concept1;
+				org.ohdsi.vocabulary.Concept ext2 = (org.ohdsi.vocabulary.Concept) concept2;
+				comparison.validStartDateMismatch = !Objects.equals(ext1.validStartDate, ext2.validStartDate);
+				comparison.validEndDateMismatch = !Objects.equals(ext1.validEndDate, ext2.validEndDate);
+			} else {
+				comparison.validStartDateMismatch = false;
+				comparison.validEndDateMismatch = false;
+			}
+		} else {
+			// If concept not in both vocabularies, no mismatch comparison possible
+			comparison.nameMismatch = false;
+			comparison.standardConceptMismatch = false;
+			comparison.invalidReasonMismatch = false;
+			comparison.conceptCodeMismatch = false;
+			comparison.domainIdMismatch = false;
+			comparison.vocabularyIdMismatch = false;
+			comparison.conceptClassIdMismatch = false;
+			comparison.validStartDateMismatch = false;
+			comparison.validEndDateMismatch = false;
+		}
+		return comparison;
+	}
+	
+	public ConceptSetComparison enrichComparisonWithVocabularyInfo(ConceptSetComparison comparison, Source source1, Source source2) {
+		VocabularyInfo vocabularyInfo1 = getInfo(source1.getSourceKey());
+		VocabularyInfo vocabularyInfo2 = getInfo(source2.getSourceKey());
+
+		comparison.vocab1SourceKey = source1.getSourceKey();
+		comparison.vocab1SourceName = source1.getSourceName();
+		comparison.vocab1SourceVersion = vocabularyInfo1.version;
+
+		comparison.vocab2SourceKey = source2.getSourceKey();
+		comparison.vocab2SourceName = source2.getSourceName();
+		comparison.vocab2SourceVersion = vocabularyInfo2.version;
+
+		return comparison;
+	}
+	@Path("compare-arbitrary-diff-vocab")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Collection<ConceptSetComparison> compareConceptSetsCsvOverDiffVocabs(@RequestBody CompareConceptSetsArbitraryRequest compareConceptSetsArbitraryRequest) throws Exception {
+
+		CompareConceptSetsRequest compareConceptSetsRequest = new CompareConceptSetsRequest();
+		compareConceptSetsRequest.source1Key = compareConceptSetsArbitraryRequest.source1Key;
+		compareConceptSetsRequest.source2Key = compareConceptSetsArbitraryRequest.source2Key;
+		compareConceptSetsRequest.expression1 = compareConceptSetsArbitraryRequest.expression1;
+		compareConceptSetsRequest.expression2 = compareConceptSetsArbitraryRequest.expression2;
+
+		Source source1 = getSourceRepository().findBySourceKey(compareConceptSetsRequest.source1Key);
+		Source source2 = getSourceRepository().findBySourceKey(compareConceptSetsRequest.source2Key);
+
+		Collection<ConceptSetComparison> regularCompareResults = compareConceptSetsOverDiffVocabs(compareConceptSetsRequest).getComparisons();
+		List<ConceptSetComparison> finalResults = new ArrayList<>(regularCompareResults);
+
+		// maps for items "not found in DB from input1", "not found in DB from input2"
+		final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(compareConceptSetsArbitraryRequest.expression1.items, regularCompareResults);
+		final Map<String, org.ohdsi.circe.vocabulary.Concept> input2ex = ExpressionFileUtils.toExclusionMap(compareConceptSetsArbitraryRequest.expression2.items, regularCompareResults);
+
+		// compare/combine exclusion maps and add the result to the output
+		finalResults.addAll(ExpressionFileUtils.combine(input1Ex, input2ex));
+
+		// concept field maps to display mismatches
+		final Map<String, String> names1 = ExpressionFileUtils.toNamesMap(compareConceptSetsArbitraryRequest.expression1.items);
+		final Map<String, String> names2 = ExpressionFileUtils.toNamesMap(compareConceptSetsArbitraryRequest.expression2.items);
+
+		finalResults.forEach(item -> {
+			final String key = ExpressionFileUtils.getKey(item);
+			final String name1 = names1.get(key);
+			final String name2 = names2.get(key);
+
+			// Check name mismatch
+			if (name1 != null && name2 != null) {
+				item.nameMismatch = item.nameMismatch || !name1.equals(name2);
+			} else if (name1 != null && item.vocab1ConceptName != null) {
+				item.nameMismatch = item.nameMismatch || !name1.equals(item.vocab1ConceptName);
+			} else if (name2 != null && item.vocab2ConceptName != null) {
+				item.nameMismatch = item.nameMismatch || !name2.equals(item.vocab2ConceptName);
+			}
+		});
+
+		return finalResults.stream()
+			.map(c -> enrichComparisonWithVocabularyInfo(c, source1, source2))
+			.collect(Collectors.toList());
+	}
+
+	public static class CompareConceptSetsRequest {
+		public CompareConceptSetsRequest() {}
+		public String source1Key;
+		public String source2Key;
+		public ConceptSetExpression expression1;
+		public ConceptSetExpression expression2;
+		public boolean compareSourceCodes;
+	}
+	 public static class CompareConceptSetsArbitraryRequest extends CompareConceptSetsRequest {
+		 public CompareConceptSetsArbitraryRequest() {}
+		 public ExpressionType expressionType1;
+		 public ExpressionType expressionType2;
+	 }
+
+	@Path("{sourceKey}/compare-arbitrary")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
+																																final CompareArbitraryDto dto) throws Exception {
+		final ConceptSetExpression[] csExpressionList = dto.compareTargets;
+		if (csExpressionList.length != 2) {
+			throw new Exception("You must specify two concept set expressions in order to use this method.");
+		}
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+
+		final Collection<ConceptSetComparison> returnVal = conceptSetCompareService.compareConceptSets(source, dto);
+
+		// maps for items "not found in DB from input1", "not found in DB from input2"
+		final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(csExpressionList[0].items, returnVal);
+		final Map<String, org.ohdsi.circe.vocabulary.Concept> input2ex = ExpressionFileUtils.toExclusionMap(csExpressionList[1].items, returnVal);
+
+		// compare/combine exclusion maps and add the result to the output
+		returnVal.addAll(ExpressionFileUtils.combine(input1Ex, input2ex));
+
+		// concept names to display mismatches - updated to use vocab1ConceptName and vocab2ConceptName
+		final Map<String, String> names1 = ExpressionFileUtils.toNamesMap(csExpressionList[0].items);
+		final Map<String, String> names2 = ExpressionFileUtils.toNamesMap(csExpressionList[1].items);
+
+		returnVal.forEach(item -> {
+			final String key = ExpressionFileUtils.getKey(item);
+			final String name1 = names1.get(key);
+			final String name2 = names2.get(key);
+
+			// Check if there's a mismatch between the two concept names
+			item.nameMismatch = (name1 != null && name2 != null && !name1.equals(name2)) ||
+				(name1 != null && item.vocab1ConceptName != null && !name1.equals(item.vocab1ConceptName)) ||
+				(name2 != null && item.vocab2ConceptName != null && !name2.equals(item.vocab2ConceptName));
+		});
+
+		return returnVal.stream()
+			.map(c -> enrichComparisonWithVocabularyInfo(c, source, source))
+			.collect(Collectors.toList());
+	}
 
   /**
    * Compares two concept set expressions to find which concepts are
@@ -1680,7 +1983,6 @@ public class VocabularyService extends AbstractDaoService {
    * in a concept set expression.
    * 
    * @summary Optimize concept set (default vocabulary)
-   * @param sourceKey The source containing the vocabulary
    * @param conceptSetExpression The concept set expression to optimize
    * @return A concept set optimization
    */
@@ -1780,48 +2082,5 @@ public class VocabularyService extends AbstractDaoService {
     result.removedConceptSet = removedConceptSet;
     return result;
 
-  }
-  
-
-  private String JoinArray(final long[] array) {
-    String result = "";
-
-    for (int i = 0; i < array.length; i++) {
-      if (i > 0) {
-        result += ",";
-      }
-
-      result += array[i];
-    }
-
-    return result;
-  }
-  
-  private String JoinArray(final String[] array) {
-    String result = "";
-
-    for (int i = 0; i < array.length; i++) {
-      if (i > 0) {
-        result += ",";
-      }
-
-      result += "'" + array[i] + "'";
-    }
-
-    return result;
-  }
-  
-  private String JoinArrayList(final ArrayList<String> array){
-      String result = "";
-    
-      for (int i = 0; i < array.size(); i++) {
-        if (i > 0) {
-          result += " AND ";
-        }
-
-        result += array.get(i);
-      }
-
-    return result;
   }
 }

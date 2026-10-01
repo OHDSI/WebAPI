@@ -3,6 +3,8 @@ package org.ohdsi.webapi.job;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.ohdsi.webapi.Constants;
@@ -27,14 +29,19 @@ public final class JobUtils {
         job.setName(jobInstance.getJobName());
         return job;
     }
-    
-    public static JobExecutionResource toJobExecutionResource(final JobExecution jobExecution) {
+
+  	public static JobExecutionResource toJobExecutionResource(final JobExecution jobExecution) {
+        return JobUtils.toJobExecutionResource(jobExecution, o -> Boolean.FALSE);
+	  }
+
+		public static JobExecutionResource toJobExecutionResource(final JobExecution jobExecution, Function<JobExecution, Boolean> hasArtifactProvider) {
         final JobExecutionResource execution = new JobExecutionResource(
                 toJobInstanceResource(jobExecution.getJobInstance()), jobExecution.getId());
         execution.setStatus(jobExecution.getStatus().name());
         execution.setStartDate(jobExecution.getStartTime());
         execution.setEndDate(jobExecution.getEndTime());
         execution.setExitStatus(jobExecution.getExitStatus().getExitCode());
+				execution.setHasArtifact(hasArtifactProvider.apply(jobExecution));
         JobParameters jobParams = jobExecution.getJobParameters();
         if (jobParams != null) {
             Map<String, JobParameter> params = jobParams.getParameters();
@@ -51,7 +58,11 @@ public final class JobUtils {
         }
         return execution;
     }
-    
+
+	  public static List<JobExecutionResource> toJobExecutionResource(final ResultSet rs) throws SQLException {
+	     return JobUtils.toJobExecutionResource(rs, o-> Boolean.FALSE);
+	  }
+		
     /**
      * Create List of JobExecutionResource objects containing job parameters.
      * <p>
@@ -61,7 +72,7 @@ public final class JobUtils {
      * @return
      * @throws SQLException
      */
-    public static List<JobExecutionResource> toJobExecutionResource(final ResultSet rs) throws SQLException {
+    public static List<JobExecutionResource> toJobExecutionResource(final ResultSet rs, Function<JobExecution, Boolean> hasArtifactProvider) throws SQLException {
         //TODO order by executionId
         List<JobExecutionResource> jobs = new ArrayList<>();
         JobExecutionResource jobexec = null;
@@ -91,7 +102,7 @@ public final class JobUtils {
                 jobExecution.setCreateTime(rs.getTimestamp(7));
                 jobExecution.setLastUpdated(rs.getTimestamp(8));
                 jobExecution.setVersion(rs.getInt(9));
-                jobexec = toJobExecutionResource(jobExecution);
+                jobexec = toJobExecutionResource(jobExecution, hasArtifactProvider);
             }
             
             //parameters starts at 12

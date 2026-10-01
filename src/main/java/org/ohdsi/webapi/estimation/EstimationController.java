@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;

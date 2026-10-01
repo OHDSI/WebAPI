@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.*;
 import java.math.BigDecimal;

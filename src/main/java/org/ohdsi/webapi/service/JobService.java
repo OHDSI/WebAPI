@@ -5,6 +5,8 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
+import org.ohdsi.webapi.job.artifact.JobArtifactGenerator;
+import org.ohdsi.webapi.job.artifact.JobArtifactGeneratorFactory;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
@@ -63,14 +65,17 @@ public class JobService extends AbstractDaoService {
 
   private final JobTemplate jobTemplate;
 
-  private Map<Long, Job> jobMap = new HashMap<>();
+	private final JobArtifactGeneratorFactory artifactGeneratorFactory;
 
-  public JobService(JobExplorer jobExplorer, SearchableJobExecutionDao jobExecutionDao, JobRepository jobRepository, JobTemplate jobTemplate) {
+	private Map<Long, Job> jobMap = new HashMap<>();
+
+  public JobService(JobExplorer jobExplorer, SearchableJobExecutionDao jobExecutionDao, JobRepository jobRepository, JobTemplate jobTemplate, JobArtifactGeneratorFactory artifactGeneratorFactory) {
 
     this.jobExplorer = jobExplorer;
     this.jobExecutionDao = jobExecutionDao;
     this.jobRepository = jobRepository;
     this.jobTemplate = jobTemplate;
+    this.artifactGeneratorFactory = artifactGeneratorFactory;
   }
 
   /**
@@ -106,7 +111,7 @@ public class JobService extends AbstractDaoService {
             final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
                     .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
                     .findFirst();
-            return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
+            return jobExecution.map(JobUtils::toJobExecutionResource).orElse(null);
     }
 
     /**
@@ -194,25 +199,39 @@ public class JobService extends AbstractDaoService {
       String tqName = "ohdsi_schema";
       String tqValue = getOhdsiSchema();
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, sqlPath, tqName, tqValue);
-      resources = getJdbcTemplate().query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<List<JobExecutionResource>>() {
-        @Override
-        public List<JobExecutionResource> extractData(ResultSet rs) throws SQLException, DataAccessException {
-
-          return JobUtils.toJobExecutionResource(rs);
-        }
+      resources = getJdbcTemplate().query(psr.getSql(), psr.getSetter(), rs -> {
+        return JobUtils.toJobExecutionResource(rs, this::checkArtifactAvailability);
       });
       return new PageImpl<>(resources, new PageRequest(0, pageSize), resources.size());
     } else {
       resources = new ArrayList<>();
       for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
               pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
-        resources.add(JobUtils.toJobExecutionResource(jobExecution));
+				JobExecutionResource resource = JobUtils.toJobExecutionResource(jobExecution, this::checkArtifactAvailability);
+				resources.add(resource);
       }
       return new PageImpl<>(resources, new PageRequest(pageIndex, pageSize),
               this.jobExecutionDao.countJobExecutions());
     }
 
   }
+	private Boolean checkArtifactAvailability(JobExecution jobExecution) {
+		try {
+			// Only check for completed jobs
+			if (!"COMPLETED".equals(jobExecution.getStatus().toString())) {
+				return false;
+			}
+			JobArtifactGenerator generator = artifactGeneratorFactory.getGenerator(jobExecution);
+			if (generator == null) {
+				return false;
+			}
+			return generator.hasArtifact(jobExecution);
+		} catch (Exception e) {
+			log.warn("Failed to check artifact availability for execution {}",
+				jobExecution.getId(), e);
+			return false;
+		}
+	}
 
   public void stopJob(JobExecution jobExecution, Job job) {
 

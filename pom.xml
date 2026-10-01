@@ -26,7 +26,7 @@
     <featureExtraction.version>3.8.0</featureExtraction.version>
     <tomcat.embed.version>8.5.87</tomcat.embed.version>
 
-    <commons-fileupload.version>1.5</commons-fileupload.version>
+    <commons-fileupload.version>1.6.0</commons-fileupload.version>
 
     <circe.version>1.12.1</circe.version>
     <jersey.version>2.14</jersey.version>

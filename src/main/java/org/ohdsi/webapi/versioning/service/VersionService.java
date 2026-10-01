@@ -2,10 +2,13 @@ package org.ohdsi.webapi.versioning.service;
 
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.util.jpa.JpaSugar;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionPK;
+import org.ohdsi.webapi.versioning.domain.VersionPK_;
 import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.domain.Version_;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
@@ -24,11 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 import javax.ws.rs.NotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -61,6 +68,19 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         this.repositoryMap.put(VersionType.INCIDENCE_RATE, (VersionRepository<T>) irRepository);
         this.repositoryMap.put(VersionType.PATHWAY, (VersionRepository<T>) pathwayRepository);
         this.repositoryMap.put(VersionType.REUSABLE, (VersionRepository<T>) reusableRepository);
+    }
+
+    public <V extends Version> Integer getLatest(Class<V> clazz, long id) {
+        return getLatest(entityManager, clazz, id);
+    }
+
+    public static <V extends Version> Integer getLatest(EntityManager em, Class<V> clazz, long id) {
+        CriteriaQuery<Integer> criteriaQuery = JpaSugar.query(em, Integer.class, (cb, cq) -> {
+            Path<VersionPK> pk = cq.from(clazz).get(Version_.pk);
+            Predicate hasId = cb.equal(pk.get(VersionPK_.assetId), id);
+            return cq.select(cb.max(pk.get(VersionPK_.version))).where(hasId);
+        });
+        return Optional.ofNullable(em.createQuery(criteriaQuery).getSingleResult()).orElse(0) + 1;
     }
 
     private VersionRepository<T> getRepository(VersionType type) {

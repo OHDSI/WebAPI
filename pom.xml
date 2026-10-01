@@ -622,6 +622,12 @@
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-jpamodelgen</artifactId>
+      <version>${hibernate.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
@@ -1094,15 +1100,9 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.odysseusinc.arachne</groupId>
-      <artifactId>arachne-scheduler</artifactId>
-      <version>${arachne.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
+      <version>9.1.6</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>

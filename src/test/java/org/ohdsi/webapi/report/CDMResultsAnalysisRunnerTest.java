@@ -2,8 +2,8 @@ package org.ohdsi.webapi.report;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +15,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -47,7 +48,7 @@ public class CDMResultsAnalysisRunnerTest {
     public void getDrilldown_propagatesQueryFailureInsteadOfReturningEmptyResult() {
 
         // Simulate a SQL failure during the drilldown (e.g. unreachable results schema)
-        when(jdbcTemplate.query(anyString(), any(), any(RowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(PreparedStatementSetter.class), any(RowMapper.class)))
                 .thenThrow(new DataAccessResourceFailureException("simulated SQL failure"));
 
         try {

@@ -885,14 +885,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         Set<CohortDefinitionEntity> cohortDefs = characterization.getCohorts();
         Set<FeAnalysisEntity> featureAnalyses = characterization.getFeatureAnalyses();
 
-        // if filter is not used then it must be initialized first
-        if (!params.isFilterUsed()) {
+        // Each omitted dimension means "all configured values". A request may
+        // legitimately filter only cohorts, domains, or analyses; treating it
+        // as an all-or-nothing filter leaves the other dimensions empty and
+        // produces invalid SQL such as `analysis_id in ()`.
+        if (params.getCohortIds().isEmpty()) {
             params.setCohortIds(characterization.getCohortDefinitions().stream()
                     .map(CohortDefinitionEntity::getId).collect(Collectors.toList()));
+        }
+
+        if (params.getAnalysisIds().isEmpty()) {
             params.setAnalysisIds(
                     featureAnalyses.stream().map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
-            params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
-                    .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
         } else {
             List<Integer> analysisIds = params.getAnalysisIds().stream().map(analysisId -> {
                 FeAnalysisEntity fe = featureAnalyses.stream()
@@ -903,6 +907,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 return mapFeatureAnalysisId(fe);
             }).collect(Collectors.toList());
             params.setAnalysisIds(analysisIds);
+        }
+
+        if (params.getDomainIds().isEmpty()) {
+            params.setDomainIds(featureAnalyses.stream()
+                    .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
         }
         // remove domains which cannot be used as corresponding analyses are not
         // selected

@@ -2,15 +2,13 @@ package org.ohdsi.webapi.util;
 
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.tag.dto.TagDTO;
-import org.ohdsi.webapi.user.dto.UserDTO;
 import org.springframework.core.convert.support.GenericConversionService;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -35,9 +33,9 @@ public class ConversionUtils {
     }
 
     public static void convertMetadata(GenericConversionService conversionService, CommonEntity<? extends Number> source, CommonEntityDTO target) {
-        target.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));
+        target.setCreatedBy(User.fromEntity(source.getCreatedBy()));
         target.setCreatedDate(source.getCreatedDate());
-        target.setModifiedBy(conversionService.convert(source.getModifiedBy(), UserDTO.class));
+        target.setModifiedBy(User.fromEntity(source.getModifiedBy()));
         target.setModifiedDate(source.getModifiedDate());
     }
 }

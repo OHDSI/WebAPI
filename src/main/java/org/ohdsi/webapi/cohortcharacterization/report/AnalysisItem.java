@@ -4,7 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 
 import java.util.*;
 
@@ -45,7 +45,7 @@ public class AnalysisItem {
         return faType;
     }
 
-    public AnalysisResultItem getSimpleItems(Map<Integer, CohortDefinition> definitionMap,
+    public AnalysisResultItem getSimpleItems(Map<Integer, CohortDefinitionEntity> definitionMap,
                                              Map<String, String> feAnalysisMap) {
         Set<ExportItem> values = new HashSet<>();
         Set<String> domainIds = new HashSet<>();
@@ -53,7 +53,7 @@ public class AnalysisItem {
         ItemFactory factory = new ItemFactory();
         for (List<CcResult> results : map.values()) {
             for (CcResult ccResult : results) {
-                CohortDefinition cohortDef = definitionMap.get(ccResult.getCohortId());
+                CohortDefinitionEntity cohortDef = definitionMap.get(ccResult.getCohortId());
                 ExportItem item = factory.createItem(ccResult, cohortDef.getName());
                 String domainId = feAnalysisMap.get(ccResult.getAnalysisName());
                 item.setDomainId(domainId);
@@ -65,7 +65,7 @@ public class AnalysisItem {
         return new AnalysisResultItem(domainIds, cohorts, values);
     }
 
-    public AnalysisResultItem getComparativeItems(CohortDefinition firstCohortDef, CohortDefinition secondCohortDef,
+    public AnalysisResultItem getComparativeItems(CohortDefinitionEntity firstCohortDef, CohortDefinitionEntity secondCohortDef,
                                                   Map<String, String> feAnalysisMap) {
         Set<ExportItem> values = new HashSet<>();
         Set<String> domainIds = new HashSet<>();

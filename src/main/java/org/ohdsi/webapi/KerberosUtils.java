@@ -1,7 +1,7 @@
 package org.ohdsi.webapi;
 
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
-import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
+import org.ohdsi.webapi.arachne.datasource.dto.DataSourceUnsecuredDTO;
+import org.ohdsi.webapi.arachne.datasource.util.ConnectionParams;
 import org.ohdsi.webapi.source.Source;
 
 public final class KerberosUtils {

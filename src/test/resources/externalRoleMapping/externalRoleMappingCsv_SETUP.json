@@ -1,0 +1,17 @@
+{
+  "public.sec_role": [
+    { "id": 50001, "name": "Analyst", "system_role": true },
+    { "id": 50002, "name": "Admin", "system_role": true },
+    { "id": 50003, "name": "Viewer", "system_role": true },
+    { "id": 50004, "name": "Designer", "system_role": true },
+    { "id": 50005, "name": "DataSteward", "system_role": true },
+    { "id": 50006, "name": "Auditor", "system_role": true }
+  ],
+  "public.sec_external_role_map": [
+    { "id": 50001, "origin": "LDAP", "external_claim": "CN=Analysts,OU=Groups,DC=corp,DC=local", "role_id": 50001, "description": "LDAP Analysts group" },
+    { "id": 50002, "origin": "LDAP", "external_claim": "CN=Admins,OU=Groups,DC=corp,DC=local", "role_id": 50002, "description": "LDAP Admins group" },
+    { "id": 50003, "origin": "WINDOWS", "external_claim": "CORP\\Designers", "role_id": 50004, "description": "Windows Designers group" },
+    { "id": 50004, "origin": "OIDC", "external_claim": "realm_analyst", "role_id": 50001, "description": "OIDC Analyst realm role" },
+    { "id": 50005, "origin": "OIDC", "external_claim": "data_steward", "role_id": 50005, "description": "OIDC DataSteward realm role" }
+  ]
+}

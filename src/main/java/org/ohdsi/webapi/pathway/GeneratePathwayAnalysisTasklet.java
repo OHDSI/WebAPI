@@ -5,9 +5,9 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -49,7 +49,7 @@ public class GeneratePathwayAnalysisTasklet extends AnalysisTasklet {
         Source source = sourceService.findBySourceId(sourceId);
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(Integer.parseInt(jobParams.get(PATHWAY_ANALYSIS_ID).toString()));
         Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
-        UserEntity user = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
+        UserEntity user = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString()).orElseThrow();
         String cohortTable = jobParams.get(TARGET_TABLE).toString();
         String sessionId = jobParams.get(SESSION_ID).toString();
 

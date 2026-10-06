@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.util;
 
 import com.google.common.collect.ImmutableSet;
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.GenerationUtils;

@@ -1,16 +1,16 @@
 package org.ohdsi.webapi.cohortdefinition.event;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 
 public class CohortDefinitionChangedEvent {
 
-    private CohortDefinition cohortDefinition;
+    private CohortDefinitionEntity cohortDefinition;
 
-    public CohortDefinitionChangedEvent(CohortDefinition cohortDefinition) {
+    public CohortDefinitionChangedEvent(CohortDefinitionEntity cohortDefinition) {
         this.cohortDefinition = cohortDefinition;
     }
 
-    public CohortDefinition getCohortDefinition() {
+    public CohortDefinitionEntity getCohortDefinition() {
         return cohortDefinition;
     }
 }

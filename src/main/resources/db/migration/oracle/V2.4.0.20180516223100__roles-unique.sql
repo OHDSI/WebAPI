@@ -1,1 +1,0 @@
-alter table ${ohdsiSchema}.sec_role ADD CONSTRAINT sec_role_name_uq UNIQUE (name);

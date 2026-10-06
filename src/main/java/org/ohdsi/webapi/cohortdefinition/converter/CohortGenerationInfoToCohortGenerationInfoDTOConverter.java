@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortdefinition.converter;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.security.authz.User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +13,7 @@ public class CohortGenerationInfoToCohortGenerationInfoDTOConverter extends Base
         final CohortGenerationInfoDTO dto = new CohortGenerationInfoDTO();
 
         dto.setIsCanceled(info.isCanceled());
-        dto.setCreatedBy(conversionService.convert(info.getCreatedBy(), UserDTO.class));
+        dto.setCreatedBy(User.fromEntity(info.getCreatedBy()));
         dto.setExecutionDuration(info.getExecutionDuration());
         dto.setFailMessage(info.getFailMessage());
         dto.setId(info.getId());

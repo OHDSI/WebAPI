@@ -3,58 +3,57 @@ package org.ohdsi.webapi.feanalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
-import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.ohdsi.webapi.security.authz.access.EntityType;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.ohdsi.webapi.security.authz.access.EntityGrant;
+import org.ohdsi.webapi.security.authz.access.UserAuthorizations;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/feature-analysis")
-@Controller
+@RequestMapping("/feature-analysis")
+@RestController
 public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
-    private PermissionService permissionService;
+    private AuthorizationService authorizationService;
+
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
 
     FeAnalysisController(
             final FeAnalysisService service,
             final ConversionService conversionService,
-            PermissionService permissionService) {
+            AuthorizationService authorizationService) {
         this.service = service;
         this.conversionService = conversionService;
-        this.permissionService = permissionService;
+        this.authorizationService = authorizationService;
     }
 
     /**
@@ -63,16 +62,37 @@ public class FeAnalysisController {
      * @param pageable
      * @return
      */
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
+    // Listing is open; the returned page is filtered per-entity here (read:feature-analysis / per-entity grants).
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(entity -> {
+        UserAuthorizations authz = authorizationService.getCurrentUserAuthorizations();
+        boolean globalRead = authorizationService.isPermitted("read:feature-analysis");
+        boolean globalWrite = authorizationService.isPermitted("write:feature-analysis");
+        boolean needsFiltering = !defaultGlobalReadPermissions && !globalRead;
+
+        java.util.function.Function<FeAnalysisEntity, FeAnalysisShortDTO> toDto = entity -> {
             FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
-            permissionService.fillWriteAccess(entity, dto);
+            EntityGrant grant = authz.feAnalysisAccess.getOrDefault(Long.valueOf(entity.getId()), EntityGrant.NONE);
+            dto.setReadAccess(globalRead || grant.hasAccess(AccessType.READ));
+            dto.setWriteAccess(globalWrite || grant.hasAccess(AccessType.WRITE));
             return dto;
+        };
+
+        if (!needsFiltering) {
+            return service.getPage(pageable).map(toDto);
+        }
+        // Per-entity filtering required: load all, keep the readable ones, then re-paginate.
+        List<FeAnalysisShortDTO> filtered = new ArrayList<>();
+        service.getPage(Pageable.unpaged()).forEach(entity -> {
+            FeAnalysisShortDTO dto = toDto.apply(entity);
+            if (dto.isReadAccess()) {
+                filtered.add(dto);
+            }
         });
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<FeAnalysisShortDTO> content = start < filtered.size() ? filtered.subList(start, end) : new ArrayList<>();
+        return new PageImpl<>(content, pageable, filtered.size());
     }
 
     /**
@@ -81,11 +101,9 @@ public class FeAnalysisController {
      * @param name The desired name for the new feature analysis
      * @return 1 if the name conflicts with an existing feature analysis name and 0 otherwise
      */
-    @GET
-    @Path("/{id}/exists")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public int getCountFeWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#id, FE_ANALYSIS) or isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#id, FE_ANALYSIS, READ)")
+    public int getCountFeWithSameName(@PathVariable(value = "id", required = false) final int id, @RequestParam("name") String name) {
         return service.getCountFeWithSameName(id, name);
     }
 
@@ -93,10 +111,8 @@ public class FeAnalysisController {
      * Feature analysis domains
      * @return Feature analysis domains such as DRUG, DRUG_ERA, MEASUREMENT, etc.
      */
-    @GET
-    @Path("/domains")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/domains", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public List<OptionDTO> listDomains() {
 
         List<OptionDTO> options = new ArrayList<>();
@@ -111,11 +127,10 @@ public class FeAnalysisController {
      * @param dto Feature analysis specification
      * @return
      */
-    @POST
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public FeAnalysisDTO createAnalysis(final FeAnalysisDTO dto) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+    @PreAuthorize("isPermitted('create:feature-analysis')")
+    public FeAnalysisDTO createAnalysis(@RequestBody final FeAnalysisDTO dto) {
         final FeAnalysisEntity createdEntity = service.createAnalysis(conversionService.convert(dto, FeAnalysisEntity.class));
         return convertFeAnalysisToDto(createdEntity);
     }
@@ -126,11 +141,9 @@ public class FeAnalysisController {
      * @param dto Feature analysis specification
      * @return
      */
-    @PUT
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public FeAnalysisDTO updateAnalysis(@PathParam("id") final Integer feAnalysisId, final FeAnalysisDTO dto) {
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, WRITE)")
+    public FeAnalysisDTO updateAnalysis(@PathVariable("id") final Integer feAnalysisId, @RequestBody final FeAnalysisDTO dto) {
         final FeAnalysisEntity updatedEntity = service.updateAnalysis(feAnalysisId, conversionService.convert(dto, FeAnalysisEntity.class));
         return convertFeAnalysisToDto(updatedEntity);
     }
@@ -139,11 +152,11 @@ public class FeAnalysisController {
      * Delete a feature analysis
      * @param feAnalysisId ID of feature analysis to delete
      */
-    @DELETE
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public void deleteAnalysis(@PathParam("id") final Integer feAnalysisId) {
-        final FeAnalysisEntity entity = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, WRITE)")
+    public void deleteAnalysis(@PathVariable("id") final Integer feAnalysisId) {
+        final FeAnalysisEntity entity = service.findById(feAnalysisId).orElse(null);
+        ExceptionUtils.throwNotFoundExceptionIfNull(entity, String.format("There is no feature analysis with id = %d.", feAnalysisId));
         service.deleteAnalysis(entity);
     }
 
@@ -152,28 +165,28 @@ public class FeAnalysisController {
      * @param feAnalysisId ID of feature analysis to retrieve
      * @return ID, type, name domain, description, etc of feature analysis
      */
-    @GET
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Integer feAnalysisId) {
-        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
-                .orElseThrow(NotFoundException::new);
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('read:feature-analysis') or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)")
+    public FeAnalysisDTO getFeAnalysis(@PathVariable("id") final Integer feAnalysisId) {
+        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
+        ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));
         return convertFeAnalysisToDto(feAnalysis);
     }
 
-    @GET
-    @Path("/{id}/export/conceptset")
-    public Response exportConceptSets(@PathParam("id") final Integer feAnalysisId) {
+    @GetMapping(value = "/{id}/export/conceptset", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PreAuthorize("isOwner(#feAnalysisId, FE_ANALYSIS) or isPermitted('read:feature-analysis') or isPermitted('write:feature-analysis') or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)")
+    public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportConceptSets(@PathVariable("id") final Integer feAnalysisId) {
 
-      final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
+      final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
+      ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));
       if (feAnalysis instanceof FeAnalysisWithCriteriaEntity) {
         List<ConceptSetExport> exportList = service.exportConceptSets((FeAnalysisWithCriteriaEntity<?>) feAnalysis);
 
         ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
         return HttpUtils.respondBinary(stream, String.format("featureAnalysis_%d_export.zip", feAnalysisId));
       } else {
-        throw new BadRequestException();
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -182,13 +195,13 @@ public class FeAnalysisController {
      * @param feAnalysisId ID of feature analysis to copy
      * @return The design specification of the new copy
      */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/copy")
+    @GetMapping(value = "/{id}/copy", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public FeAnalysisDTO copy(@PathParam("id") final Integer feAnalysisId) {
-        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
-                .orElseThrow(NotFoundException::new);
+    @CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+    @PreAuthorize("(isOwner(#feAnalysisId, FE_ANALYSIS) or isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis')) or hasEntityAccess(#feAnalysisId, FE_ANALYSIS, READ)) and isPermitted('create:feature-analysis')")
+    public FeAnalysisDTO copy(@PathVariable("id") final Integer feAnalysisId) {
+        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElse(null);
+        ExceptionUtils.throwNotFoundExceptionIfNull(feAnalysis, String.format("There is no feature analysis with id = %d.", feAnalysisId));
         final FeAnalysisEntity feAnalysisForCopy = getNewEntityForCopy(feAnalysis);
 
         FeAnalysisEntity saved;
@@ -257,9 +270,8 @@ public class FeAnalysisController {
      * Get aggregation functions used in feature analyses
      * @return
      */
-    @GET
-    @Path("/aggregates")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/aggregates", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
     public List<FeAnalysisAggregateDTO> listAggregates() {
         List<FeAnalysisAggregateDTO> result = service.findAggregates().stream()
                 .map(this::convertFeAnalysisAggregateToDto)

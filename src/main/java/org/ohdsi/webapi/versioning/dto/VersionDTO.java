@@ -3,9 +3,10 @@ package org.ohdsi.webapi.versioning.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
+
+import org.ohdsi.webapi.security.authz.User;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -23,7 +24,7 @@ public class VersionDTO {
     private boolean archived;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private UserDTO createdBy;
+    private User createdBy;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date createdDate;
@@ -52,11 +53,11 @@ public class VersionDTO {
         this.version = version;
     }
 
-    public UserDTO getCreatedBy() {
+    public User getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(UserDTO createdBy) {
+    public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
     }
 

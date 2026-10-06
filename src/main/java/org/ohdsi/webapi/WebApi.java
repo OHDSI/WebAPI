@@ -1,40 +1,41 @@
 package org.ohdsi.webapi;
 
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
-import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 
 
 /**
- * Launch as java application or deploy as WAR (@link {@link WebApplication}
- * will source this file).
+ * OHDSI WebAPI Spring Boot Application
+ *
+ * - JAR: java -jar WebAPI.jar (embedded Tomcat)
+ * - WAR: Deploy to external servlet container (mvn package -Pwar)
  */
 @EnableScheduling
-@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class, SolrAutoConfiguration.class})
+@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class, LdapAutoConfiguration.class, DataSourceAutoConfiguration.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class WebApi extends SpringBootServletInitializer {
 
-
-
     @Override
-    protected SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
-        return application.sources(WebApi.class);
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(WebApi.class);
     }
 
     public static void main(final String[] args) throws Exception
     {
         TomcatURLStreamHandlerFactory.disable();
-        new SpringApplicationBuilder(WebApi.class).run(args);
+        SpringApplication.run(WebApi.class, args);
     }
 
     @PostConstruct

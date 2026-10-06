@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.info;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,8 @@ public class BuildInfo {
     private final RepositoryInfo atlasRepositoryInfo;
     private final RepositoryInfo webapiRepositoryInfo;
 
+    // Constructor for Spring dependency injection
+    @Autowired
     public BuildInfo(BuildProperties buildProperties, @Value("${build.number}") final String buildNumber) {
 
         this.artifactVersion = String.format("%s %s", buildProperties.getArtifact(), buildProperties.getVersion());
@@ -33,6 +38,25 @@ public class BuildInfo {
                 getAsInteger(buildProperties, "webapi.milestone.id"),
                 buildProperties.get("webapi.release.tag")
         );
+    }
+
+    // Constructor for Jackson deserialization
+    @JsonCreator
+    public BuildInfo(
+            @JsonProperty("artifactVersion") String artifactVersion,
+            @JsonProperty("build") String build,
+            @JsonProperty("timestamp") String timestamp,
+            @JsonProperty("branch") String branch,
+            @JsonProperty("commitId") String commitId,
+            @JsonProperty("atlasRepositoryInfo") RepositoryInfo atlasRepositoryInfo,
+            @JsonProperty("webapiRepositoryInfo") RepositoryInfo webapiRepositoryInfo) {
+        this.artifactVersion = artifactVersion;
+        this.build = build;
+        this.timestamp = timestamp;
+        this.branch = branch;
+        this.commitId = commitId;
+        this.atlasRepositoryInfo = atlasRepositoryInfo;
+        this.webapiRepositoryInfo = webapiRepositoryInfo;
     }
 
     private Integer getAsInteger(BuildProperties properties, String key) {

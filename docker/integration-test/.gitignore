@@ -1,0 +1,3 @@
+# Test results (generated during test runs)
+test-results/*.xml
+test-results/*.json

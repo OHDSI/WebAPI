@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.feanalysis;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -22,7 +21,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+
+import org.springframework.http.HttpStatus;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -159,7 +162,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     @Transactional
     public FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity updatedEntity) {
 
-        FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
+        FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow();
 
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
@@ -196,7 +199,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
       List<FeAnalysisCriteriaEntity> removed = original.getDesign().stream()
               .filter(c -> updated.getDesign().stream().noneMatch(u -> Objects.equals(c.getId(), u.getId())))
               .collect(Collectors.toList());
-      criteriaRepository.delete(removed);
+      criteriaRepository.deleteAll(removed);
     }
 
     @Override

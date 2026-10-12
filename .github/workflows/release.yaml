@@ -1,4 +1,5 @@
-# Create release files
+
+# Create release files and publish Docker images
 name: Release
 
 on:
@@ -9,22 +10,28 @@ env:
   DOCKER_IMAGE: ohdsi/webapi
 
 jobs:
+  # Build JAR and WAR and attach them to the GitHub Release
   upload:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    permissions:
+      contents: write
 
-      - uses: actions/setup-java@v4
+    steps:
+      # Check out the exact commit associated with the release tag
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 21
 
-      # The miredot plugin's POM cannot be resolved by Maven 3.10+ (${toolsjar} is
-      # never set), so pin the last working Maven 3.9 release instead of the runner's.
+      # The miredot plugin's POM cannot be resolved by Maven 3.10+
+      # (${toolsjar} is never set), so pin Maven 3.9.16.
       - name: Set up Maven
         run: |
           curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar xz -C "$RUNNER_TEMP"
@@ -33,33 +40,52 @@ jobs:
       - name: Maven cache
         uses: actions/cache@v4
         with:
-          # Cache gradle directories
           path: ~/.m2
-          # Key for restoring and saving the cache
           key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      # Build executable JAR
       - name: Build JAR
         run: mvn -B -DskipTests=true -DskipUnitTests=true -Dpackaging.type=jar package
 
+      # Build deployable WAR for Tomcat
       - name: Build WAR
         run: mvn -B -DskipTests=true -DskipUnitTests=true package
 
-      # Upload both JAR and WAR to GitHub release
-      - name: Upload to GitHub
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: 'target/WebAPI.jar;target/WebAPI.war'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      # Keep original filenames for direct deployment.
+      # Generate checksums for verifying downloaded artifacts.
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
 
-  # Build and push tagged release docker image to
+          mkdir -p dist
+
+          cp target/WebAPI.jar dist/WebAPI.jar
+          cp target/WebAPI.war dist/WebAPI.war
+
+          cd dist
+          sha256sum WebAPI.jar WebAPI.war > SHA256SUMS.txt
+
+      # Attach artifacts to the existing GitHub Release.
+      # This does not create a new release.
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            dist/WebAPI.jar
+            dist/WebAPI.war
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+          overwrite_files: true
+
+  # Build and push tagged release Docker image to
   # ohdsi/webapi:<version> and ohdsi/webapi:latest.
   docker:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
 
@@ -74,9 +100,10 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest
 
-      # Setup docker build environment
+      # Setup Docker build environment
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

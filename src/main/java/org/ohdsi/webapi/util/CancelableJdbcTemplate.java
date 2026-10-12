@@ -154,10 +154,15 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
   private boolean supportsBatchUpdates(Connection connection) throws SQLException {
 
+    String url = connection.getMetaData().getURL();
     // NOTE:
     // com.cloudera.impala.hivecommon.dataengine.HiveJDBCDataEngine.prepareBatch throws NOT_IMPLEMENTED exception
-    return JdbcUtils.supportsBatchUpdates(connection) 
-              && !connection.getMetaData().getURL().startsWith("jdbc:impala")
-              && !connection.getMetaData().getURL().startsWith("jdbc:IRIS");
+    // SQL Server executes the whole batch as a single T-SQL batch, so re-creating a temp table that was
+    // dropped earlier in the same batch fails with "There is already an object named '#...' in the database"
+    // (see https://github.com/OHDSI/WebAPI/issues/2528)
+    return JdbcUtils.supportsBatchUpdates(connection)
+              && !url.startsWith("jdbc:impala")
+              && !url.startsWith("jdbc:IRIS")
+              && !url.startsWith("jdbc:sqlserver");
   }
 }

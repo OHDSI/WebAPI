@@ -29,6 +29,13 @@ jobs:
         with:
             java-version: 8
 
+      # The miredot plugin's POM cannot be resolved by Maven 3.10+ (${toolsjar} is
+      # never set), so pin the last working Maven 3.9 release instead of the runner's.
+      - name: Set up Maven
+        run: |
+          curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.16/bin" >> "$GITHUB_PATH"
+
       - name: Maven cache
         uses: actions/cache@v4
         with:

@@ -145,7 +145,8 @@ public class SourceService extends AbstractDaoService {
     @GetMapping(value = "/sources", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<SourceInfo>> getSourcesEndpoint() {
         boolean globalRead = authorizationService.isPermitted("read:source")
-                || authorizationService.isPermitted("write:source");
+                || authorizationService.isPermitted("write:source")
+                || authorizationService.isPermitted("admin:source");
         Collection<SourceInfo> visible = getSources().stream()
                 .filter(s -> globalRead || authorizationService.hasSourceAccess(s.getSourceKey(), AccessType.READ))
                 .map(SourceInfo::new)

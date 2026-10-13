@@ -223,8 +223,11 @@ public class JobService extends AbstractDaoService {
               Tasklet tasklet = ((TaskletStep) step).getTasklet();
               if (tasklet instanceof StoppableTasklet) {
                 StepSynchronizationManager.register(stepExec);
-                ((StoppableTasklet) tasklet).stop();
-                StepSynchronizationManager.release();
+                try {
+                  ((StoppableTasklet) tasklet).stop();
+                } finally {
+                  StepSynchronizationManager.release();
+                }
               }
             }
           });
@@ -260,13 +263,13 @@ public class JobService extends AbstractDaoService {
   @Transactional
   public void cancelJobExecution(Predicate<? super JobExecution> filterPredicate) {
       jobExecutionDao.getRunningJobExecutions().stream()
+            .map(jobExecution -> jobExplorer.getJobExecution(jobExecution.getId()))
+            .filter(Objects::nonNull)
             .filter(filterPredicate)
             .findFirst()
             .ifPresent(jobExecution -> {
-              Job job = getRunningJob(jobExecution.getJobId());
-              if (Objects.nonNull(job)) {
-                stopJob(jobExecution, job);
-              }
+              Job job = getRunningJob(jobExecution.getId());
+              stopJob(jobExecution, job);
             });
   }
 }

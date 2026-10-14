@@ -261,15 +261,17 @@ public class JobService extends AbstractDaoService {
   }
 
   @Transactional
-  public void cancelJobExecution(Predicate<? super JobExecution> filterPredicate) {
-      jobExecutionDao.getRunningJobExecutions().stream()
+  public boolean cancelJobExecution(Predicate<? super JobExecution> filterPredicate) {
+      return jobExecutionDao.getRunningJobExecutions().stream()
             .map(jobExecution -> jobExplorer.getJobExecution(jobExecution.getId()))
             .filter(Objects::nonNull)
             .filter(filterPredicate)
             .findFirst()
-            .ifPresent(jobExecution -> {
+            .map(jobExecution -> {
               Job job = getRunningJob(jobExecution.getId());
               stopJob(jobExecution, job);
-            });
+              return true;
+            })
+            .orElse(false);
   }
 }

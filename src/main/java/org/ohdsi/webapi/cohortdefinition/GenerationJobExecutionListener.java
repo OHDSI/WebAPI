@@ -95,9 +95,14 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 				info.setRecordCount(null);
 				info.setPersonCount(null);
 				info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
-				info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(), "... [truncated] ...", 2000));
+				String failureMessage = je.getAllFailureExceptions().stream()
+						.findFirst()
+						.map(Throwable::getMessage)
+						.orElse("Generation stopped without a failure exception");
+				info.setFailMessage(StringUtils.abbreviateMiddle(failureMessage, "... [truncated] ...", 2000));
 			} else {
 				info.setIsValid(true);
+				info.setCanceled(false);
 				info.setFailMessage(null);
 
 				// query summary results from source

@@ -79,11 +79,12 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		execution = () -> savePaths(source, generationId);
 		FutureTask<int[]> savePathsTask = new FutureTask<>(execution);
 		taskExecutor.execute(savePathsTask);
-		rowsUpdated.addAll(intArrayToList(waitForFuture(savePathsTask)));
+		int[] pathsUpdated = waitForFuture(savePathsTask);
 
 		if (isStopped()) {
 			return null;
 		}
+		rowsUpdated.addAll(intArrayToList(pathsUpdated));
 
 		// build comboId -> combo name map
 		final PathwayAnalysisEntity design = genericConversionService
@@ -97,7 +98,12 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		execution = () -> savePathwayCodes(pathwayCodes);
 		FutureTask<int[]> saveCodesTask = new FutureTask<>(execution);
 		taskExecutor.execute(saveCodesTask);
-		rowsUpdated.addAll(intArrayToList(waitForFuture(saveCodesTask)));
+		int[] codesUpdated = waitForFuture(saveCodesTask);
+
+		if (isStopped()) {
+			return null;
+		}
+		rowsUpdated.addAll(intArrayToList(codesUpdated));
 
 		return rowsUpdated.stream().mapToInt(Integer::intValue).toArray();
 	}

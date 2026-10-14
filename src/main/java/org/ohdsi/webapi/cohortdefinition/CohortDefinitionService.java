@@ -935,25 +935,26 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
 						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 								String.format("Source with key '%s' not found", sourceKey)));
-		getTransactionTemplateRequiresNew().execute(status -> {
-			CohortDefinitionEntity currentDefinition = cohortDefinitionRepository.findById(id)
-					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-							String.format("Cohort Definition with id = %d not found", id)));
-			CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
-			if (Objects.nonNull(info)) {
-				invalidateExecution(info);
-				cohortDefinitionRepository.save(currentDefinition);
-			}
-			return null;
-		});
-
-		jobService.cancelJobExecution(e -> {
+		boolean canceled = jobService.cancelJobExecution(e -> {
 			JobParameters parameters = e.getJobParameters();
 			String jobName = e.getJobInstance().getJobName();
 			return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
 							&& Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
 							&& Objects.equals(Constants.GENERATE_COHORT, jobName);
 		});
+		if (canceled) {
+			getTransactionTemplateRequiresNew().execute(status -> {
+				CohortDefinitionEntity currentDefinition = cohortDefinitionRepository.findById(id)
+						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+								String.format("Cohort Definition with id = %d not found", id)));
+				CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
+				if (Objects.nonNull(info)) {
+					invalidateExecution(info);
+					cohortDefinitionRepository.save(currentDefinition);
+				}
+				return null;
+			});
+		}
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 

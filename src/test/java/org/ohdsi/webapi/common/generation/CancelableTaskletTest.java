@@ -42,6 +42,20 @@ public class CancelableTaskletTest {
     tasklet.shutdown();
   }
 
+  @Test
+  public void stop_suppressesACompletedWorkerFailure() {
+    TestCancelableTasklet tasklet = new TestCancelableTasklet(mock(Statement.class));
+    FutureTask<int[]> work = new FutureTask<>(() -> {
+      throw new RuntimeException("canceling statement due to user request");
+    });
+    work.run();
+
+    tasklet.stop();
+
+    assertNull(tasklet.awaitWorkCompletion(work));
+    tasklet.shutdown();
+  }
+
   private static class TestCancelableTasklet extends CancelableTasklet {
 
     private final CountDownLatch workStarted = new CountDownLatch(1);

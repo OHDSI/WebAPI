@@ -118,8 +118,8 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         int designHash = this.generationCacheHelper.computeHash(details.getExpression());
         CohortGenerationUtils.insertInclusionRules(cd, source, designHash, resultSchema, sessionId, cancelableJdbcTemplate);
 
+        StatementCancel stmtCancel = new StatementCancel();
         try {
-            StatementCancel stmtCancel = new StatementCancel();
             statementCancels.add(stmtCancel);
             GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                 try {
@@ -141,9 +141,14 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
             });
             String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
             cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
-            statementCancels.remove(stmtCancel);
         } catch (StatementCancelException ignored) {
             // this exception must be caught to prevent "FAIL" status of the job
+        } catch (RuntimeException exception) {
+            if (!stopped && !stmtCancel.isCanceled()) {
+                throw exception;
+            }
+        } finally {
+            statementCancels.remove(stmtCancel);
         }
         return null;
     }

@@ -122,7 +122,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
           cd.getGenerationInfoList().add(info);
 
           info.setStatus(GenerationStatus.PENDING)
-                  .setStartTime(Calendar.getInstance().getTime());
+                  .setStartTime(Calendar.getInstance().getTime())
+                  .setCanceled(false);
 
           cohortDefinitionRepository.save(cd);
           

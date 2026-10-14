@@ -18,7 +18,9 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -53,7 +55,7 @@ public class JobServiceTest {
     when(taskletStep.getTasklet()).thenReturn(tasklet);
     addRunningJob(jobService, 10L, job);
 
-    jobService.cancelJobExecution(execution -> execution == hydratedExecution);
+    assertTrue(jobService.cancelJobExecution(execution -> execution == hydratedExecution));
 
     verify(jobExplorer).getJobExecution(10L);
     verify(tasklet).stop();
@@ -75,9 +77,19 @@ public class JobServiceTest {
     when(hydratedExecution.getId()).thenReturn(10L);
     when(hydratedExecution.getStepExecutions()).thenReturn(Collections.emptySet());
 
-    jobService.cancelJobExecution(execution -> execution == hydratedExecution);
+    assertTrue(jobService.cancelJobExecution(execution -> execution == hydratedExecution));
 
     verify(jobRepository).update(hydratedExecution);
+  }
+
+  @Test
+  public void cancelJobExecution_returnsFalseWhenNoRunningExecutionMatches() {
+    SearchableJobExecutionDao jobExecutionDao = mock(SearchableJobExecutionDao.class);
+    when(jobExecutionDao.getRunningJobExecutions()).thenReturn(Collections.emptyList());
+    JobService jobService = new JobService(mock(JobExplorer.class), jobExecutionDao,
+        mock(JobRepository.class), mock(JobTemplate.class));
+
+    assertFalse(jobService.cancelJobExecution(execution -> true));
   }
 
   @Test

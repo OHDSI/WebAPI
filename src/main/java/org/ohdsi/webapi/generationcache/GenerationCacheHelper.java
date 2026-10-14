@@ -9,6 +9,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.StatementCancel;
+import org.ohdsi.webapi.util.StatementCancelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -83,7 +84,7 @@ public class GenerationCacheHelper {
         cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
         // Ensure that no cache created if generation has been cancelled
         if (stmtCancel.isCanceled()) {
-            throw new RuntimeException("Cohort generation has been cancelled");
+            throw new StatementCancelException();
         }
     }
 

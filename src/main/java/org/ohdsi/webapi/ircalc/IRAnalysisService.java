@@ -512,6 +512,8 @@ public class IRAnalysisService extends AbstractDaoService implements
     analysisInfo.setStatus(GenerationStatus.PENDING)
             .setStartTime(startTime)
             .setExecutionDuration(null);
+        analysisInfo.setIsValid(false);
+        analysisInfo.setCanceled(false);
 
     this.irAnalysisRepository.save(analysis);
 

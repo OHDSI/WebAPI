@@ -63,7 +63,10 @@ public class IRAnalysisInfoListener implements JobExecutionListener {
     @Override
     public void afterJob(JobExecution je) {
 
-        boolean isValid = !(je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED);
+        boolean isCanceled = je.getStatus() == BatchStatus.STOPPED
+            || je.getStepExecutions().stream()
+            .anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode()));
+        boolean isValid = je.getStatus() != BatchStatus.FAILED && !isCanceled;
         String statusMessage = je.getExitStatus().getExitDescription();
 
         JobParameters jobParams = je.getJobParameters();
@@ -79,7 +82,7 @@ public class IRAnalysisInfoListener implements JobExecutionListener {
 
         findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
             analysisInfo.setIsValid(isValid);
-			analysisInfo.setCanceled(je.getStatus() == BatchStatus.STOPPED || je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
+            analysisInfo.setCanceled(isCanceled);
             analysisInfo.setExecutionDuration((int) (endTime.getTime() - startTime.getTime()));
             analysisInfo.setStatus(GenerationStatus.COMPLETE);
             analysisInfo.setMessage(statusMessage.substring(0, Math.min(MAX_MESSAGE_LENGTH, statusMessage.length())));

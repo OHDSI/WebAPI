@@ -168,8 +168,7 @@ public class PersonService extends AbstractDaoService {
 
   protected PreparedStatementRenderer prepareObservationPeriodsSql(String personId, Source source) {
 
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/getObservationPeriods.sql", "tableQualifier", resultsTableQualifier, "personId", Long.valueOf(personId));
+    return prepareCdmSql("/resources/person/sql/getObservationPeriods.sql", personId, source);
   }
 
   protected PreparedStatementRenderer prepareGetCohortsSql(String personId, Source source) {
@@ -180,14 +179,30 @@ public class PersonService extends AbstractDaoService {
 
   protected PreparedStatementRenderer preparePersonInfoSql(String personId, Source source) {
 
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/personInfo.sql", "tableQualifier", tableQualifier, "personId", Long.valueOf(personId));
+    return prepareCdmSql("/resources/person/sql/personInfo.sql", personId, source);
   }
 
   protected PreparedStatementRenderer prepareGetPersonProfile(String personId, Source source) {
 
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Long.valueOf(personId));
+    return prepareCdmSql("/resources/person/sql/getRecords.sql", personId, source);
+  }
+
+  /**
+   * Renders a person query that reads CDM tables and joins concept names. Concepts come from
+   * the Vocabulary daimon, which may be a different schema than the CDM; sources without a
+   * Vocabulary daimon fall back to the CDM schema.
+   */
+  private PreparedStatementRenderer prepareCdmSql(String sqlPath, String personId, Source source) {
+
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+    if (vocabularyTableQualifier == null) {
+      vocabularyTableQualifier = cdmTableQualifier;
+    }
+    return new PreparedStatementRenderer(source, sqlPath,
+            new String[]{"tableQualifier", "vocabularyTableQualifier"},
+            new String[]{cdmTableQualifier, vocabularyTableQualifier},
+            new String[]{"personId"}, new Object[]{Long.valueOf(personId)});
   }
 	
 	private Boolean canViewDates() {

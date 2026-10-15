@@ -269,7 +269,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return The job execution resource
      */
     @GetMapping(value = "/{sourceKey}/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
+    @PreAuthorize("isPermitted('admin:cache')")
     public JobExecutionResource refreshCache(@PathVariable("sourceKey") final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
@@ -292,7 +292,7 @@ public class CDMResultsService extends AbstractDaoService {
      */
     @PostMapping(value = "/{sourceKey}/clearCache")
     @Transactional()
-    @PreAuthorize("isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE)")
+    @PreAuthorize("isPermitted('admin:cache')")
     public void clearCacheForSource(@PathVariable("sourceKey") final String sourceKey) {
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       cacheService.clearCache(source);

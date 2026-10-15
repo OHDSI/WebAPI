@@ -1058,7 +1058,7 @@ public class VocabularyService extends AbstractDaoService {
    * @param sourceKey The source containing the vocabulary
    * @return The vocabulary info
    */
-  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source')) or hasSourceAccess(#sourceKey, READ)")
+  @PreAuthorize("isAnyPermitted(anyOf('read:source','write:source','admin:source')) or hasSourceAccess(#sourceKey, READ)")
   @GetMapping(value = "/{sourceKey}/info",
               produces = MediaType.APPLICATION_JSON_VALUE)
   public VocabularyInfo getInfo(@PathVariable("sourceKey") String sourceKey) {

@@ -231,28 +231,6 @@ public class SourceService extends AbstractDaoService {
             throw new SourceDuplicateKeyException("The source key has been already used.");
         }
         Source sourceEntity = conversionService.convert(source, Source.class);
-        if (sourceEntity.getDaimons() != null) {
-            // First source should get priority = 1
-            Iterable<Source> sources = sourceRepository.findAll();
-            sourceEntity.getDaimons()
-                    .stream()
-                    .filter(sd -> sd.getPriority() <= 0)
-                    .filter(sd -> {
-                        boolean accept = true;
-                        // Check if source daimon of given type with priority > 0 already exists in other sources
-                        for (Source innerSource : sources) {
-                            accept = !innerSource.getDaimons()
-                                    .stream()
-                                    .anyMatch(innerDaimon -> innerDaimon.getPriority() > 0
-                                            && innerDaimon.getDaimonType().equals(sd.getDaimonType()));
-                            if (!accept) {
-                                break;
-                            }
-                        }
-                        return accept;
-                    })
-                    .forEach(sd -> sd.setPriority(1));
-        }
         Source original = new Source();
         original.setSourceDialect(sourceEntity.getSourceDialect());
         setKeyfileData(sourceEntity, original, keyfile);
@@ -312,10 +290,11 @@ public class SourceService extends AbstractDaoService {
             updated.setModifiedBy(getCurrentUserEntity());
             updated.setModifiedDate(new Date());
 
-            reuseDeletedDaimons(updated, existingSource);
+                reuseExistingDaimonIds(updated, existingSource);
 
             List<SourceDaimon> removed = existingSource.getDaimons().stream()
-                    .filter(d -> !updated.getDaimons().contains(d))
+                    .filter(existingDaimon -> updated.getDaimons().stream()
+                        .noneMatch(updatedDaimon -> existingDaimon.getDaimonType() == updatedDaimon.getDaimonType()))
                     .collect(Collectors.toList());
             // Delete MUST be called after fetching user or source data to prevent autoflush (see DefaultPersistEventListener.onPersist)
             sourceDaimonRepository.deleteAll(removed);
@@ -505,28 +484,15 @@ public class SourceService extends AbstractDaoService {
         return userRepository.findById(authorizationService.getAuthenticatedPrincipal().getUserId()).orElseThrow();
     }
 
-    private void reuseDeletedDaimons(Source updated, Source source) {
-        List<SourceDaimon> daimons = updated.getDaimons().stream().filter(d -> source.getDaimons().contains(d))
-                .collect(Collectors.toList());
-        List<SourceDaimon> newDaimons = updated.getDaimons().stream().filter(d -> !source.getDaimons().contains(d))
-                .collect(Collectors.toList());
+    private void reuseExistingDaimonIds(Source updated, Source existing) {
+        List<SourceDaimon> existingDaimons = sourceDaimonRepository.findBySource(existing);
 
-        List<SourceDaimon> allDaimons = sourceDaimonRepository.findBySource(source);
-
-        for (SourceDaimon newSourceDaimon : newDaimons) {
-            Optional<SourceDaimon> reusedDaimonOpt = allDaimons.stream()
-                    .filter(d -> d.equals(newSourceDaimon))
-                    .findFirst();
-            if (reusedDaimonOpt.isPresent()) {
-                SourceDaimon reusedDaimon = reusedDaimonOpt.get();
-                reusedDaimon.setPriority(newSourceDaimon.getPriority());
-                reusedDaimon.setTableQualifier(newSourceDaimon.getTableQualifier());
-                daimons.add(reusedDaimon);
-            } else {
-                daimons.add(newSourceDaimon);
-            }
+        for (SourceDaimon updatedDaimon : updated.getDaimons()) {
+            existingDaimons.stream()
+                    .filter(existingDaimon -> existingDaimon.getDaimonType() == updatedDaimon.getDaimonType())
+                    .findFirst()
+                    .ifPresent(existingDaimon -> updatedDaimon.setSourceDaimonId(existingDaimon.getSourceDaimonId()));
         }
-        updated.setDaimons(daimons);
     }
 
     private void transformIfRequired(Source source) {

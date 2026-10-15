@@ -329,6 +329,26 @@ public class SourceAccessIT extends WebApiIT {
         );
     }
 
+    @Test
+    public void limitedUserDeniedSourceCdmResultsCacheClear() {
+        ResponseEntity<String> r = postAsLimitedUser("/cdmresults/" + SOURCE_KEY + "/clearCache");
+        assertEquals(
+            "Limited user (no admin:cache permission) should be denied with 403 Forbidden on source CDMResults cache clear",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
+
+    @Test
+    public void limitedUserDeniedSourceCdmResultsCacheRefresh() {
+        ResponseEntity<String> r = getAsLimitedUser("/cdmresults/" + SOURCE_KEY + "/refreshCache");
+        assertEquals(
+            "Limited user (no admin:cache permission) should be denied with 403 Forbidden on source CDMResults cache refresh",
+            HttpStatus.FORBIDDEN,
+            HttpStatus.valueOf(r.getStatusCode().value())
+        );
+    }
+
     /**
      * A limited user (authenticated, but with no source grant) must receive
      * HTTP 403 Forbidden when accessing the source-scoped EvidenceService info

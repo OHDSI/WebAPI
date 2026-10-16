@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
 import org.springframework.jdbc.core.RowMapper;
+import org.ohdsi.webapi.report.ConceptCountRecord;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

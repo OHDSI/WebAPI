@@ -2,7 +2,6 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.stereotype.Component;

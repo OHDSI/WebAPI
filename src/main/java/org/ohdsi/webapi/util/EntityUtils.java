@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.util;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 
 public class EntityUtils {
 
@@ -10,7 +10,10 @@ public class EntityUtils {
     }
     
     public static EntityGraph fromAttributePaths(final String... strings) {
-
-        return EntityGraphUtils.fromAttributePaths(strings);
+        DynamicEntityGraph.Builder builder = DynamicEntityGraph.loading();
+        for (String path : strings) {
+            builder = builder.addPath(path);
+        }
+        return builder.build();
     }
 }

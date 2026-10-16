@@ -2,7 +2,7 @@ package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.exception.AtlasException;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.security.authz.UserEntity;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.slf4j.Logger;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -24,6 +24,11 @@ public abstract class AnalysisTasklet extends CancelableTasklet implements Stopp
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
     }
 
+    /**
+     * Saves analysis generation info in a separate transaction (PROPAGATION_REQUIRES_NEW).
+     * This ensures metadata is committed immediately and won't roll back with step failure.
+     * Uses the same transaction manager as the step transaction to properly suspend it.
+     */
     protected void saveInfoWithinTheSeparateTransaction(Long jobId, String serializedDesign, UserEntity userEntity) {
         DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
         txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -34,7 +39,9 @@ public abstract class AnalysisTasklet extends CancelableTasklet implements Stopp
             this.transactionTemplate.getTransactionManager().commit(infoSaveTx);
         } catch (Exception ex) {
             log.error("Cannot save sourceInfo for the job: {} ", jobId, ex);
-            this.transactionTemplate.getTransactionManager().rollback(infoSaveTx);
+            if (infoSaveTx != null) {
+                this.transactionTemplate.getTransactionManager().rollback(infoSaveTx);
+            }
             throw new AtlasException(ex);
         }
     }

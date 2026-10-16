@@ -16,19 +16,17 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.google.common.collect.ImmutableList;
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.arachne.commons.types.DBMSType;
 import org.ohdsi.cohortcharacterization.CCQueryBuilder;
-import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -36,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -69,7 +66,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                 Long.valueOf(jobParams.get(COHORT_CHARACTERIZATION_ID).toString())
         );
         final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
-        final UserEntity userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
+        final UserEntity userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString()).orElseThrow();
         String serializedDesign = new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization);
         saveInfoWithinTheSeparateTransaction(jobId, serializedDesign, userEntity);
         final Integer sourceId = Integer.valueOf(jobParams.get(SOURCE_ID).toString());

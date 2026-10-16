@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.tagging;
 
-import org.ohdsi.webapi.reusable.ReusableController;
+import org.ohdsi.webapi.reusable.ReusableService;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.ohdsi.webapi.tag.domain.Tag;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     @Autowired
-    private ReusableController controller;
+    private ReusableService service;
 
     @Autowired
     private ReusableRepository repository;
@@ -24,12 +24,12 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
         dto.setName("test name");
         dto.setDescription("test description");
 
-        initialDTO = controller.create(dto);
+        initialDTO = service.create(dto);
     }
 
     @Override
     protected ReusableDTO doCopyData(ReusableDTO def) {
-        return controller.copy(def.getId());
+        return service.copy(def.getId());
     }
 
     @Override
@@ -44,27 +44,27 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
 
     @Override
     protected void assignTag(Integer id, boolean isPermissionProtected) {
-        controller.assignTag(id, getTag(isPermissionProtected).getId());
+        service.assignTag(id, getTag(isPermissionProtected).getId());
     }
 
     @Override
     protected void unassignTag(Integer id, boolean isPermissionProtected) {
-        controller.unassignTag(id, getTag(isPermissionProtected).getId());
+        service.unassignTag(id, getTag(isPermissionProtected).getId());
     }
 
     @Override
     protected void assignProtectedTag(Integer id, boolean isPermissionProtected) {
-        controller.assignPermissionProtectedTag(id, getTag(isPermissionProtected).getId());
+        service.assignPermissionProtectedTag(id, getTag(isPermissionProtected).getId());
     }
 
     @Override
     protected void unassignProtectedTag(Integer id, boolean isPermissionProtected) {
-        controller.unassignPermissionProtectedTag(id, getTag(isPermissionProtected).getId());
+        service.unassignPermissionProtectedTag(id, getTag(isPermissionProtected).getId());
     }
 
     @Override
     protected ReusableDTO getDTO(Integer id) {
-        return controller.get(id);
+        return service.getDTOById(id);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     @Override
     protected void assignTags(Integer id, Tag...tags) {
         for (Tag tag : tags) {
-            controller.assignTag(id, tag.getId());
+            service.assignTag(id, tag.getId());
         }
     }
 
@@ -83,6 +83,6 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     protected List<ReusableDTO> getDTOsByTag(List<String> tagNames) {
         TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
         requestDTO.setNames(tagNames);
-        return controller.listByTags(requestDTO);
+        return service.listByTags(requestDTO);
     }
 }

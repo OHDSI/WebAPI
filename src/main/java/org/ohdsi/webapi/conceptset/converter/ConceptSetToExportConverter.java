@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.conceptset.converter;
 
-import com.odysseusinc.arachne.commons.converter.BaseConvertionServiceAwareConverter;
+import org.ohdsi.webapi.arachne.commons.converter.BaseConvertionServiceAwareConverter;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.springframework.stereotype.Component;

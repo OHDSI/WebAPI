@@ -15,16 +15,15 @@
 package org.ohdsi.webapi.ircalc;
 
 import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  *
@@ -45,7 +44,7 @@ public class IncidenceRateAnalysisDetails implements Serializable {
   private IncidenceRateAnalysis analysis;
  
   @Lob
-  @Type(type = "org.hibernate.type.TextType")  
+  @JdbcTypeCode(SqlTypes.VARCHAR)
   private String expression;
 
   protected IncidenceRateAnalysisDetails() {}

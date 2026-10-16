@@ -6,7 +6,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -49,7 +49,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
             rule.description = null;
         });
         
-        CohortDefinitionDetails cohortDetails = new CohortDefinitionDetails();
+        CohortDefinitionDetailsEntity cohortDetails = new CohortDefinitionDetailsEntity();
         cohortDetails.setExpression(Utils.serialize(cleanExpression));
         return cohortDetails.calculateHashCode();
     }

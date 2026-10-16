@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.source ADD (deleted_date Timestamp(3));

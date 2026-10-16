@@ -18,21 +18,20 @@
 
 package org.ohdsi.webapi.info;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.info.ConfigurationInfo;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/info")
-@Controller
+@RestController
+@RequestMapping("/info")
 public class InfoService {
 
     private final Info info;
@@ -51,9 +50,7 @@ public class InfoService {
     /**
      * Get info about the WebAPI instance
      */
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Info getInfo() {
 
         return info;

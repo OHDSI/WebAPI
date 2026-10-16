@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService;
+// import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService; // Removed - example service deleted
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,7 +98,7 @@ public class JobServiceIT extends WebApiIT {
     
     private void assertJobInstance(final JobInstanceResource instance) {
         Assert.assertNotNull(instance.getInstanceId());
-        assertEquals(ExampleApplicationWithJobService.EXAMPLE_JOB_NAME, instance.getName());
+        assertEquals("OhdsiExampleJob", instance.getName()); // Was ExampleApplicationWithJobService.EXAMPLE_JOB_NAME
     }
     
     private void assertOk(final ResponseEntity<?> entity) {

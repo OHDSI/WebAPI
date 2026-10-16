@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.versioning.converter;
 
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.security.authz.User;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ public class VersionBaseToVersionDTOConverter extends BaseConversionServiceAware
         target.setAssetId(source.getAssetId());
         target.setVersion(source.getVersion());
         target.setArchived(source.isArchived());
-        target.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));
+        target.setCreatedBy(User.fromEntity(source.getCreatedBy()));
         target.setCreatedDate(source.getCreatedDate());
 
         return target;

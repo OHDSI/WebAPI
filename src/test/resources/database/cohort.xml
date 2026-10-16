@@ -2,6 +2,12 @@
 <dataset>
     <cohort_definition
             id="1"
-            name="Clopidogrel"        
+            name="Clopidogrel"
+            description="Test cohort definition"
+            expression_type="SIMPLE_EXPRESSION"
+    />
+    <cohort_definition_details
+            id="1"
+            expression="{}"
     />
 </dataset>

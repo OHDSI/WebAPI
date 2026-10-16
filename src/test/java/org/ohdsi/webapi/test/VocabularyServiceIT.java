@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.test;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -23,13 +23,16 @@ public class VocabularyServiceIT extends WebApiIT {
     @Value("${vocabularyservice.endpoint.domains}")
     private String endpointDomains;
 
+    @Value("${vocabularyservice.endpoint.search}")
+    private String endpointSearch;
+
     @Autowired
     private SourceRepository sourceRepository;
 
     @Before
     public void init() throws Exception {
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        truncateTable(String.format("%s.%s", getOhdsiSchema(), "source"));
+        resetSequence(String.format("%s.%s", getOhdsiSchema(), "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
         prepareCdmSchema();
         prepareResultSchema();
@@ -68,6 +71,18 @@ public class VocabularyServiceIT extends WebApiIT {
 
         //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointDomains, String.class);
+
+        //Assertion
+        assertOK(entity);
+    }
+
+    @Test
+    public void canSearchConceptsWithQueryParam() {
+        // Test the GET /{sourceKey}/search?query=... endpoint format
+        String searchUrl = this.endpointSearch.replace("{sourceKey}", SOURCE_KEY) + "?query=test";
+
+        //Action
+        final ResponseEntity<String> entity = getRestTemplate().getForEntity(searchUrl, String.class);
 
         //Assertion
         assertOK(entity);

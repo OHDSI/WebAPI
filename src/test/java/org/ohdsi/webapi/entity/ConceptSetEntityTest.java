@@ -5,11 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.conceptset.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
+import static org.ohdsi.webapi.conceptset.ConceptSetService.COPY_NAME;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 public class ConceptSetEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<ConceptSetDTO> {

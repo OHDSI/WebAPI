@@ -19,29 +19,11 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             "GROUP BY ct.assetId.tagId")
     List<TagInfo> findCohortTagInfo();
 
-    @Query("SELECT cct.assetId.tagId as id, " +
-            "COUNT(cct.assetId.tagId) AS count " +
-            "FROM CohortCharacterizationTag cct " +
-            "GROUP BY cct.assetId.tagId")
-    List<TagInfo> findCcTagInfo();
-
     @Query("SELECT cst.assetId.tagId as id, " +
             "COUNT(cst.assetId.tagId) AS count " +
             "FROM ConceptSetTag cst " +
             "GROUP BY cst.assetId.tagId")
     List<TagInfo> findConceptSetTagInfo();
-
-    @Query("SELECT it.assetId.tagId as id, " +
-            "COUNT(it.assetId.tagId) AS count " +
-            "FROM IrTag it " +
-            "GROUP BY it.assetId.tagId")
-    List<TagInfo> findIrTagInfo();
-
-    @Query("SELECT pt.assetId.tagId as id, " +
-            "COUNT(pt.assetId.tagId) AS count " +
-            "FROM PathwayTag pt " +
-            "GROUP BY pt.assetId.tagId")
-    List<TagInfo> findPathwayTagInfo();
 
     @Query("SELECT rt.assetId.tagId as id, " +
             "COUNT(rt.assetId.tagId) AS count " +
@@ -49,6 +31,6 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             "GROUP BY rt.assetId.tagId")
     List<TagInfo> findReusableTagInfo();
 
-    @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")
+    @Query("SELECT t FROM Tag t WHERE t.mandatory = true")
     List<Tag> findMandatoryTags();
 }

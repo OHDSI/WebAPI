@@ -1,72 +1,69 @@
 package org.ohdsi.webapi.pathway;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
-import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.*;
-import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.ohdsi.webapi.security.authz.access.EntityType;
+import org.ohdsi.webapi.security.authz.access.AccessType;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-@Path("/pathway-analysis")
-@Controller
+@RestController
+@RequestMapping("/pathway-analysis")
+@Transactional
 public class PathwayController {
 
 	private ConversionService conversionService;
 	private ConverterUtils converterUtils;
 	private PathwayService pathwayService;
+	private AuthorizationService authorizationService;
 	private final SourceService sourceService;
 	private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
-	private final I18nService i18nService;
 	private PathwayChecker checker;
-	private PermissionService permissionService;
 
 	@Autowired
-	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
+	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, AuthorizationService authorizationService) {
 
 		this.conversionService = conversionService;
 		this.converterUtils = converterUtils;
 		this.pathwayService = pathwayService;
+		this.authorizationService = authorizationService;
 		this.sourceService = sourceService;
 		this.sensitiveInfoService = sensitiveInfoService;
-		this.i18nService = i18nService;
 		this.checker = checker;
-		this.permissionService = permissionService;
 	}
 
 	/**
@@ -82,12 +79,10 @@ public class PathwayController {
 	 * @param dto the pathway analysis design
 	 * @return the created pathway analysis
 	 */
-	@POST
-	@Path("/")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Transactional
-	public PathwayAnalysisDTO create(final PathwayAnalysisDTO dto) {
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@PreAuthorize("isPermitted('create:pathway')")
+	public PathwayAnalysisDTO create(@RequestBody final PathwayAnalysisDTO dto) {
 
 		PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
 		PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
@@ -104,11 +99,10 @@ public class PathwayController {
 	 * @param id the analysis to copy
 	 * @return The copied pathway analysis.
 	 */
-	@POST
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Transactional
-	public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
+	@PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)) and isPermitted('create:pathway')")
+	public PathwayAnalysisDTO copy(@PathVariable("id") final Integer id) {
 
 		PathwayAnalysisDTO dto = get(id);
 		dto.setId(null);
@@ -129,12 +123,11 @@ public class PathwayController {
 	 * @param dto
 	 * @return
 	 */
-	@POST
-	@Path("/import")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@PreAuthorize("isPermitted('create:pathway')")
+	public PathwayAnalysisDTO importAnalysis(@RequestBody final PathwayAnalysisExportDTO dto) {
 		dto.setTags(null);
 		dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
 		PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
@@ -153,18 +146,10 @@ public class PathwayController {
 	 * @summary List Designs by Page
 	 * @return the list of pathway analysis DTOs.
 	 */
-	@GET
-	@Path("/")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Transactional
+	// Listing is open; the returned page is filtered per-entity in the service.
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
-		return pathwayService.getPage(pageable).map(pa -> {
-			PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
-			permissionService.fillWriteAccess(pa, dto);
-			permissionService.fillReadAccess(pa, dto);
-			return dto;
-		});
+		return pathwayService.getPage(pageable);
 	}
   
 
@@ -182,11 +167,9 @@ public class PathwayController {
 	 * @return a count of the number of pathway analysis designs with the same
 	 * name
 	 */
-	@GET
-	@Path("/{id}/exists")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public int getCountPAWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+	@GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public int getCountPAWithSameName(@PathVariable(value = "id", required = false) final int id, @RequestParam("name") String name) {
 
 		return pathwayService.getCountPAWithSameName(id, name);
 	}
@@ -201,12 +184,10 @@ public class PathwayController {
 	 * @param dto the pathway analysis design
 	 * @return the updated pathway analysis design.
 	 */
-	@PUT
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	public PathwayAnalysisDTO update(@PathParam("id") final Integer id, @RequestBody final PathwayAnalysisDTO dto) {
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public PathwayAnalysisDTO update(@PathVariable("id") final Integer id, @RequestBody final PathwayAnalysisDTO dto) {
 		pathwayService.saveVersion(id);
 		PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
 		pathwayAnalysis.setId(id);
@@ -221,14 +202,12 @@ public class PathwayController {
 	 * @param id the design id
 	 * @return a pathway analysis design for the given id
 	 */
-	@GET
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('read:pathway') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public PathwayAnalysisDTO get(@PathVariable("id") final Integer id) {
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format(i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d."), id));
+		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
 		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
 		PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
@@ -244,12 +223,10 @@ public class PathwayController {
 	 * @param id the design id to export
 	 * @return a String containing the pathway analysis design as JSON
 	 */
-	@GET
-	@Path("/{id}/export")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	public String export(@PathParam("id") final Integer id) {
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('read:pathway') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public String export(@PathVariable("id") final Integer id) {
 
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
 		ExportUtil.clearCreateAndUpdateInfo(pathwayAnalysis);
@@ -270,11 +247,9 @@ public class PathwayController {
 	 * @param sourceKey the source used to find the schema and dialect
 	 * @return a String containing the analysis sql
 	 */
-	@GET
-	@Path("/{id}/sql/{sourceKey}")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceKey") final String sourceKey) {
+	@GetMapping(value = "/{id}/sql/{sourceKey}", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('read:pathway') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public String getAnalysisSql(@PathVariable("id") final Integer id, @PathVariable("sourceKey") final String sourceKey) {
 
 		Source source = sourceService.findBySourceKey(sourceKey);
 		return pathwayService.buildAnalysisSql(-1L, pathwayService.getById(id), source.getSourceId());
@@ -286,11 +261,9 @@ public class PathwayController {
 	 * @summary Delete Pathway Analysis Design
 	 * @param id
 	 */
-	@DELETE
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void delete(@PathParam("id") final Integer id) {
+	@DeleteMapping(value = "/{id}")
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public void delete(@PathVariable("id") final Integer id) {
 
 		pathwayService.delete(id);
 	}
@@ -305,14 +278,12 @@ public class PathwayController {
 	 * @param sourceKey
 	 * @return a job execution reference
 	 */
-	@POST
-	@Path("/{id}/generation/{sourceKey}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/{id}/generation/{sourceKey}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
+	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
 	public JobExecutionResource generatePathways(
-					@PathParam("id") final Integer pathwayAnalysisId,
-					@PathParam("sourceKey") final String sourceKey
+					@PathVariable("id") final Integer pathwayAnalysisId,
+					@PathVariable("sourceKey") final String sourceKey
 	) {
 
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(pathwayAnalysisId);
@@ -337,11 +308,11 @@ public class PathwayController {
 	 * @param pathwayAnalysisId the pathway analysis id
 	 * @param sourceKey the key of the source
 	 */
-	@DELETE
-	@Path("/{id}/generation/{sourceKey}")
+	@DeleteMapping(value = "/{id}/generation/{sourceKey}")
+	@PreAuthorize("(isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)) and (isPermitted('write:source') or hasSourceAccess(#sourceKey, WRITE))")
 	public void cancelPathwaysGeneration(
-					@PathParam("id") final Integer pathwayAnalysisId,
-					@PathParam("sourceKey") final String sourceKey
+					@PathVariable("id") final Integer pathwayAnalysisId,
+					@PathVariable("sourceKey") final String sourceKey
 	) {
 
 		Source source = sourceService.findBySourceKey(sourceKey);
@@ -360,13 +331,11 @@ public class PathwayController {
 	 * @param pathwayAnalysisId the pathway analysis design id
 	 * @return the list of generation info objects for this design
 	 */
-	@GET
-	@Path("/{id}/generation")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/{id}/generation", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
+	@PreAuthorize("isOwner(#pathwayAnalysisId, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#pathwayAnalysisId, PATHWAY_ANALYSIS, READ)")
 	public List<CommonGenerationDTO> getPathwayGenerations(
-					@PathParam("id") final Integer pathwayAnalysisId
+				@PathVariable("id") final Integer pathwayAnalysisId
 	) {
 
 		Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
@@ -381,17 +350,17 @@ public class PathwayController {
 	 * @param generationId
 	 * @return a CommonGenerationDTO for the given generation id
 	 */
-	@GET
-	@Path("/generation/{generationId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/generation/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
 	public CommonGenerationDTO getPathwayGenerations(
-					@PathParam("generationId") final Long generationId
+					@PathVariable("generationId") final Long generationId
 	) {
+		checkGenerationReadAccess(generationId);
 
 		PathwayAnalysisGenerationEntity generationEntity = pathwayService.getGeneration(generationId);
 		return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
-						Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
+					Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
 	}
 
 	/**
@@ -405,13 +374,13 @@ public class PathwayController {
 	 * @param generationId the generation to fetch the design for
 	 * @return a JSON representation of the pathway analysis design.
 	 */
-	@GET
-	@Path("/generation/{generationId}/design")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/generation/{generationId}/design", produces = MediaType.APPLICATION_JSON_VALUE)
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
 	public String getGenerationDesign(
-					@PathParam("generationId") final Long generationId
+					@PathVariable("generationId") final Long generationId
 	) {
+		checkGenerationReadAccess(generationId);
 
 		return pathwayService.findDesignByGenerationId(generationId);
 
@@ -424,13 +393,13 @@ public class PathwayController {
 	 * @param generationId the generation id of the results
 	 * @return the pathway analysis results
 	 */
-	@GET
-	@Path("/generation/{generationId}/result")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/generation/{generationId}/result", produces = MediaType.APPLICATION_JSON_VALUE)
+	// Per-generation entity + source access is enforced in-body by checkGeneration*Access
+	// (which resolves the generation to its parent pathway analysis); this gate only blocks anonymous.
 	public PathwayPopulationResultsDTO getGenerationResults(
-					@PathParam("generationId") final Long generationId
+					@PathVariable("generationId") final Long generationId
 	) {
+		checkGenerationReadAccess(generationId);
 		return pathwayService.getGenerationResults(generationId);
 	}
 
@@ -450,13 +419,57 @@ public class PathwayController {
 	 * @param pathwayAnalysisDTO the pathway analysis design to check
 	 * @return the set of checks (warnings, info and errors)
 	 */
-	@POST
-	@Path("/check")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public CheckResult runDiagnostics(PathwayAnalysisDTO pathwayAnalysisDTO) {
+	@PostMapping(value = "/check", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:pathway','write:pathway'))")
+	public CheckResult runDiagnostics(@RequestBody PathwayAnalysisDTO pathwayAnalysisDTO) {
 
 		return new CheckResult(checker.check(pathwayAnalysisDTO));
+	}
+
+	// --- generation-level authorization helpers (generationId-only endpoints)
+	private void checkGenerationReadAccess(Long generationId) {
+		PathwayAnalysisGenerationEntity generationEntity = pathwayService.getGeneration(generationId);
+		ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format("There is no generation with id = %d.", generationId));
+		PathwayAnalysisEntity pa = generationEntity.getPathwayAnalysis();
+		if (pa == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated pathway analysis not found");
+		}
+		String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
+
+		boolean paAllowed = authorizationService.isOwner(pa.getId().longValue(), EntityType.PATHWAY_ANALYSIS)
+				|| authorizationService.isPermitted("read:pathway")
+				|| authorizationService.isPermitted("write:pathway")
+				|| authorizationService.hasEntityAccess(pa.getId().longValue(), EntityType.PATHWAY_ANALYSIS, AccessType.READ);
+
+		boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("read:source")
+				|| authorizationService.isPermitted("write:source")
+				|| authorizationService.hasSourceAccess(sourceKey, AccessType.READ));
+
+		if (!paAllowed || !sourceAllowed) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+		}
+	}
+
+	private void checkGenerationWriteAccess(Long generationId) {
+		PathwayAnalysisGenerationEntity generationEntity = pathwayService.getGeneration(generationId);
+		ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format("There is no generation with id = %d.", generationId));
+		PathwayAnalysisEntity pa = generationEntity.getPathwayAnalysis();
+		if (pa == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Associated pathway analysis not found");
+		}
+		String sourceKey = generationEntity.getSource() != null ? generationEntity.getSource().getSourceKey() : null;
+
+		boolean paAllowed = authorizationService.isOwner(pa.getId().longValue(), EntityType.PATHWAY_ANALYSIS)
+				|| authorizationService.isPermitted("read:pathway")
+				|| authorizationService.isPermitted("write:pathway")
+				|| authorizationService.hasEntityAccess(pa.getId().longValue(), EntityType.PATHWAY_ANALYSIS, AccessType.READ);
+
+		boolean sourceAllowed = sourceKey != null && (authorizationService.isPermitted("write:source")
+				|| authorizationService.hasSourceAccess(sourceKey, AccessType.WRITE));
+
+		if (!paAllowed || !sourceAllowed) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+		}
 	}
 
 	/**
@@ -466,10 +479,10 @@ public class PathwayController {
 	 * @param id
 	 * @param tagId
 	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/tag/")
-	public void assignTag(@PathParam("id") final int id, final int tagId) {
+	@PostMapping(value = "/{id}/tag", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('admin:tags') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public void assignTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
 		pathwayService.assignTag(id, tagId);
 	}
 
@@ -480,10 +493,10 @@ public class PathwayController {
 	 * @param id
 	 * @param tagId
 	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/tag/{tagId}")
-	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+	@DeleteMapping(value = "/{id}/tag/{tagId}")
+	@Transactional
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('admin:tags') or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public void unassignTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
 		pathwayService.unassignTag(id, tagId);
 	}
 
@@ -494,10 +507,10 @@ public class PathwayController {
 	 * @param id
 	 * @param tagId
 	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/protectedtag/")
-	public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+	@PostMapping(value = "/{id}/protectedtag", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)) and isPermitted('admin:tags')")
+	public void assignPermissionProtectedTag(@PathVariable("id") final int id, @RequestBody final int tagId) {
 		pathwayService.assignTag(id, tagId);
 	}
 
@@ -508,10 +521,10 @@ public class PathwayController {
 	 * @param id
 	 * @param tagId
 	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/protectedtag/{tagId}")
-	public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+	@DeleteMapping(value = "/{id}/protectedtag/{tagId}")
+	@Transactional
+	@PreAuthorize("(isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)) and isPermitted('admin:tags')")
+	public void unassignPermissionProtectedTag(@PathVariable("id") final int id, @PathVariable("tagId") final int tagId) {
 		pathwayService.unassignTag(id, tagId);
 	}
 
@@ -522,10 +535,9 @@ public class PathwayController {
 	 * @param id
 	 * @return
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/")
-	public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+	@GetMapping(value = "/{id}/version", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public List<VersionDTO> getVersions(@PathVariable("id") final long id) {
 		return pathwayService.getVersions(id);
 	}
 
@@ -537,10 +549,9 @@ public class PathwayController {
 	 * @param version
 	 * @return
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{version}")
-	public PathwayVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+	@GetMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isAnyPermitted(anyOf('read:pathway','write:pathway')) or hasEntityAccess(#id, PATHWAY_ANALYSIS, READ)")
+	public PathwayVersionFullDTO getVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		return pathwayService.getVersion(id, version);
 	}
 
@@ -553,11 +564,10 @@ public class PathwayController {
 	 * @param updateDTO
 	 * @return
 	 */
-	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{version}")
-	public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
-					VersionUpdateDTO updateDTO) {
+	@PutMapping(value = "/{id}/version/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public VersionDTO updateVersion(@PathVariable("id") final int id, @PathVariable("version") final int version,
+					@RequestBody VersionUpdateDTO updateDTO) {
 		return pathwayService.updateVersion(id, version, updateDTO);
 	}
 
@@ -568,10 +578,9 @@ public class PathwayController {
 	 * @param id
 	 * @param version
 	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{version}")
-	public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+	@DeleteMapping(value = "/{id}/version/{version}")
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public void deleteVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		pathwayService.deleteVersion(id, version);
 	}
 
@@ -583,10 +592,10 @@ public class PathwayController {
 	 * @param version
 	 * @return
 	 */
-	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{version}/createAsset")
-	public PathwayAnalysisDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+	@PutMapping(value = "/{id}/version/{version}/createAsset", produces = MediaType.APPLICATION_JSON_VALUE)
+	@CacheEvict(cacheNames = org.ohdsi.webapi.security.authz.AuthorizationCacheService.CachingSetup.AUTH_INFO_CACHE, key = "@authorizationService.getAuthenticatedPrincipal().getUserId()")
+	@PreAuthorize("isOwner(#id, PATHWAY_ANALYSIS) or isPermitted('write:pathway') or hasEntityAccess(#id, PATHWAY_ANALYSIS, WRITE)")
+	public PathwayAnalysisDTO copyAssetFromVersion(@PathVariable("id") final int id, @PathVariable("version") final int version) {
 		return pathwayService.copyAssetFromVersion(id, version);
 	}
 
@@ -597,11 +606,8 @@ public class PathwayController {
 	 * @param requestDTO
 	 * @return
 	 */
-	@POST
-	@Path("/byTags")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+	@PostMapping(value = "/byTags", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public List<PathwayAnalysisDTO> listByTags(@RequestBody TagNameListRequestDTO requestDTO) {
 		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
 			return Collections.emptyList();
 		}

@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
+import org.ohdsi.webapi.report.ScatterplotRecord;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

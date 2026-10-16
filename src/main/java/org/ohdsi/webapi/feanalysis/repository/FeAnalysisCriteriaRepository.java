@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface FeAnalysisCriteriaRepository extends JpaRepository<FeAnalysisCriteriaEntity, Long> {
     List<FeAnalysisCriteriaEntity> findAllByFeatureAnalysisId(Integer id);
-    @Query("select fa from FeAnalysisCriteriaEntity AS fa JOIN FETCH fa.featureAnalysis where expression = ?1")
+    @Query("select fa from FeAnalysisCriteriaEntity AS fa JOIN FETCH fa.featureAnalysis where fa.expressionString = ?1")
     List<FeAnalysisCriteriaEntity> findAllByExpressionString(String expression);
 }

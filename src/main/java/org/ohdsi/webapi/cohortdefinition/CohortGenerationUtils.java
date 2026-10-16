@@ -26,7 +26,7 @@ import static org.ohdsi.webapi.Constants.Tables.COHORT_SUMMARY_STATS_CACHE;
 
 public class CohortGenerationUtils {
 
-  public static void insertInclusionRules(CohortDefinition cohortDef, Source source, int designHash,
+  public static void insertInclusionRules(CohortDefinitionEntity cohortDef, Source source, int designHash,
                                           String targetSchema, String sessionId, JdbcTemplate jdbcTemplate) {
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
     String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", targetSchema, cohortDef.getId());

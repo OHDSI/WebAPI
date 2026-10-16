@@ -5,16 +5,15 @@ OHDSI WebAPI contains all OHDSI RESTful services that can be called from OHDSI a
 ## Features
 
 - Provides a centralized API for working with 1 or more databases converted to the [Common Data Model](https://github.com/OHDSI/CommonDataModel) (CDM) v5.
-- Searching the OMOP standardized vocabularies for medical concepts and constructing concept sets.
-- Defining cohort definitions for use in identifying patient populations.
-- Characterizing cohorts
-- Computing incidence rates
-- Retrieve patient profiles
-- Design population level estimation and patient level prediction studies
+- Searches the OMOP standardized vocabularies for medical concepts and constructs concept sets.
+- Defines cohort definitions for identifying patient populations.
+- Characterizes cohorts.
+- Computes incidence rates.
+- Retrieves patient profiles.
 
 ## Technology
 
-OHDSI WebAPI is a Java 8 web application that utilizes a PostgreSQL database for storage.
+OHDSI WebAPI is a Java 21 web application that uses a PostgreSQL database for storage.
 
 ## API Documentation
 
@@ -22,15 +21,15 @@ The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc
 
 ## System Requirements & Installation
 
-Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
+Documentation is available in the [WebAPI Installation Guide](https://github.com/OHDSI/WebAPI/wiki), which covers system requirements and installation instructions.
 
 ## WebAPI Configuration in version 3.0
 
-Application configuration has moved from a maven build-based pipeline (in version 2.x) to external configuration in WebAPI 3.0 (and using a new YAML format) as described in this [Atlas Sandbox project](https://github.com/OHDSI/AtlasWebAPISandbox/tree/main/ExternalConfig).
+Application configuration moved from a Maven build-based pipeline in version 2.x to external YAML configuration in WebAPI 3.0, as described in the [Atlas Sandbox project](https://github.com/OHDSI/AtlasWebAPISandbox/tree/main/ExternalConfig).
 
-### VS.Code Launch settings Example
+### VS Code Launch Configuration Example
 
-In VS Code, to launch the app using an external config, you can define a new launch settings in your local .vscode/launch.json file:
+In VS Code, to launch the application using an external configuration file, define a new launch configuration in your local `.vscode/launch.json` file:
 
 ```
 {
@@ -48,7 +47,7 @@ In VS Code, to launch the app using an external config, you can define a new lau
 ```
 _Note the format of Windows paths in this example_
 
-This will pass the necessary VM arg to load additional Spring configuration from the specified file.  For example, for a local Postgres install with Windows Authentication enabled:
+This passes the necessary VM argument to load additional Spring configuration from the specified file. For example, for a local PostgreSQL installation with Windows Authentication enabled:
 
 ```
 datasource:
@@ -67,9 +66,9 @@ security:
   origin: http://localhost
   provider: AtlasRegularSecurity
 ```
-### Deploying WAR to Tomcat
+### Deploying a WAR to Tomcat
 
-You can provide the enviornment variable `spring.config.additional-location` using a context.xml that is uploaded along with the WAR:
+You can provide the `spring.config.additional-location` environment property using a `context.xml` file deployed with the WAR:
 
 ```
 <Context>
@@ -125,13 +124,13 @@ The following parameters are used:
 - `security.auth.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
 - `security.auth.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
 
-Sample idp metadata and sp metadata config files for okta:
+Sample IdP and SP metadata configuration files for Okta:
 - `saml/dev/idp-metadata-okta.xml`
 - `saml/dev/sp-metadata-okta.xml`
 
-## Managing auth providers (Updated for v3.0)
+## Managing Auth Providers (Updated for v3.0)
 
-The following parameters are used to enable/disable certain provider:
+The following parameters enable or disable authentication providers:
 
 - `security.auth.ad.enabled`
 - `security.auth.cas.enabled`
@@ -144,9 +143,9 @@ The following parameters are used to enable/disable certain provider:
 - `security.auth.openid.enabled`
 - `security.auth.windows.enabled`
 
-Acceptable values are `true` and `false`
+Acceptable values are `true` and `false`.
 
-Default paramaters for each of these authentication providers are provided as an example in the embedded application.yaml file.  All providers are disabled by default.
+Default parameters for each authentication provider are provided as examples in the embedded `application.yaml` file. All providers are disabled by default.
 
 ## Geospatial support
 
@@ -154,7 +153,7 @@ Instructions can be found at [webapi-component-geospatial](https://github.com/OH
 
 ## Testing
 
-It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't support window functions, `md5` function, HEX to BIT conversion, `setval`, `set datestyle`, CTAS + CTE.
+Embedded PostgreSQL is used instead of H2 for unit tests because H2 does not support window functions, the `md5` function, HEX-to-BIT conversion, `setval`, `set datestyle`, or CTAS with CTEs.
 
 ## Support
 
@@ -170,21 +169,20 @@ It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't s
 
 ### Development Quick Start Guide
 
-To start the application locally, the following quick steps (all commands are executed from repository root directory)
+To start the application locally, follow these steps. Run all commands from the repository root directory.
 
-1. Ensure that you have the following tools installed: Java 1.8, maven (check via `mvn -v`), docker-ce (check via `docker -v`), psql command line client
-(check via psql --version) or other tool that allows to connect to postgres DB.
+1. Ensure that you have the following tools installed: JDK 21, Maven (check with `mvn -v`), Docker (check with `docker -v`), and the `psql` command-line client (check with `psql --version`) or another tool that can connect to a PostgreSQL database.
 2. Run `mvn clean install` and make sure it completes successfully, resolve dependency issues if any.
 3. Create a new database in docker: `docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine`.
 4. Start DB container: `docker start postgres-webapi`.
-	 Verify that you can connect via psql console (`PGPASSWORD='ohdsi' psql -d postgresql://localhost:8432/?user=postgres`).
-5. If your default java version is too high (e.g. 17), set JAVA_HOME to point to 1.8 installaction, for example `export JAVA_HOME=/usr/lib/jvm/zulu8-ca-amd64`
-6. Start WebAPI `mvn clean install spring-boot:run -Dmaven.test.skip=true -P webapi-postgresql -s src/dev/settings.xml -f pom.xml`
+  Verify that you can connect through the `psql` console (`PGPASSWORD='ohdsi' psql -d postgresql://localhost:8432/?user=postgres`).
+5. Ensure that `JAVA_HOME` points to a JDK 21 installation.
+6. Start WebAPI: `mvn clean install spring-boot:run -Dmaven.test.skip=true -P webapi-postgresql -s src/dev/settings.xml -f pom.xml`
 7. Log in with the username of your liking
-8. Grant this newly created user admin privileges by running the following sql `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
+8. Grant this newly created user administrative privileges by running the following SQL: `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
    and log in again.
 
-At this point you have the application running and admin account operational. To actually use it, additional steps are required to set up privileges
+At this point, the application is running and an administrative account is operational. To use it, additional steps are required to set up privileges
 and at least one CDM database. They are covered in the respective documentation sections.
 
 ## License

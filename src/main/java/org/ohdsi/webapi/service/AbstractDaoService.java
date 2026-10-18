@@ -368,14 +368,16 @@ public abstract class AbstractDaoService extends AbstractAdminService
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
 
-        // unassign tags from the same group if group marked as multi_selection=false
+        // Unassign tags from the same group if group marked as multi_selection=false.
+        // Snapshot ids first because unassignTag mutates Hibernate's managed collection.
         tag.getGroups().stream().findFirst().ifPresent(group -> {
           if (!group.isMultiSelection()) {
-            entity.getTags().forEach(t -> {
-              if (t.getGroups().stream().anyMatch(g -> g.getId().equals(group.getId()))) {
-                unassignTag(entity, t.getId());
-              }
-            });
+            entity.getTags().stream()
+                .filter(existing -> existing.getGroups().stream()
+                    .anyMatch(existingGroup -> existingGroup.getId().equals(group.getId())))
+                .map(Tag::getId)
+                .toList()
+                .forEach(existingTagId -> unassignTag(entity, existingTagId));
           }
         });
 
@@ -392,10 +394,13 @@ public abstract class AbstractDaoService extends AbstractAdminService
           throw new AccessDeniedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
-        Set<Tag> tags = entity.getTags().stream()
-                .filter(t -> t.getId() != tagId)
-                .collect(Collectors.toSet());
-        entity.setTags(tags);
+        // Keep Hibernate's managed collection intact. Replacing it with a new
+        // Set can make concurrent tag mutations reconcile the entire join table
+        // snapshot, restoring another tag removed by a parallel request.
+        entity.getTags().stream()
+          .filter(existing -> Objects.equals(existing.getId(), tagId))
+          .findFirst()
+          .ifPresent(existing -> entity.getTags().remove(existing));
       }
     }
   }

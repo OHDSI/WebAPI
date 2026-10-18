@@ -73,7 +73,7 @@ public class TagService extends AbstractDaoService {
 
     public Tag create(Tag tag) {
         tag.setType(TagType.CUSTOM);
-        if (tag.getGroups() == null || tag.getGroups().isEmpty()) {
+        if (tag.getGroups() == null) {
             throw new BadRequestAtlasException("A tag must be assigned to at least one tag group.");
         }
         List<Integer> groupIds = tag.getGroups().stream()

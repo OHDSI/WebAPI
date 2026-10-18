@@ -14,7 +14,7 @@ sandbox/
 *~
 .DS_Store
 .factorypath
-*md
+*.md
 specs/
 .specify
 docs

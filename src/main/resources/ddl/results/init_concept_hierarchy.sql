@@ -98,6 +98,7 @@ FROM (
 	INNER JOIN @vocab_schema.concept c2 ON ca1.ancestor_concept_id = c2.concept_id
 		AND c2.domain_id = 'Drug'
 		AND c2.concept_class_id = 'Ingredient'
+		AND c2.standard_concept = 'S'
 ) rxnorm
 LEFT JOIN (
 	SELECT

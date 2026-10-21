@@ -180,6 +180,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             .GetResourceAsString("/resources/cohortcharacterizations/sql/queryTemporalAnnualResults.sql");
     private final String QUERY_COUNT = ResourceHelper
             .GetResourceAsString("/resources/cohortcharacterizations/sql/queryCountWithoutThreshold.sql");
+    private final String QUERY_STRATA_COUNTS = ResourceHelper
+            .GetResourceAsString("/resources/cohortcharacterizations/sql/queryStrataCounts.sql");
     private final String DELETE_RESULTS = ResourceHelper
             .GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper
@@ -798,6 +800,21 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, Long.class);
     }
 
+    private Map<String, Map<String, Long>> findStrataCounts(final Long generationId) {
+        final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        final Source source = generationEntity.getSource();
+        String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_STRATA_COUNTS,
+                "cohort_characterization_generation_id", String.valueOf(generationId));
+        String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
+                SourceUtils.getTempQualifier(source));
+        List<StrataCounts.Candidate> candidates = this.getSourceJdbcTemplate(source).query(translatedSql,
+                (rs, rowNum) -> new StrataCounts.Candidate(rs.getLong("cohort_definition_id"),
+                        rs.getLong("strata_id"), rs.getLong("person_count"), rs.getLong("row_count")));
+        return StrataCounts.resolve(candidates);
+    }
+
     @Override
     public GenerationResults exportExecutionResult(final Long generationId, ExportExecutionResultRequest params) {
         GenerationResults res = findResult(generationId, params);
@@ -829,6 +846,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     .collect(Collectors.toList()));
         }
         res.setPrevalenceThreshold(params.getThresholdValuePct());
+        res.setStrataCounts(findStrataCounts(generationId));
         return res;
     }
 

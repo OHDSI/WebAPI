@@ -107,6 +107,10 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("tempdb\\.\\.", "");
         }
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
+        // DropCohortTableListener runs this after the job, so intermediate tables are removed even if the job fails or is cancelled
+        chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().putString(
+                DropCohortTableListener.CLEANUP_SQL,
+                SqlTranslate.translateSql(ccQueryBuilder.getCleanupSql(), source.getSourceDialect(), sessionId, tempSchema));
         return SqlSplit.splitSql(translatedSql);
     }
 

@@ -40,8 +40,8 @@ public class CDMCacheBatchService {
             CDMCacheEntity processedEntity;
             if (cacheEntities.containsKey(entity.getConceptId())) {
                 processedEntity = cacheEntities.get(entity.getConceptId());
-                if (Arrays.equals(new long[] { entity.getPersonCount(),entity.getDescendantPersonCount(),entity.getRecordCount(),entity.getDescendantRecordCount()},
-                    new long[] {processedEntity.getPersonCount(),processedEntity.getDescendantPersonCount(),processedEntity.getRecordCount(),processedEntity.getDescendantRecordCount()})) {
+                if (Arrays.equals(new Long[] { entity.getPersonCount(),entity.getDescendantPersonCount(),entity.getRecordCount(),entity.getDescendantRecordCount()},
+                    new Long[] {processedEntity.getPersonCount(),processedEntity.getDescendantPersonCount(),processedEntity.getRecordCount(),processedEntity.getDescendantRecordCount()})) {
                   return;  // data hasn't changed, so move to next in forEach
                 }
             } else {

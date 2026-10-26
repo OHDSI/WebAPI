@@ -1072,7 +1072,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
 
-		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(), this.getSourceRepository());
+		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(), this.getSourceRepository(), this::getSourceJdbcTemplate);
 
 		Step cleanupStep = new StepBuilder("cohortDefinition.cleanupCohort", jobRepository)
 						.tasklet(cleanupTasklet, transactionManager)

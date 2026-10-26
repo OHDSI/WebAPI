@@ -17,6 +17,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -34,7 +35,6 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,20 +50,21 @@ public class CleanupCohortTasklet implements Tasklet {
 	
 	private final TransactionTemplate transactionTemplate;
 	private final SourceRepository sourceRepository;
+	private final Function<Source, ? extends JdbcTemplate> sourceJdbcTemplateProvider;
 
 	private final String CLEANUP_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/cleanupResults.sql"); 
 
+	/**
+	 * @param sourceJdbcTemplateProvider builds the JdbcTemplate for a source with its credentials and
+	 * connection settings applied, e.g. AbstractDaoService::getSourceJdbcTemplate
+	 */
 	public CleanupCohortTasklet(final TransactionTemplate transactionTemplate,
-		final SourceRepository sourceRepository) {
+		final SourceRepository sourceRepository,
+		final Function<Source, ? extends JdbcTemplate> sourceJdbcTemplateProvider) {
 		this.transactionTemplate = transactionTemplate;
 		this.sourceRepository = sourceRepository;
+		this.sourceJdbcTemplateProvider = sourceJdbcTemplateProvider;
 	}
-	
-  private JdbcTemplate getSourceJdbcTemplate(Source source) {
-    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
-    JdbcTemplate template = new JdbcTemplate(dataSource);
-    return template;
-  }
 	
   private Integer doTask(ChunkContext chunkContext) {
     int sourcesUpdated = 0;
@@ -82,7 +83,7 @@ public class CleanupCohortTasklet implements Tasklet {
 				String deleteSql = SqlRender.renderSql(CLEANUP_TEMPLATE, new String[]{"results_database_schema", "cohort_definition_id"}, new String[]{resultSchema, cohortId.toString()});
 				deleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, SourceUtils.getTempQualifier(source));
 				
-				getSourceJdbcTemplate(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
+				sourceJdbcTemplateProvider.apply(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 				sourcesUpdated++;
 			} catch (Exception e) {
 				log.error("Error deleting results for cohort: {}, cause: {}", cohortId, e.getMessage());

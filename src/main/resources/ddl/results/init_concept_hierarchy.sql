@@ -276,9 +276,9 @@ FROM
 (
 	SELECT
 		c1.concept_id,
-		CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) AS proc_concept_name
+		CONCAT(COALESCE(v1.vocabulary_name, c1.vocabulary_id), ' ', c1.concept_code, ': ', c1.concept_name) AS proc_concept_name
 	FROM @vocab_schema.concept c1
-	INNER JOIN @vocab_schema.vocabulary v1 ON c1.vocabulary_id = v1.vocabulary_id
+	LEFT JOIN @vocab_schema.vocabulary v1 ON c1.vocabulary_id = v1.vocabulary_id
 	WHERE c1.domain_id = 'Procedure'
 ) procs
 LEFT JOIN (

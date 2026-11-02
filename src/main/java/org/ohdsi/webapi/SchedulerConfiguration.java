@@ -4,12 +4,14 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import static com.cronutils.model.CronType.QUARTZ;
 
 @Configuration
+@Lazy(false)
 public class SchedulerConfiguration {
 
   @Bean

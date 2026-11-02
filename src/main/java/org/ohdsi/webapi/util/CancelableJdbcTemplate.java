@@ -49,11 +49,19 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       @Override
       public int[] doInStatement(Statement stmt) throws SQLException, DataAccessException {
         int[] rowsAffected = new int[sql.length];
-        cancelOp.setStatement(stmt);
+        if (!cancelOp.setStatement(stmt)) {
+          return rowsAffected;
+        }
         if (supportsBatchUpdates(stmt.getConnection())) {
           for (String sqlStmt : sql) {
+            if (cancelOp.isCanceled()) {
+              return rowsAffected;
+            }
             this.currSql = appendSql(this.currSql, sqlStmt);
             stmt.addBatch(sqlStmt);
+          }
+          if (cancelOp.isCanceled()) {
+            return rowsAffected;
           }
           try {
             rowsAffected = stmt.executeBatch();
@@ -78,6 +86,9 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         }
         else {
           for (int i = 0; i < sql.length; i++) {
+            if (cancelOp.isCanceled()) {
+              break;
+            }
             String connectionString = stmt.getConnection().getMetaData().getURL();
             if (connectionString.startsWith("jdbc:spark") || connectionString.startsWith("jdbc:databricks")) {
               this.currSql = BigQuerySparkTranslate.sparkHandleInsert(sql[i], stmt.getConnection());
@@ -125,7 +136,11 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         for (int i = 0; i < statements.size(); i++) {
           current = statements.get(i);
           PreparedStatement query = current.createPreparedStatement(con);
-          cancelOp.setStatement(query);
+
+          if (!cancelOp.setStatement(query) || cancelOp.isCanceled()) {
+            query.close();
+            break;
+          }
 					if (!query.execute()) {
 						rowsAffected[i] = query.getUpdateCount();
 					}

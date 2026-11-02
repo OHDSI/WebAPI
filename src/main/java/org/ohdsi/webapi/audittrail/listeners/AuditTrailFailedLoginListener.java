@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.audittrail.listeners;
 
-import com.odysseusinc.logging.event.FailedLoginEvent;
+import org.ohdsi.webapi.arachne.logging.event.FailedLoginEvent;
 import org.ohdsi.webapi.audittrail.AuditTrailService;
 import org.ohdsi.webapi.audittrail.events.AuditTrailLoginFailedEvent;
 import org.springframework.beans.factory.annotation.Autowired;

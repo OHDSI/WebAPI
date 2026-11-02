@@ -2,14 +2,10 @@ package org.ohdsi.webapi.pathway.converter;
 
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsEntity;
 import org.ohdsi.webapi.cohortdefinition.converter.BaseCohortDTOToCohortDefinitionConverter;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
-import org.ohdsi.webapi.pathway.dto.PathwayCohortDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCohortExportDTO;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,10 +15,10 @@ public class PathwayCohortExportDTOToCohortDefinitionConverter extends BaseCohor
     }
 
     @Override
-    protected void doConvert(PathwayCohortExportDTO source, CohortDefinition target) {
+    protected void doConvert(PathwayCohortExportDTO source, CohortDefinitionEntity target) {
         super.doConvert(source, target);
         if (source.getExpression() != null) {
-            final CohortDefinitionDetails details = new CohortDefinitionDetails();
+            final CohortDefinitionDetailsEntity details = new CohortDefinitionDetailsEntity();
             final String expression = convertExpression(source);
             details.setExpression(expression);
             target.setDetails(details);

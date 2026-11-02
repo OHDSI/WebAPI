@@ -1,0 +1,64 @@
+datasource:
+  dialect: postgresql
+  dialect.source: postgresql
+  driverClassName: org.postgresql.Driver
+  ohdsi.schema: <WEBAPI_SCHEMA>
+  url: jdbc:postgresql://<HOST>:<PORT>/<WEBAPI_DATABASE>
+  username: <WEBAPI_APP_USER>
+  password: <WEBAPI_APP_PASSWORD>
+
+security:
+  auth:
+    db:
+      enabled: true
+      lockout-policy:
+        max-failed-attempts: 5
+        lockout-duration: 30m
+      datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://<HOST>:<PORT>/<SECURITY_DATABASE>
+        username: <SECURITY_DB_USER>
+        password: <SECURITY_DB_PASSWORD>
+        schema: <SECURITY_SCHEMA>
+
+    oauth:
+      callback:
+        ui: http://localhost/Atlas3/#/oauth/callback
+      google:
+        enabled: true
+        apiKey: <GOOGLE_CLIENT_ID>
+        apiSecret: <GOOGLE_CLIENT_SECRET>
+
+  cors:
+    enabled: true
+    allowed-origins: http://localhost, http://localhost:8080, http://localhost:5173
+
+  defaultRoles: "public,Atlas users"
+
+  sessions:
+    expiration: 8h
+    cleanup-interval: 1h
+
+spring:
+  jpa:
+    open-in-view: false
+
+  flyway:
+    url: ${datasource.url}
+    user: <WEBAPI_ADMIN_USER>
+    password: <WEBAPI_ADMIN_PASSWORD>
+    out-of-order: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,caches
+
+logging:
+  level:
+    org.ohdsi.webapi.security.authz: DEBUG
+    # org.springframework.jdbc: DEBUG
+    # org.hibernate.SQL: DEBUG
+    # org.hibernate.orm.jdbc.bind: TRACE
+    # org.hibernate.stat: DEBUG

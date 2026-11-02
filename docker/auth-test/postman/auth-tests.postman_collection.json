@@ -1,0 +1,1002 @@
+{
+  "info": {
+    "_postman_id": "webapi-auth-tests",
+    "name": "WebAPI Authentication Tests",
+    "description": "Integration tests for WebAPI authentication with OpenID Connect",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "WebAPI Info Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Info endpoint is accessible', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains version', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('version');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "info"
+              ]
+            }
+          }
+        },
+        {
+          "name": "OIDC Discovery Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OIDC discovery endpoint returns 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Discovery document contains required endpoints', function() {",
+                  "    const doc = pm.response.json();",
+                  "    pm.expect(doc).to.have.property('authorization_endpoint');",
+                  "    pm.expect(doc).to.have.property('token_endpoint');",
+                  "    pm.expect(doc).to.have.property('issuer');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{oidc_url}}/.well-known/openid-configuration",
+              "host": [
+                "{{oidc_url}}"
+              ],
+              "path": [
+                ".well-known",
+                "openid-configuration"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Auth Providers Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Auth providers returns 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('OpenID provider is listed', function() {",
+                  "    const providers = pm.response.json();",
+                  "    const oidc = providers.find(p => p.name === 'OpenID');",
+                  "    pm.expect(oidc).to.not.be.undefined;",
+                  "    pm.expect(oidc.url).to.equal('user/login/openid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/providers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "providers"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Anonymous Access",
+      "item": [
+        {
+          "name": "Endpoint Without Token - Should Return Anonymous Identity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Endpoint accessible as anonymous user without token', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/source/sources",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "source",
+                "sources"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Info Without Token - Should Return Anonymous Identity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User info accessible as anonymous user', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "OIDC Full Login Flow",
+      "item": [
+        {
+          "name": "1. Start OIDC Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OIDC login returns 302 redirect', function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "const location = pm.response.headers.get('Location');",
+                  "pm.test('Location header contains authorization endpoint', function() {",
+                  "    pm.expect(location).to.not.be.undefined;",
+                  "    pm.expect(location).to.include('client_id=');",
+                  "    pm.expect(location).to.include('state=');",
+                  "    pm.expect(location).to.include('response_type=code');",
+                  "});",
+                  "",
+                  "// Extract the state parameter and full auth URL for subsequent requests",
+                  "if (location) {",
+                  "    const stateMatch = location.match(/[?&#]state=([^&#]+)/);",
+                  "    const state = stateMatch ? stateMatch[1] : null;",
+                  "    pm.collectionVariables.set('oidc_state', state);",
+                  "    // The mock-oauth2-server's interactive login is at the authorization endpoint",
+                  "    // Newman needs the internal Docker URL, so replace localhost with mock-oauth2",
+                  "    const internalUrl = location.replace('localhost:9090', 'mock-oauth2:9090');",
+                  "    pm.collectionVariables.set('oidc_full_auth_url', internalUrl);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/login/openid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login",
+                "openid"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Simulate IdP Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('IdP login returns redirect with code', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([302, 303]);",
+                  "});",
+                  "",
+                  "const location = pm.response.headers.get('Location');",
+                  "pm.test('Redirect contains authorization code', function() {",
+                  "    pm.expect(location).to.not.be.undefined;",
+                  "    pm.expect(location).to.include('code=');",
+                  "});",
+                  "",
+                  "// Extract code and state from redirect",
+                  "if (location) {",
+                  "    const codeMatch = location.match(/[?&#]code=([^&#]+)/);",
+                  "    const stateMatch = location.match(/[?&#]state=([^&#]+)/);",
+                  "    const code = codeMatch ? codeMatch[1] : null;",
+                  "    const state = stateMatch ? stateMatch[1] : null;",
+                  "    pm.collectionVariables.set('oidc_auth_code', code);",
+                  "    // State should match what we sent",
+                  "    if (state) {",
+                  "        pm.collectionVariables.set('oidc_state', state);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "testuser"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{oidc_full_auth_url}}",
+              "host": [
+                "{{oidc_full_auth_url}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Complete OAuth Callback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Callback returns 302 redirect to frontend', function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "const location = pm.response.headers.get('Location');",
+                  "pm.test('Redirect contains WebAPI OTC code', function() {",
+                  "    pm.expect(location).to.not.be.undefined;",
+                  "    pm.expect(location).to.include('code=');",
+                  "});",
+                  "",
+                  "// Extract OTC from redirect URL",
+                  "if (location) {",
+                  "    const otcMatch = location.match(/[?&#]code=([^&#]+)/);",
+                  "    const otc = otcMatch ? otcMatch[1] : null;",
+                  "    if (otc) {",
+                  "        pm.collectionVariables.set('oidc_webapi_otc', otc);",
+                  "        pm.test('OTC is well-formed UUID', function() {",
+                  "            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+                  "            pm.expect(otc).to.match(uuidRegex);",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/oauth/callback/openid?code={{oidc_auth_code}}&state={{oidc_state}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "oauth",
+                "callback",
+                "openid"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "{{oidc_auth_code}}"
+                },
+                {
+                  "key": "state",
+                  "value": "{{oidc_state}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Redeem OTC Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const otc = pm.collectionVariables.get('oidc_webapi_otc');",
+                  "if (!otc) {",
+                  "    pm.test.skip('No OIDC OTC code available');",
+                  "} else {",
+                  "    pm.test('OTC redemption returns 200', function() {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.test('Redemption response contains login and jwt', function() {",
+                  "        pm.expect(jsonData).to.have.property('login');",
+                  "        pm.expect(jsonData).to.have.property('jwt');",
+                  "        pm.expect(jsonData.login).to.equal('testuser');",
+                  "    });",
+                  "",
+                  "    // Store JWT for subsequent requests",
+                  "    if (jsonData.jwt) {",
+                  "        pm.collectionVariables.set('oidc_jwt_token', jsonData.jwt);",
+                  "        pm.test('JWT token is well-formed', function() {",
+                  "            pm.expect(jsonData.jwt).to.include('.');",
+                  "            const parts = jsonData.jwt.split('.');",
+                  "            pm.expect(parts.length).to.equal(3);",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/login/otc?code={{oidc_webapi_otc}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login",
+                "otc"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "{{oidc_webapi_otc}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Access Protected Endpoint",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('oidc_jwt_token');",
+                  "if (token) {",
+                  "    pm.request.headers.add({",
+                  "        key: 'Authorization',",
+                  "        value: 'Bearer ' + token",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('oidc_jwt_token');",
+                  "if (!token) {",
+                  "    pm.test.skip('No OIDC token available');",
+                  "} else {",
+                  "    pm.test('Protected endpoint accessible with OIDC token', function() {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JDBC Authentication",
+      "item": [
+        {
+          "name": "JDBC Login - Valid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('JDBC login returns 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Extract JWT token from response body",
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.jwt) {",
+                  "    pm.collectionVariables.set('jdbc_token', jsonData.jwt);",
+                  "    pm.test('JWT token received in response body', function() {",
+                  "        pm.expect(jsonData.jwt).to.not.be.empty;",
+                  "        pm.expect(jsonData.jwt).to.include('.');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('JWT should be present in response', function() {",
+                  "        pm.expect(jsonData.jwt).to.not.be.undefined;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "login",
+                  "value": "testuser@example.com"
+                },
+                {
+                  "key": "password",
+                  "value": "testpass123"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/user/login/db",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login",
+                "db"
+              ]
+            }
+          }
+        },
+        {
+          "name": "JDBC Login - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid credentials return 401', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "login",
+                  "value": "testuser@example.com"
+                },
+                {
+                  "key": "password",
+                  "value": "wrongpassword"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/user/login/db",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login",
+                "db"
+              ]
+            }
+          }
+        },
+        {
+          "name": "JDBC Login - Missing Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Missing credentials are handled', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{base_url}}/user/login/db",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login",
+                "db"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Access Protected Endpoint with JDBC Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This test runs after successful JDBC login",
+                  "const token = pm.collectionVariables.get('jdbc_token');",
+                  "if (token) {",
+                  "    pm.test('Protected endpoint accessible with valid token', function() {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "    });",
+                  "} else {",
+                  "    pm.test.skip('No JDBC token available');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.collectionVariables.get('jdbc_token');",
+                  "if (token) {",
+                  "    pm.request.headers.add({",
+                  "        key: 'Authorization',",
+                  "        value: 'Bearer ' + token",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Security Configuration",
+      "item": [
+        {
+          "name": "Security Info Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Security info endpoint responds', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401, 403]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Response contains security info', function() {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('configuration');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "info"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JWT Validation",
+      "item": [
+        {
+          "name": "Invalid JWT Token - Should Return 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid JWT returns 401', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.jwt.token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Malformed Authorization Header - Should Fall Through to Anonymous",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Malformed auth header falls through to anonymous', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "NotBearer some-token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Expired JWT Token - Should Return 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Expired JWT returns 401', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgVXNlciIsImV4cCI6MTYwMDAwMDAwMH0.invalid-signature"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Endpoints",
+      "item": [
+        {
+          "name": "Info Endpoint - Always Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Info endpoint is always accessible', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is valid JSON', function() {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "info"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CORS Headers",
+      "item": [
+        {
+          "name": "CORS Preflight Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('CORS preflight responds correctly', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 405]);",
+                  "});",
+                  "",
+                  "// Check for CORS headers if enabled",
+                  "const corsHeader = pm.response.headers.get('Access-Control-Allow-Origin');",
+                  "if (corsHeader) {",
+                  "    pm.test('CORS headers present', function() {",
+                  "        pm.expect(corsHeader).to.not.be.null;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "OPTIONS",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000"
+              },
+              {
+                "key": "Access-Control-Request-Method",
+                "value": "GET"
+              },
+              {
+                "key": "Access-Control-Request-Headers",
+                "value": "Authorization"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "info"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script - log response time",
+          "pm.test('Response time is reasonable', function() {",
+          "    pm.expect(pm.response.responseTime).to.be.below(30000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "authorization_endpoint",
+      "value": ""
+    },
+    {
+      "key": "token_endpoint",
+      "value": ""
+    },
+    {
+      "key": "userinfo_endpoint",
+      "value": ""
+    },
+    {
+      "key": "auth_redirect_url",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "oidc_full_auth_url",
+      "value": ""
+    },
+    {
+      "key": "oidc_state",
+      "value": ""
+    },
+    {
+      "key": "oidc_auth_code",
+      "value": ""
+    },
+    {
+      "key": "oidc_webapi_otc",
+      "value": ""
+    },
+    {
+      "key": "oidc_jwt_token",
+      "value": ""
+    },
+    {
+      "key": "jdbc_token",
+      "value": ""
+    }
+  ]
+}

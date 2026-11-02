@@ -58,8 +58,12 @@ public abstract class CancelableTasklet extends StoppableTransactionalTasklet<in
   @Override
   public void stop() {
     try {
-      this.stmtCancel.cancel();
+      StatementCancel.CancellationResult result = this.stmtCancel.cancel();
+      if (result != StatementCancel.CancellationResult.CANCELED) {
+        log.warn("Database statement cancellation result: {}", result);
+      }
     } catch (SQLException ignored) {
+      log.warn("Unable to request database statement cancellation", ignored);
     }
     super.stop();
   }

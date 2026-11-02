@@ -4,8 +4,8 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.WindowedCriteriaFeature;
 import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("WINDOWED_CRITERIA")

@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.converter;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.webapi.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;

@@ -14,12 +14,14 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -55,7 +57,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		if (jobParams.containsKey(SOURCE_ID)) {
 			int sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
-			Source source = this.sourceRepository.findOne(sourceId);
+			Source source = this.sourceRepository.findById(sourceId).orElse(null);
 			if (source != null) {
 				return mapSource(source, cohortDefinitionId);
 			} else {
@@ -80,7 +82,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 					return 0;
 				}
 
-				sampleRepository.delete(samples);
+				sampleRepository.deleteAll(samples);
 
 				int[] cohortSampleIds = samples.stream()
 						.mapToInt(CohortSample::getId)
@@ -111,31 +113,31 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 		return RepeatStatus.FINISHED;
 	}
 
-	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId) {
+	public JobExecutionResource launch(JobRepository jobRepository, PlatformTransactionManager transactionManager, JobTemplate jobTemplate, int cohortDefinitionId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
 		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 
 		log.info("Beginning cohort cleanup for cohort definition id: {}", cohortDefinitionId);
-		return launch(jobBuilders, stepBuilders, jobTemplate, builder.toJobParameters());
+		return launch(jobRepository, transactionManager, jobTemplate, builder.toJobParameters());
 	}
 
-	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId, int sourceId) {
+	public JobExecutionResource launch(JobRepository jobRepository, PlatformTransactionManager transactionManager, JobTemplate jobTemplate, int cohortDefinitionId, int sourceId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
 		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 		builder.addString(SOURCE_ID, String.valueOf(sourceId));
 
 		log.info("Beginning cohort cleanup for cohort definition id {} and source ID {}", cohortDefinitionId, sourceId);
-		return launch(jobBuilders, stepBuilders, jobTemplate, builder.toJobParameters());
+		return launch(jobRepository, transactionManager, jobTemplate, builder.toJobParameters());
 	}
 
-	private JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, JobParameters jobParameters) {
-		Step cleanupStep = stepBuilders.get("cohortSample.cleanupSamples")
-				.tasklet(this)
+	private JobExecutionResource launch(JobRepository jobRepository, PlatformTransactionManager transactionManager, JobTemplate jobTemplate, JobParameters jobParameters) {
+		Step cleanupStep = new StepBuilder("cohortSample.cleanupSamples", jobRepository)
+				.tasklet(this, transactionManager)
 				.build();
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupSamples")
+		SimpleJobBuilder cleanupJobBuilder = new JobBuilder("cleanupSamples", jobRepository)
 				.start(cleanupStep);
 
 		Job cleanupCohortJob = cleanupJobBuilder.build();

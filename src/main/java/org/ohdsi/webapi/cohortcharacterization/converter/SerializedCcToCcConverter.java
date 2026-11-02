@@ -6,7 +6,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.springframework.core.convert.ConversionService;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 public class SerializedCcToCcConverter implements AttributeConverter<CohortCharacterizationEntity, String> {
 

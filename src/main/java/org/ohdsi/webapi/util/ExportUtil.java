@@ -5,10 +5,8 @@ import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
@@ -162,23 +160,5 @@ public class ExportUtil {
         analysisCohortDefinition.setCreatedDate(null);
         analysisCohortDefinition.setModifiedBy(null);
         analysisCohortDefinition.setModifiedDate(null);
-    }
-
-    public static void clearCreateAndUpdateInfo(EstimationAnalysisImpl analysis) {
-        analysis.setCreatedBy(null);
-        analysis.setCreatedDate(null);
-        analysis.setModifiedBy(null);
-        analysis.setModifiedDate(null);
-
-        analysis.getCohortDefinitions().forEach(ExportUtil::clearCreateAndUpdateInfo);
-    }
-
-    public static void clearCreateAndUpdateInfo(PatientLevelPredictionAnalysisImpl analysis) {
-        analysis.setCreatedBy(null);
-        analysis.setCreatedDate(null);
-        analysis.setModifiedBy(null);
-        analysis.setModifiedDate(null);
-
-        analysis.getCohortDefinitions().forEach(ExportUtil::clearCreateAndUpdateInfo);
     }
 }

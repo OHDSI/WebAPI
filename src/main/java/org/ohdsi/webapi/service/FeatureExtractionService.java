@@ -5,12 +5,10 @@
  */
 package org.ohdsi.webapi.service;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import org.springframework.stereotype.Component;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.MediaType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 
 /**
@@ -18,18 +16,17 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
  * @author asena5
  * @author alondhe2
  */
-@Path("/featureextraction/")
-@Component
+@RestController
+@RequestMapping("/featureextraction")
 public class FeatureExtractionService extends AbstractDaoService {
 	/**
 	 * Get default feature extraction settings
 	 * @param temporal Use temporal covariate settings? true or false (default)
 	 * @return JSON with default covariate settings object
 	 */
-	@GET
-	@Path("defaultcovariatesettings")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getDefaultCovariateSettings(@QueryParam("temporal") final String temporal) {
+	@GetMapping(value = "/defaultcovariatesettings", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("isAnyPermitted(anyOf('read:feature-analysis','write:feature-analysis'))")
+	public String getDefaultCovariateSettings(@RequestParam(value = "temporal", required = false) final String temporal) {
 		boolean getTemporal = false;
 		try {
 			if (temporal != null && !temporal.isEmpty()) {

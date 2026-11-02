@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.util;
 
-import org.apache.tika.concurrent.SimpleThreadPoolExecutor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.StatementCallback;

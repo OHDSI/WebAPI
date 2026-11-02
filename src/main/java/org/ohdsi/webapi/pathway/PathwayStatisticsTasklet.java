@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
@@ -29,9 +28,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -82,11 +79,12 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		execution = () -> savePaths(source, generationId);
 		FutureTask<int[]> savePathsTask = new FutureTask<>(execution);
 		taskExecutor.execute(savePathsTask);
-		rowsUpdated.addAll(intArrayToList(waitForFuture(savePathsTask)));
+		int[] pathsUpdated = waitForFuture(savePathsTask);
 
 		if (isStopped()) {
 			return null;
 		}
+		rowsUpdated.addAll(intArrayToList(pathsUpdated));
 
 		// build comboId -> combo name map
 		final PathwayAnalysisEntity design = genericConversionService
@@ -100,7 +98,12 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		execution = () -> savePathwayCodes(pathwayCodes);
 		FutureTask<int[]> saveCodesTask = new FutureTask<>(execution);
 		taskExecutor.execute(saveCodesTask);
-		rowsUpdated.addAll(intArrayToList(waitForFuture(saveCodesTask)));
+		int[] codesUpdated = waitForFuture(saveCodesTask);
+
+		if (isStopped()) {
+			return null;
+		}
+		rowsUpdated.addAll(intArrayToList(codesUpdated));
 
 		return rowsUpdated.stream().mapToInt(Integer::intValue).toArray();
 	}

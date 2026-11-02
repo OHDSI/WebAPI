@@ -2,7 +2,7 @@ package org.ohdsi.webapi.tag.converter;
 
 import org.ohdsi.webapi.tag.domain.TagType;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 public class TagTypeConverter implements AttributeConverter<TagType, Integer> {
     @Override

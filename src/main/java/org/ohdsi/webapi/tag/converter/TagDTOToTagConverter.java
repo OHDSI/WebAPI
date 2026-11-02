@@ -17,10 +17,12 @@ public class TagDTOToTagConverter extends BaseCommonDTOToEntityConverter<TagDTO,
     @Override
     protected void doConvert(TagDTO source, Tag target) {
         target.setId(source.getId());
-        Set<Tag> groups = source.getGroups().stream()
+        if (source.getGroups() != null) {
+            Set<Tag> groups = source.getGroups().stream()
                 .map(t -> conversionService.convert(t, Tag.class))
                 .collect(Collectors.toSet());
-        target.setGroups(groups);
+            target.setGroups(groups);
+        }
         target.setName(source.getName());
         target.setType(source.getType());
         target.setCount(source.getCount());

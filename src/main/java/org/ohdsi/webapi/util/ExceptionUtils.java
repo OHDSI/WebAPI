@@ -1,14 +1,14 @@
 package org.ohdsi.webapi.util;
 
 import java.util.Objects;
-import javax.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 public class ExceptionUtils {
 
-    public static void throwNotFoundExceptionIfNull(Object entity, String message) throws NotFoundException {
-
+    public static void throwNotFoundExceptionIfNull(Object entity, String message) {
         if (Objects.isNull(entity)) {
-            throw new NotFoundException(message);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, message);
         }
     }
 }

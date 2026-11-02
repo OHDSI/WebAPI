@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service.converters;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConceptSetDTOToConceptSetConverter implements Converter<ConceptSetDTO, ConceptSet> {
 
-  public ConceptSetDTOToConceptSetConverter(GenericConversionService conversionService) {
+  public ConceptSetDTOToConceptSetConverter(@Qualifier("conversionService") GenericConversionService conversionService) {
 
     conversionService.addConverter(this);
   }

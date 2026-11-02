@@ -1,0 +1,2 @@
+claim,role_name,description,extra_column
+"CN=Test,OU=Groups,DC=local",Analyst,Test claim,extra_value

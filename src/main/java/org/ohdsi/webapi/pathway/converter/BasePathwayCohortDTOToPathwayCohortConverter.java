@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.pathway.converter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionEntity;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayCohortDTO;
@@ -28,8 +28,8 @@ public abstract class BasePathwayCohortDTOToPathwayCohortConverter<S extends Pat
 
     protected abstract R getResultObject();
 
-    protected CohortDefinition convertCohort(S source) {
+    protected CohortDefinitionEntity convertCohort(S source) {
 
-        return conversionService.convert(source, CohortDefinition.class);
+        return conversionService.convert(source, CohortDefinitionEntity.class);
     }
 }

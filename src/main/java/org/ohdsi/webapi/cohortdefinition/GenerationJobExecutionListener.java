@@ -63,7 +63,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		this.sourceTemplate = sourceTemplate;
 	}
 
-	private CohortGenerationInfo findBySourceId(CohortDefinition df, Integer sourceId) {
+	private CohortGenerationInfo findBySourceId(CohortDefinitionEntity df, Integer sourceId) {
 		return df.getGenerationInfoList().stream()
 						.filter(info -> info.getId().getSourceId().equals(sourceId))
 						.findFirst()
@@ -84,10 +84,10 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 
 		try {
 			Source source = sourceService.findBySourceId(sourceId);
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinitionEntity df = this.cohortDefinitionRepository.findById(defId).orElse(null);
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			setExecutionDurationIfPossible(je, info);
-			info.setStatus(GenerationStatus.COMPLETE);
+			info.setStatus(je.getStatus() == BatchStatus.FAILED ? GenerationStatus.ERROR : GenerationStatus.COMPLETE);
 			info.setCcGenerateId(je.getId());
 
 			if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
@@ -95,9 +95,14 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 				info.setRecordCount(null);
 				info.setPersonCount(null);
 				info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
-				info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(), "... [truncated] ...", 2000));
+				String failureMessage = je.getAllFailureExceptions().stream()
+						.findFirst()
+						.map(Throwable::getMessage)
+						.orElse("Generation stopped without a failure exception");
+				info.setFailMessage(StringUtils.abbreviateMiddle(failureMessage, "... [truncated] ...", 2000));
 			} else {
 				info.setIsValid(true);
+				info.setCanceled(false);
 				info.setFailMessage(null);
 
 				// query summary results from source
@@ -125,7 +130,12 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
 			return;
 		}
-		info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+		// Spring Batch 5: LocalDateTime instead of Date
+		long startTime = je.getStartTime() != null ? 
+		    je.getStartTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0;
+		long endTime = je.getEndTime() != null ?
+		    je.getEndTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0;
+		info.setExecutionDuration((int) (endTime - startTime));
 	}
 
 	@Override
@@ -139,7 +149,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
 		try {
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinitionEntity df = this.cohortDefinitionRepository.findById(defId).orElse(null);
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			info.setIsValid(false);
 			info.setStartTime(startTime);

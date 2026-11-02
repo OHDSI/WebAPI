@@ -5,9 +5,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.ohdsi.webapi.security.authz.UserEntity;
+import org.ohdsi.webapi.security.authz.UserRepository;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.repository.TagRepository;
@@ -48,9 +48,11 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
 
     @Before
     public void createInitialData() throws IOException {
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
+        userRepository.findByLogin("anonymous").orElseGet(() -> {
+            UserEntity user = new UserEntity();
+            user.setLogin("anonymous");
+            return userRepository.save(user);
+        });
 
         this.protectedTag = new Tag();
         this.protectedTag.setName("protected tag name");
@@ -87,7 +89,12 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
     public void clear() {
         doClear();
         tagRepository.deleteAll();
-        userRepository.deleteAll();
+        // Preserve the anonymous user (id=-1) inserted by baseline migration
+        userRepository.findAll().forEach(user -> {
+            if (user.getId() != -1L) {
+                userRepository.delete(user);
+            }
+        });
     }
 
     @Test

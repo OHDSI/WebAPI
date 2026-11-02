@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.audittrail.listeners;
 
-import com.odysseusinc.logging.event.SuccessLogoutEvent;
+import org.ohdsi.webapi.arachne.logging.event.SuccessLogoutEvent;
 import org.ohdsi.webapi.audittrail.AuditTrailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

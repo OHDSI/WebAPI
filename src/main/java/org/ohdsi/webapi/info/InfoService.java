@@ -34,17 +34,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/info")
 public class InfoService {
 
-    private final Info info;
+    private final String version;
+    private final BuildInfo buildInfo;
+    private final List<ConfigurationInfo> configurationInfoList;
 
     public InfoService(BuildProperties buildProperties, BuildInfo buildInfo, List<ConfigurationInfo> configurationInfoList) {
 
-        String version = getVersion(buildProperties);
-
-        this.info = new Info(
-                version,
-                buildInfo,
-                configurationInfoList.stream().collect(Collectors.toMap(ConfigurationInfo::getKey, ConfigurationInfo::getProperties))
-        );
+        this.version = getVersion(buildProperties);
+        this.buildInfo = buildInfo;
+        this.configurationInfoList = configurationInfoList;
     }
 
     /**
@@ -53,7 +51,11 @@ public class InfoService {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Info getInfo() {
 
-        return info;
+        return new Info(
+                version,
+                buildInfo,
+                configurationInfoList.stream().collect(Collectors.toMap(ConfigurationInfo::getKey, ConfigurationInfo::getProperties))
+        );
     }
 
     private String getVersion(BuildProperties buildProperties) {

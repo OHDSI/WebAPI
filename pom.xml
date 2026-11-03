@@ -566,7 +566,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>12.8.1.jre11</version>
+      <version>12.8.2.jre11</version>
     </dependency>
     <!-- msal4j removed - not used in codebase -->
     <dependency>

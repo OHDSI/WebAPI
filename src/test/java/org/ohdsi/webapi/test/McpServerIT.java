@@ -10,13 +10,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.postgresql.PGConnection;
+import org.postgresql.copy.CopyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -36,6 +47,10 @@ public class McpServerIT extends WebApiIT {
 
     private static final long T2DM = 201826L;
     private static final long NON_STANDARD = 44054006L;
+    private static final long GI_BLEED = 192671L;
+    /** People in Eunomia with a gastrointestinal hemorrhage inside an observation period, all ages / aged 40+. */
+    private static final long EUNOMIA_GI_BLEED_PEOPLE = 479;
+    private static final long EUNOMIA_GI_BLEED_PEOPLE_40_PLUS = 204;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -236,6 +251,74 @@ public class McpServerIT extends WebApiIT {
     }
 
     @Test
+    public void generatesACohortOnEunomiaAndReportsCountsAndAttrition() throws Exception {
+        loadEunomia("person", "observation_period", "condition_occurrence", "concept", "concept_ancestor");
+
+        // First gastrointestinal hemorrhage in an observation period; the inclusion rule keeps people aged 40+.
+        String traceId = newTraceId();
+        Map<String, Object> expression = cohortExpression(GI_BLEED, "Gastrointestinal hemorrhage");
+        expression.put("InclusionRules", List.of(Map.of("name", "Age 40+", "expression", Map.of(
+                "Type", "ALL", "CriteriaList", List.of(), "Groups", List.of(),
+                "DemographicCriteriaList", List.of(Map.of("Age", Map.of("Value", 40, "Op", "gte")))))));
+        JsonNode created = callTool("create_cohort_definition", Map.of(
+                "name", "MCP IT GI bleed cohort " + UUID.randomUUID(),
+                "source_key", SOURCE_KEY,
+                "expression", expression,
+                "clinical_rationale", "Adults aged 40+ at their first recorded gastrointestinal hemorrhage.",
+                "evidence_reference", "OHDSI Eunomia GiBleed example study"),
+                traceparent(traceId, "9999999999999999"), "STEP_3_COHORT_CRITERIA");
+        assertFalse(created.toString(), created.path("isError").asBoolean());
+        int cohortId = mapper.readTree(text(created)).path("cohort_definition_id").asInt();
+
+        JsonNode queued = callTool("generate_cohort", Map.of("cohort_definition_id", cohortId, "source_key", SOURCE_KEY,
+                "clinical_rationale", "Generate to check the cohort size is plausible.",
+                "evidence_reference", "Phenotype review plan"),
+                traceparent(traceId, "bbbbbbbbbbbbbbbb"), "STEP_5_GENERATION_VERIFICATION");
+        assertFalse(queued.toString(), queued.path("isError").asBoolean());
+
+        JsonNode status = null;
+        long deadline = System.currentTimeMillis() + 120_000;
+        while (System.currentTimeMillis() < deadline) {
+            status = mapper.readTree(text(callTool("get_cohort_generation_status",
+                    Map.of("cohort_definition_id", cohortId, "source_key", SOURCE_KEY),
+                    traceparent(traceId, "cccccccccccccccc"), "STEP_5_GENERATION_VERIFICATION")));
+            if ("COMPLETE".equals(status.path("status").asText())) {
+                break;
+            }
+            Thread.sleep(500);
+        }
+        assertEquals(status.toString(), "COMPLETE", status.path("status").asText());
+        assertTrue(status.toString(), status.path("is_valid").asBoolean());
+
+        // The same cohort counted independently with plain SQL on the CDM.
+        String firstEvents = "select co.person_id, min(co.condition_start_date) as index_date from "
+                + CDM_SCHEMA_NAME + ".condition_occurrence co join " + CDM_SCHEMA_NAME + ".observation_period op "
+                + "on op.person_id = co.person_id and co.condition_start_date between "
+                + "op.observation_period_start_date and op.observation_period_end_date "
+                + "where co.condition_concept_id = " + GI_BLEED + " group by co.person_id";
+        long base = jdbcTemplate.queryForObject("select count(*) from (" + firstEvents + ") e", Long.class);
+        long aged40 = jdbcTemplate.queryForObject("select count(*) from (" + firstEvents + ") e join "
+                + CDM_SCHEMA_NAME + ".person p on p.person_id = e.person_id "
+                + "where extract(year from e.index_date) - p.year_of_birth >= 40", Long.class);
+        assertEquals(EUNOMIA_GI_BLEED_PEOPLE, base);
+        assertEquals(EUNOMIA_GI_BLEED_PEOPLE_40_PLUS, aged40);
+
+        assertEquals(status.toString(), aged40, status.path("person_count").asLong());
+        assertEquals(status.toString(), aged40, status.path("record_count").asLong());
+        JsonNode attrition = status.path("attrition_all_events");
+        assertEquals(status.toString(), base, attrition.path("base_count").asLong());
+        assertEquals(status.toString(), aged40, attrition.path("final_count").asLong());
+        JsonNode rule = attrition.path("inclusion_rules").get(0);
+        assertEquals("Age 40+", rule.path("name").asText());
+        assertEquals(aged40, rule.path("count_satisfying").asLong());
+
+        long written = jdbcTemplate.queryForObject("select count(distinct subject_id) from " + RESULT_SCHEMA_NAME
+                + ".cohort where cohort_definition_id = ?", Long.class, cohortId);
+        assertEquals(aged40, written);
+        assertEquals("SUCCESS", lastOutcome(traceId, "generate_cohort"));
+    }
+
+    @Test
     public void callWithoutTraceparentStartsANewTrace() throws Exception {
         JsonNode result = callTool("list_sources", Map.of(), null, null);
         assertFalse(result.path("isError").asBoolean());
@@ -275,8 +358,12 @@ public class McpServerIT extends WebApiIT {
     }
 
     private Map<String, Object> cohortExpression(String conceptName) throws Exception {
-        String json = "{\"ConceptSets\":[{\"id\":0,\"name\":\"T2DM\",\"expression\":{\"items\":[{\"concept\":"
-                + "{\"CONCEPT_ID\":" + T2DM + ",\"CONCEPT_NAME\":\"" + conceptName + "\"},\"includeDescendants\":true}]}}],"
+        return cohortExpression(T2DM, conceptName);
+    }
+
+    private Map<String, Object> cohortExpression(long conceptId, String conceptName) throws Exception {
+        String json = "{\"ConceptSets\":[{\"id\":0,\"name\":\"Codes\",\"expression\":{\"items\":[{\"concept\":"
+                + "{\"CONCEPT_ID\":" + conceptId + ",\"CONCEPT_NAME\":\"" + conceptName + "\"},\"includeDescendants\":true}]}}],"
                 + "\"PrimaryCriteria\":{\"CriteriaList\":[{\"ConditionOccurrence\":{\"CodesetId\":0}}],"
                 + "\"ObservationWindow\":{\"PriorDays\":0,\"PostDays\":0},\"PrimaryCriteriaLimit\":{\"Type\":\"First\"}},"
                 + "\"QualifiedLimit\":{\"Type\":\"First\"},\"ExpressionLimit\":{\"Type\":\"First\"},"
@@ -284,6 +371,27 @@ public class McpServerIT extends WebApiIT {
         @SuppressWarnings("unchecked")
         Map<String, Object> m = mapper.readValue(json, Map.class);
         return m;
+    }
+
+    /** Streams the given tables of the bundled Eunomia CDM (src/test/resources/eunomia.csv.zip) into the cdm schema. */
+    private static void loadEunomia(String... tables) throws Exception {
+        Set<String> wanted = new HashSet<>(Arrays.asList(tables));
+        try (Connection connection = ITStarter.getDataSource().getConnection();
+             ZipInputStream zip = new ZipInputStream(McpServerIT.class.getResourceAsStream("/eunomia.csv.zip"))) {
+            CopyManager copy = connection.unwrap(PGConnection.class).getCopyAPI();
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                String table = entry.getName().replace(".csv", "");
+                if (!wanted.remove(table)) {
+                    continue;
+                }
+                BufferedReader csv = new BufferedReader(new InputStreamReader(zip, StandardCharsets.UTF_8));
+                String columns = csv.readLine();
+                copy.copyIn("copy " + CDM_SCHEMA_NAME + "." + table + " (" + columns + ") from stdin with (format csv)",
+                        csv);
+            }
+        }
+        assertTrue("missing from eunomia.csv.zip: " + wanted, wanted.isEmpty());
     }
 
     private int itemCount(int conceptSetId) {

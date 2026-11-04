@@ -118,7 +118,9 @@ public class McpToolFactory {
 
         McpAuditEntry entry;
         try {
-            entry = audit.start(trace, def.name, step, toJson(args.asMap()), rationale, evidence);
+            Integer entityId = def.entityType == null ? null : entityId(args.raw(def.entityIdField));
+            entry = audit.start(trace, def.name, step, toJson(args.asMap()), rationale, evidence,
+                    entityId == null ? null : def.entityType, entityId);
         } catch (Exception e) {
             log.error("MCP audit trail unavailable; refusing to run tool {}", def.name, e);
             return error(trace, null, Outcome.ERROR, "The audit trail could not be written, so the tool was not run.");
@@ -151,7 +153,9 @@ public class McpToolFactory {
 
         String resultJson = outcome == Outcome.SUCCESS ? toJson(result) : null;
         try {
-            audit.finish(entry, outcome, resultJson, message);
+            Integer createdId = def.entityType != null && result instanceof Map<?, ?> m
+                    ? entityId(m.get(def.entityIdField)) : null;
+            audit.finish(entry, outcome, resultJson, message, createdId == null ? null : def.entityType, createdId);
         } catch (Exception e) {
             // The action already happened and its STARTED row is on record; do not hide the result.
             log.error("Could not record outcome {} of MCP audit entry {}", outcome, entry.getId(), e);
@@ -165,6 +169,16 @@ public class McpToolFactory {
                 .isError(false)
                 .meta(resultMeta(trace, entry.getId(), step))
                 .build();
+    }
+
+    private static Integer entityId(Object value) {
+        if (value instanceof Number n) {
+            return n.intValue();
+        }
+        if (value instanceof String s && s.matches("\\d{1,9}")) {
+            return Integer.valueOf(s);
+        }
+        return null;
     }
 
     private void checkRationale(ToolDefinition def, String rationale, String evidence) {

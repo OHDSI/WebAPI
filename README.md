@@ -180,6 +180,7 @@ Traceability rules the server enforces:
 - **Verified concepts.** `add_concept_to_set`, `create_cohort_definition` and `update_cohort_definition` look up every concept id in the source vocabulary. If an id does not exist, or the name the caller gave does not match the vocabulary's name, the call is refused and nothing is saved.
 - **Tracing.** Send a W3C `traceparent` in the call's `_meta`, plus an optional `reasoning_step`. WebAPI keeps the trace id, records your span as the parent, and returns the tool call's own span in the result's `_meta.traceparent`, along with `_meta.audit_entry_id`. A call without a traceparent starts a new trace, unless `mcp.requireTraceparent: true`.
 - **Audit.** Every call is written to `mcp_audit_log` before it runs, then completed with its outcome: `SUCCESS`, `ERROR`, `REJECTED` or `DENIED`. A database trigger makes the table append-only. `get_audit_trail` returns a trace's entries in order, as the decision log for an audit manifest.
+- **Provenance.** Calls that create, change, validate or generate a cohort definition or concept set are also recorded against that artifact. `GET /cohortdefinition/{id}/mcp-provenance` and `GET /conceptset/{id}/mcp-provenance` return that history (tool, reasoning step, rationale, evidence, outcome, user, time and trace id; not the argument or result payloads) to anyone who can read the artifact, so Atlas can show why an agent built it that way. These endpoints stay available when the MCP server is turned off.
 
 ## Geospatial support
 

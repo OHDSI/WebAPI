@@ -28,7 +28,8 @@ public class McpAuditService {
     }
 
     public McpAuditEntry start(TraceContext trace, String toolName, String reasoningStep, String argumentsJson,
-            String clinicalRationale, String evidenceReference) {
+            String clinicalRationale, String evidenceReference, McpAuditEntry.EntityType entityType,
+            Integer entityId) {
         WebApiPrincipal principal = authorizationService.getAuthenticatedPrincipal();
         McpAuditEntry entry = new McpAuditEntry();
         entry.setTraceId(trace.traceId());
@@ -44,11 +45,23 @@ public class McpAuditService {
         entry.setUserId(principal.isAnonymous() ? null : principal.getUserId());
         entry.setUserLogin(principal.getName());
         entry.setStartedAt(Instant.now());
+        if (entityType != null && entityId != null) {
+            entry.setEntityType(entityType);
+            entry.setEntityId(entityId);
+        }
         return repository.saveAndFlush(entry);
     }
 
+    /**
+     * Completes an entry. {@code entityType}/{@code entityId} are recorded only if the entry has no entity
+     * yet, which is the case for a create: the new artifact's id is known only once the tool has run.
+     */
     public McpAuditEntry finish(McpAuditEntry entry, McpAuditEntry.Outcome outcome, String resultJson,
-            String errorMessage) {
+            String errorMessage, McpAuditEntry.EntityType entityType, Integer entityId) {
+        if (entry.getEntityId() == null && entityType != null && entityId != null) {
+            entry.setEntityType(entityType);
+            entry.setEntityId(entityId);
+        }
         entry.setOutcome(outcome);
         entry.setResultJson(truncate(resultJson));
         entry.setErrorMessage(errorMessage);

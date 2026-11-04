@@ -3,7 +3,8 @@
 -- Every tool call is written here before it runs (outcome STARTED) and completed once it
 -- finishes, so no tool can change a concept set or cohort without leaving a row behind.
 -- Rows are append-only: the trigger below allows exactly one update per row (STARTED ->
--- final outcome, touching only the result columns) and rejects every delete.
+-- final outcome, touching only the result columns, plus the entity when it was not yet known)
+-- and rejects every delete.
 CREATE SEQUENCE IF NOT EXISTS ${ohdsiSchema}.mcp_audit_log_sequence;
 
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.mcp_audit_log (
@@ -25,15 +26,24 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.mcp_audit_log (
     error_message text,
     user_id bigint,
     user_login character varying(255),
+    -- the cohort definition or concept set the call created, changed, validated or generated
+    -- (null for calls not about one); set when known before the call runs, otherwise when it finishes
+    entity_type character varying(32),
+    entity_id integer,
     started_at timestamp with time zone NOT NULL,
     finished_at timestamp with time zone,
     CONSTRAINT pk_mcp_audit_log PRIMARY KEY (id),
     CONSTRAINT chk_mcp_audit_log_outcome
-        CHECK (outcome IN ('STARTED', 'SUCCESS', 'ERROR', 'REJECTED', 'DENIED'))
+        CHECK (outcome IN ('STARTED', 'SUCCESS', 'ERROR', 'REJECTED', 'DENIED')),
+    CONSTRAINT chk_mcp_audit_log_entity_type
+        CHECK (entity_type IS NULL OR entity_type IN ('COHORT_DEFINITION', 'CONCEPT_SET'))
 );
 
 CREATE INDEX IF NOT EXISTS mcp_audit_log_trace_idx
     ON ${ohdsiSchema}.mcp_audit_log USING btree (trace_id, started_at);
+
+CREATE INDEX IF NOT EXISTS mcp_audit_log_entity_idx
+    ON ${ohdsiSchema}.mcp_audit_log USING btree (entity_type, entity_id, started_at);
 
 CREATE OR REPLACE FUNCTION ${ohdsiSchema}.mcp_audit_log_append_only()
 RETURNS trigger AS $$
@@ -56,7 +66,9 @@ BEGIN
         OR NEW.evidence_reference IS DISTINCT FROM OLD.evidence_reference
         OR NEW.user_id IS DISTINCT FROM OLD.user_id
         OR NEW.user_login IS DISTINCT FROM OLD.user_login
-        OR NEW.started_at IS DISTINCT FROM OLD.started_at THEN
+        OR NEW.started_at IS DISTINCT FROM OLD.started_at
+        OR (OLD.entity_type IS NOT NULL AND NEW.entity_type IS DISTINCT FROM OLD.entity_type)
+        OR (OLD.entity_id IS NOT NULL AND NEW.entity_id IS DISTINCT FROM OLD.entity_id) THEN
         RAISE EXCEPTION 'mcp_audit_log is append-only: only the outcome of entry % may be recorded', OLD.id;
     END IF;
     RETURN NEW;

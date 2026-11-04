@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.mcp.ToolDefinition.Rationale;
 import org.ohdsi.webapi.mcp.audit.McpAuditEntry;
+import org.ohdsi.webapi.mcp.audit.McpAuditEntry.EntityType;
 import org.ohdsi.webapi.mcp.audit.McpAuditEntry.Outcome;
 import org.ohdsi.webapi.mcp.audit.McpAuditService;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,7 +40,7 @@ public class McpToolFactoryTest {
         audit = mock(McpAuditService.class);
         entry = new McpAuditEntry();
         entry.setId(42L);
-        when(audit.start(any(), anyString(), anyString(), any(), any(), any())).thenReturn(entry);
+        when(audit.start(any(), anyString(), anyString(), any(), any(), any(), any(), any())).thenReturn(entry);
     }
 
     private McpToolFactory factory(boolean requireTraceparent) {
@@ -76,8 +77,8 @@ public class McpToolFactoryTest {
         assertTrue(traceparent, traceparent.startsWith("00-" + TRACE_ID + "-"));
         assertEquals(42L, result.meta().get("audit_entry_id"));
         verify(audit).start(any(), eq("add_concept_to_set"), eq("STEP_2_CONCEPT_SELECTION"), anyString(),
-                eq("Core diagnosis concept for the phenotype."), eq("SNOMED-CT hierarchy"));
-        verify(audit).finish(eq(entry), eq(Outcome.SUCCESS), eq("{\"ok\":true}"), isNull());
+                eq("Core diagnosis concept for the phenotype."), eq("SNOMED-CT hierarchy"), isNull(), isNull());
+        verify(audit).finish(eq(entry), eq(Outcome.SUCCESS), eq("{\"ok\":true}"), isNull(), any(), any());
     }
 
     @Test
@@ -87,7 +88,7 @@ public class McpToolFactoryTest {
 
         assertFalse(ran.get());
         assertTrue(result.isError());
-        verify(audit).finish(eq(entry), eq(Outcome.REJECTED), isNull(), any());
+        verify(audit).finish(eq(entry), eq(Outcome.REJECTED), isNull(), any(), any(), any());
     }
 
     @Test
@@ -110,12 +111,12 @@ public class McpToolFactoryTest {
 
         assertFalse(ran.get());
         assertTrue(result.isError());
-        verify(audit).finish(eq(entry), eq(Outcome.REJECTED), isNull(), any());
+        verify(audit).finish(eq(entry), eq(Outcome.REJECTED), isNull(), any(), any(), any());
     }
 
     @Test
     public void doesNotRunTheToolWhenTheAuditTrailCannotBeWritten() {
-        when(audit.start(any(), anyString(), anyString(), any(), any(), any()))
+        when(audit.start(any(), anyString(), anyString(), any(), any(), any(), any(), any()))
                 .thenThrow(new IllegalStateException("database down"));
         AtomicBoolean ran = new AtomicBoolean();
         CallToolResult result = factory(false).call(guarded(ran), request(
@@ -125,7 +126,7 @@ public class McpToolFactoryTest {
 
         assertFalse(ran.get());
         assertTrue(result.isError());
-        verify(audit, never()).finish(any(), any(), any(), any());
+        verify(audit, never()).finish(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -140,7 +141,7 @@ public class McpToolFactoryTest {
         CallToolResult result = factory(false).call(def, new CallToolRequest("get_concept_set", Map.of(), null));
 
         assertTrue(result.isError());
-        verify(audit).finish(eq(entry), eq(Outcome.DENIED), isNull(), any());
+        verify(audit).finish(eq(entry), eq(Outcome.DENIED), isNull(), any(), any(), any());
     }
 
     @Test
@@ -149,5 +150,33 @@ public class McpToolFactoryTest {
         assertTrue(tool.inputSchema().required().contains("clinical_rationale"));
         assertTrue(tool.inputSchema().required().contains("evidence_reference"));
         assertFalse(tool.annotations().readOnlyHint());
+    }
+
+    @Test
+    public void recordsTheEntityFromTheArgumentsBeforeTheToolRuns() {
+        ToolDefinition def = ToolDefinition.tool("generate_cohort")
+                .description("test")
+                .step(ReasoningStep.STEP_5_GENERATION_VERIFICATION)
+                .entity(EntityType.COHORT_DEFINITION, "cohort_definition_id")
+                .handler(args -> Map.of("status", "STARTING"))
+                .build();
+        factory(false).call(def, new CallToolRequest("generate_cohort", Map.of("cohort_definition_id", 7), Map.of()));
+        verify(audit).start(any(), eq("generate_cohort"), anyString(), anyString(), isNull(), isNull(),
+                eq(EntityType.COHORT_DEFINITION), eq(7));
+    }
+
+    @Test
+    public void recordsTheEntityACreateReturns() {
+        ToolDefinition def = ToolDefinition.tool("create_concept_set")
+                .description("test")
+                .step(ReasoningStep.STEP_2_CONCEPT_SET_CONSOLIDATION)
+                .entity(EntityType.CONCEPT_SET, "concept_set_id")
+                .handler(args -> Map.of("concept_set_id", 12))
+                .build();
+        factory(false).call(def, new CallToolRequest("create_concept_set", Map.of("name", "x"), Map.of()));
+        verify(audit).start(any(), eq("create_concept_set"), anyString(), anyString(), isNull(), isNull(), isNull(),
+                isNull());
+        verify(audit).finish(eq(entry), eq(Outcome.SUCCESS), anyString(), isNull(), eq(EntityType.CONCEPT_SET),
+                eq(12));
     }
 }

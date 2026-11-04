@@ -144,6 +144,12 @@ public class McpServerIT extends WebApiIT {
         assertTrue(result.toString(), text(result).contains("Type 2 diabetes mellitus"));
         assertEquals(0, itemCount(conceptSetId));
         assertEquals("REJECTED", lastOutcome(traceId, "add_concept_to_set"));
+
+        // The refused attempt is part of the concept set's provenance.
+        JsonNode provenance = provenance("conceptset", conceptSetId);
+        assertEquals(provenance.toString(), 2, provenance.size());
+        assertEquals("add_concept_to_set", provenance.get(1).path("tool").asText());
+        assertEquals("REJECTED", provenance.get(1).path("outcome").asText());
     }
 
     @Test
@@ -192,6 +198,19 @@ public class McpServerIT extends WebApiIT {
         assertEquals(rationale, log.get(1).path("clinical_rationale").asText());
         assertEquals("STEP_2_CONCEPT_SELECTION", log.get(1).path("reasoning_step").asText());
         assertEquals("SUCCESS", log.get(1).path("outcome").asText());
+
+        // Atlas reads the same history from the concept set's provenance endpoint.
+        JsonNode provenance = provenance("conceptset", conceptSetId);
+        assertEquals(provenance.toString(), 2, provenance.size());
+        assertEquals("create_concept_set", provenance.get(0).path("tool").asText());
+        assertEquals("add_concept_to_set", provenance.get(1).path("tool").asText());
+        assertEquals(rationale, provenance.get(1).path("clinicalRationale").asText());
+        assertEquals(traceId, provenance.get(1).path("traceId").asText());
+        assertEquals("SUCCESS", provenance.get(1).path("outcome").asText());
+        assertEquals("anonymous", provenance.get(1).path("userLogin").asText());
+        assertTrue(provenance.get(1).path("startedAt").isNumber());
+        assertFalse("payloads are not exposed", provenance.get(1).has("argumentsJson"));
+        assertEquals(0, provenance("conceptset", conceptSetId + 1000).size());
     }
 
     @Test
@@ -316,6 +335,13 @@ public class McpServerIT extends WebApiIT {
                 + ".cohort where cohort_definition_id = ?", Long.class, cohortId);
         assertEquals(aged40, written);
         assertEquals("SUCCESS", lastOutcome(traceId, "generate_cohort"));
+
+        // Status polls are reads and stay out of the cohort's provenance.
+        JsonNode provenance = provenance("cohortdefinition", cohortId);
+        List<String> tools = new ArrayList<>();
+        provenance.forEach(e -> tools.add(e.path("tool").asText()));
+        assertEquals(List.of("create_cohort_definition", "generate_cohort"), tools);
+        assertEquals("STEP_3_COHORT_CRITERIA", provenance.get(0).path("reasoningStep").asText());
     }
 
     @Test
@@ -392,6 +418,13 @@ public class McpServerIT extends WebApiIT {
             }
         }
         assertTrue("missing from eunomia.csv.zip: " + wanted, wanted.isEmpty());
+    }
+
+    private JsonNode provenance(String resource, int id) throws Exception {
+        ResponseEntity<String> response = getRestTemplate().getForEntity(
+                getBaseUri() + "/" + resource + "/" + id + "/mcp-provenance", String.class);
+        assertEquals(response.getBody(), HttpStatus.OK, response.getStatusCode());
+        return mapper.readTree(response.getBody());
     }
 
     private int itemCount(int conceptSetId) {

@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.ohdsi.webapi.mcp.audit.McpAuditEntry.EntityType;
 
 /**
  * Declarative description of one MCP tool: its name, JSON input schema, the reasoning step it
@@ -34,6 +35,10 @@ public final class ToolDefinition {
     final Map<String, Object> properties;
     final List<String> required;
     final Handler handler;
+    /** The artifact a call is about, recorded in the audit log so Atlas can show its provenance. */
+    final EntityType entityType;
+    /** Argument, or for a create the result field, that holds the artifact's id. */
+    final String entityIdField;
 
     private ToolDefinition(Builder b) {
         this.name = Objects.requireNonNull(b.name);
@@ -46,6 +51,8 @@ public final class ToolDefinition {
         this.properties = b.properties;
         this.required = b.required;
         this.handler = Objects.requireNonNull(b.handler);
+        this.entityType = b.entityType;
+        this.entityIdField = b.entityIdField;
     }
 
     public String name() {
@@ -98,6 +105,8 @@ public final class ToolDefinition {
         private final Map<String, Object> properties = new LinkedHashMap<>();
         private final List<String> required = new ArrayList<>();
         private Handler handler;
+        private EntityType entityType;
+        private String entityIdField;
 
         private Builder(String name) {
             this.name = name;
@@ -141,6 +150,16 @@ public final class ToolDefinition {
         public Builder requiredParam(String name, Map<String, Object> schema) {
             properties.put(name, schema);
             required.add(name);
+            return this;
+        }
+
+        /**
+         * Records calls to this tool against the cohort definition or concept set whose id is in
+         * {@code idField}: the argument when the caller passes it, otherwise the result field of that name.
+         */
+        public Builder entity(EntityType entityType, String idField) {
+            this.entityType = Objects.requireNonNull(entityType);
+            this.entityIdField = Objects.requireNonNull(idField);
             return this;
         }
 

@@ -30,6 +30,12 @@ public class McpAuditEntry {
         DENIED
     }
 
+    /** What kind of WebAPI artifact a call was about; see {@code entity_type} in {@code mcp_audit_log}. */
+    public enum EntityType {
+        COHORT_DEFINITION,
+        CONCEPT_SET
+    }
+
     @Id
     @Column(name = "id")
     @SequenceGenerator(name = "mcp_audit_log_seq", sequenceName = "mcp_audit_log_sequence", allocationSize = 1)
@@ -78,6 +84,13 @@ public class McpAuditEntry {
 
     @Column(name = "user_login", length = 255, updatable = false)
     private String userLogin;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "entity_type", length = 32)
+    private EntityType entityType;
+
+    @Column(name = "entity_id")
+    private Integer entityId;
 
     @Column(name = "started_at", nullable = false, updatable = false)
     private Instant startedAt;
@@ -135,4 +148,10 @@ public class McpAuditEntry {
 
     public Instant getFinishedAt() { return finishedAt; }
     public void setFinishedAt(Instant finishedAt) { this.finishedAt = finishedAt; }
+
+    public EntityType getEntityType() { return entityType; }
+    public void setEntityType(EntityType entityType) { this.entityType = entityType; }
+
+    public Integer getEntityId() { return entityId; }
+    public void setEntityId(Integer entityId) { this.entityId = entityId; }
 }

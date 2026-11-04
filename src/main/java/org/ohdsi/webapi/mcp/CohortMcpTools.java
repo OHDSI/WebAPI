@@ -33,6 +33,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.mcp.ToolDefinition.Rationale;
+import org.ohdsi.webapi.mcp.audit.McpAuditEntry.EntityType;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
@@ -78,6 +79,7 @@ public class CohortMcpTools implements McpToolProvider {
                         .requiredParam("expression", objectParam("The Circe cohort expression (ConceptSets, "
                                 + "PrimaryCriteria, InclusionRules, EndStrategy, ...), as JSON."))
                         .requiredParam("source_key", stringParam("Vocabulary source used to verify the concepts."))
+                        .entity(EntityType.COHORT_DEFINITION, "cohort_definition_id")
                         .handler(this::create)
                         .build(),
                 tool("update_cohort_definition")
@@ -92,6 +94,7 @@ public class CohortMcpTools implements McpToolProvider {
                         .requiredParam("source_key", stringParam("Vocabulary source used to verify the concepts."))
                         .param("name", stringParam("New name; unchanged if omitted."))
                         .param("description", stringParam("New description; unchanged if omitted."))
+                        .entity(EntityType.COHORT_DEFINITION, "cohort_definition_id")
                         .handler(this::update)
                         .build(),
                 tool("get_cohort_definition")
@@ -118,6 +121,7 @@ public class CohortMcpTools implements McpToolProvider {
                                 + "'sql server', 'oracle', 'redshift', 'spark', 'snowflake', 'bigquery'. Defaults to "
                                 + "the source's dialect."))
                         .param("include_sql", booleanParam("Return the translated SQL. Default false."))
+                        .entity(EntityType.COHORT_DEFINITION, "cohort_definition_id")
                         .handler(this::validate)
                         .build(),
                 tool("generate_cohort")
@@ -129,6 +133,7 @@ public class CohortMcpTools implements McpToolProvider {
                         .rationale(Rationale.OPTIONAL)
                         .requiredParam("cohort_definition_id", integerParam("The cohort definition to generate."))
                         .requiredParam("source_key", stringParam("CDM source to generate on."))
+                        .entity(EntityType.COHORT_DEFINITION, "cohort_definition_id")
                         .handler(this::generate)
                         .build(),
                 tool("get_cohort_generation_status")

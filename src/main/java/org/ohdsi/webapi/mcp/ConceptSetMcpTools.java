@@ -14,6 +14,7 @@ import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ConceptSetService;
 import org.ohdsi.webapi.mcp.ToolDefinition.Rationale;
+import org.ohdsi.webapi.mcp.audit.McpAuditEntry.EntityType;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -50,6 +51,7 @@ public class ConceptSetMcpTools implements McpToolProvider {
                         .rationale(Rationale.REQUIRED)
                         .requiredParam("name", stringParam("Concept set name; must be unique in WebAPI."))
                         .param("description", stringParam("What the concept set is meant to capture."))
+                        .entity(EntityType.CONCEPT_SET, "concept_set_id")
                         .handler(this::create)
                         .build(),
                 tool("get_concept_set")
@@ -78,6 +80,7 @@ public class ConceptSetMcpTools implements McpToolProvider {
                         .requiredParam("include_descendants", booleanParam("Include all descendants of the concept."))
                         .param("include_mapped", booleanParam("Include source concepts mapped to it. Default false."))
                         .param("is_excluded", booleanParam("Exclude rather than include the concept. Default false."))
+                        .entity(EntityType.CONCEPT_SET, "concept_set_id")
                         .handler(this::addConcept)
                         .build(),
                 tool("remove_concept_from_set")
@@ -88,6 +91,7 @@ public class ConceptSetMcpTools implements McpToolProvider {
                         .rationale(Rationale.REQUIRED)
                         .requiredParam("concept_set_id", integerParam("The concept set to change."))
                         .requiredParam("concept_id", integerParam("The concept id to remove."))
+                        .entity(EntityType.CONCEPT_SET, "concept_set_id")
                         .handler(this::removeConcept)
                         .build(),
                 tool("count_concept_set_concepts")

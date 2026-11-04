@@ -8,4 +8,7 @@ import org.springframework.stereotype.Repository;
 public interface McpAuditEntryRepository extends JpaRepository<McpAuditEntry, Long> {
 
     List<McpAuditEntry> findByTraceIdOrderByStartedAtAscIdAsc(String traceId);
+
+    List<McpAuditEntry> findByEntityTypeAndEntityIdOrderByStartedAtAscIdAsc(McpAuditEntry.EntityType entityType,
+            Integer entityId);
 }

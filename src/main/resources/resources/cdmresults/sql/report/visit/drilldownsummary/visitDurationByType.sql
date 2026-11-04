@@ -10,5 +10,5 @@ SELECT
   ard1.max_value    AS max_value
 FROM @results_database_schema.achilles_results_dist ard1
 INNER JOIN
-@vocab_database_schema.concept c1 ON CAST(CASE WHEN ard1.analysis_id = 211 THEN ard1.stratum_1 ELSE null END AS INT) = c1.concept_id
-WHERE ard1.analysis_id = 211
+@vocab_database_schema.concept c1 ON CAST(CASE WHEN ard1.analysis_id IN (211, 213) THEN ard1.stratum_1 ELSE null END AS INT) = c1.concept_id
+WHERE ard1.analysis_id IN (211, 213)

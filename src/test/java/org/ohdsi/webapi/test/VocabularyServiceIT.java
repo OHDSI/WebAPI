@@ -39,6 +39,10 @@ public class VocabularyServiceIT extends WebApiIT {
         addConcept();
     }
 
+    private String withSourceKey(String endpoint) {
+        return endpoint.replace("{sourceKey}", SOURCE_KEY);
+    }
+
     private void addConcept() {
         String resultSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(CONCEPT_FILE_PATH),
                 new String[]{"cdm_database_schema"}, new String[]{CDM_SCHEMA_NAME});
@@ -50,7 +54,7 @@ public class VocabularyServiceIT extends WebApiIT {
     public void canGetConcept() {
 
         //Action
-        final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointConcept, String.class);
+        final ResponseEntity<String> entity = getRestTemplate().getForEntity(withSourceKey(this.endpointConcept), String.class);
         
         //Assertion
         assertOK(entity);
@@ -60,7 +64,7 @@ public class VocabularyServiceIT extends WebApiIT {
     public void canGetVocabularies() {
 
         //Action
-        final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointVocabularies, String.class);
+        final ResponseEntity<String> entity = getRestTemplate().getForEntity(withSourceKey(this.endpointVocabularies), String.class);
         
         //Assertion
         assertOK(entity);
@@ -70,7 +74,7 @@ public class VocabularyServiceIT extends WebApiIT {
     public void canGetDomains() {
 
         //Action
-        final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointDomains, String.class);
+        final ResponseEntity<String> entity = getRestTemplate().getForEntity(withSourceKey(this.endpointDomains), String.class);
 
         //Assertion
         assertOK(entity);
@@ -79,7 +83,7 @@ public class VocabularyServiceIT extends WebApiIT {
     @Test
     public void canSearchConceptsWithQueryParam() {
         // Test the GET /{sourceKey}/search?query=... endpoint format
-        String searchUrl = this.endpointSearch.replace("{sourceKey}", SOURCE_KEY) + "?query=test";
+        String searchUrl = withSourceKey(this.endpointSearch) + "?query=test";
 
         //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(searchUrl, String.class);

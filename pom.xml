@@ -463,6 +463,17 @@
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
     </dependency>
+    <!-- MCP tool-call spans. Only the API: without the OpenTelemetry Java agent it is a no-op; with the
+         agent, the agent provides the implementation. Version managed by Spring Boot. -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-testing</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Actuator + Micrometer for metrics and monitoring -->
     <dependency>

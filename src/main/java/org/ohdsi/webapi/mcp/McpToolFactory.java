@@ -2,6 +2,19 @@ package org.ohdsi.webapi.mcp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
@@ -16,6 +29,8 @@ import org.ohdsi.webapi.mcp.audit.McpAuditEntry.Outcome;
 import org.ohdsi.webapi.mcp.audit.McpAuditService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,7 +40,8 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Turns a {@link ToolDefinition} into an MCP tool whose every call is traced and audited.
  *
- * <p>For each call: the {@code _meta.traceparent} is continued (or a trace started), the audit row is
+ * <p>For each call: an OpenTelemetry server span is opened as a child of {@code _meta.traceparent}
+ * (MCP semantic conventions; a no-op without OpenTelemetry), the audit row is
  * written <em>before</em> the tool runs, the rationale contract is enforced, the tool runs under the
  * caller's WebAPI identity (so the services' {@code @PreAuthorize} rules apply unchanged), and the
  * audit row is completed with the outcome. The result carries the tool span's {@code traceparent}
@@ -43,18 +59,57 @@ public class McpToolFactory {
 
     private static final Logger log = LoggerFactory.getLogger(McpToolFactory.class);
 
+    // OpenTelemetry semantic conventions for MCP (gen-ai/mcp) plus WebAPI's own attributes.
+    static final String MCP_METHOD = "tools/call";
+    static final AttributeKey<String> ATTR_MCP_METHOD = AttributeKey.stringKey("mcp.method.name");
+    static final AttributeKey<String> ATTR_OPERATION = AttributeKey.stringKey("gen_ai.operation.name");
+    static final AttributeKey<String> ATTR_TOOL_NAME = AttributeKey.stringKey("gen_ai.tool.name");
+    static final AttributeKey<String> ATTR_ERROR_TYPE = AttributeKey.stringKey("error.type");
+    static final AttributeKey<String> ATTR_REASONING_STEP = AttributeKey.stringKey("ohdsi.mcp.reasoning_step");
+    static final AttributeKey<String> ATTR_OUTCOME = AttributeKey.stringKey("ohdsi.mcp.outcome");
+    static final AttributeKey<Long> ATTR_AUDIT_ENTRY_ID = AttributeKey.longKey("ohdsi.mcp.audit_entry_id");
+    static final AttributeKey<String> ATTR_ENTITY_TYPE = AttributeKey.stringKey("ohdsi.mcp.entity.type");
+    static final AttributeKey<Long> ATTR_ENTITY_ID = AttributeKey.longKey("ohdsi.mcp.entity.id");
+
+    /** Reads W3C trace context from {@code params._meta}, where MCP carries it instead of HTTP headers. */
+    private static final TextMapGetter<Map<String, Object>> META_GETTER = new TextMapGetter<>() {
+        @Override
+        public Iterable<String> keys(Map<String, Object> carrier) {
+            return carrier.keySet();
+        }
+
+        @Override
+        public String get(Map<String, Object> carrier, String key) {
+            return carrier != null && carrier.get(key) instanceof String value ? value : null;
+        }
+    };
+
     private final McpAuditService audit;
     private final ObjectMapper mapper;
     private final boolean requireTraceparent;
     private final int minRationaleLength;
+    private final Tracer tracer;
 
+    /**
+     * Uses the application's {@link OpenTelemetry} bean if there is one, otherwise the global instance: the
+     * OpenTelemetry Java agent's when WebAPI runs with it, a no-op otherwise.
+     */
+    @Autowired
     public McpToolFactory(McpAuditService audit, ObjectMapper mapper,
             @Value("${mcp.requireTraceparent:false}") boolean requireTraceparent,
-            @Value("${mcp.minRationaleLength:20}") int minRationaleLength) {
+            @Value("${mcp.minRationaleLength:20}") int minRationaleLength,
+            ObjectProvider<OpenTelemetry> openTelemetry) {
+        this(audit, mapper, requireTraceparent, minRationaleLength,
+                openTelemetry.getIfAvailable(GlobalOpenTelemetry::get));
+    }
+
+    McpToolFactory(McpAuditService audit, ObjectMapper mapper, boolean requireTraceparent, int minRationaleLength,
+            OpenTelemetry openTelemetry) {
         this.audit = audit;
         this.mapper = mapper;
         this.requireTraceparent = requireTraceparent;
         this.minRationaleLength = minRationaleLength;
+        this.tracer = openTelemetry.getTracer("org.ohdsi.webapi.mcp");
     }
 
     public SyncToolSpecification build(ToolDefinition def) {
@@ -94,27 +149,73 @@ public class McpToolFactory {
 
     CallToolResult call(ToolDefinition def, CallToolRequest request) {
         Map<String, Object> meta = request.meta() == null ? Map.of() : request.meta();
-        ToolArguments args = new ToolArguments(request.arguments());
 
-        TraceContext trace;
+        // The client's traceparent is checked against the W3C rules whether or not OpenTelemetry is active,
+        // so a malformed one is refused the same way in both cases.
+        TraceContext clientTrace = null;
         String traceProblem = null;
         Object traceparent = meta.get(META_TRACEPARENT);
         if (traceparent instanceof String tp && !tp.isBlank()) {
             try {
-                trace = TraceContext.continueFrom(tp);
+                clientTrace = TraceContext.continueFrom(tp);
             } catch (IllegalArgumentException e) {
-                trace = TraceContext.newRoot();
                 traceProblem = e.getMessage();
             }
-        } else {
-            trace = TraceContext.newRoot();
-            if (requireTraceparent) {
-                traceProblem = "_meta.traceparent is required by this server";
-            }
+        } else if (requireTraceparent) {
+            traceProblem = "_meta.traceparent is required by this server";
         }
+
+        // MCP semantic conventions: the server span's parent is the context in params._meta, and the
+        // ambient context (the HTTP request's span, when the OpenTelemetry agent runs) is linked.
+        Span ambient = Span.current();
+        Context parent = clientTrace != null
+                ? W3CTraceContextPropagator.getInstance().extract(Context.current(), meta, META_GETTER)
+                : Context.current();
+        SpanBuilder spanBuilder = tracer.spanBuilder(MCP_METHOD + " " + def.name)
+                .setSpanKind(SpanKind.SERVER)
+                .setParent(parent)
+                .setAttribute(ATTR_MCP_METHOD, MCP_METHOD)
+                .setAttribute(ATTR_OPERATION, "execute_tool")
+                .setAttribute(ATTR_TOOL_NAME, def.name);
+        if (clientTrace != null && ambient.getSpanContext().isValid()) {
+            spanBuilder.addLink(ambient.getSpanContext());
+        }
+        Span span = spanBuilder.startSpan();
+        try (Scope ignored = span.makeCurrent()) {
+            return run(def, request, meta, traceFor(span, clientTrace, ambient), traceProblem, span);
+        } finally {
+            span.end();
+        }
+    }
+
+    /**
+     * The ids recorded in the audit log and returned to the client. With OpenTelemetry active they are the
+     * exported span's own, so an audit row and its trace in the tracing backend share one trace id. Without
+     * it (no agent, no SDK) WebAPI allocates them itself.
+     */
+    static TraceContext traceFor(Span span, TraceContext clientTrace, Span ambient) {
+        SpanContext context = span.getSpanContext();
+        if (!context.isValid()) {
+            return clientTrace != null ? clientTrace : TraceContext.newRoot();
+        }
+        String parentSpanId = null;
+        if (clientTrace != null) {
+            parentSpanId = clientTrace.parentSpanId();
+        } else if (ambient.getSpanContext().isValid()
+                && ambient.getSpanContext().getTraceId().equals(context.getTraceId())) {
+            parentSpanId = ambient.getSpanContext().getSpanId();
+        }
+        return new TraceContext(context.getTraceId(), parentSpanId, context.getSpanId(),
+                context.getTraceFlags().asHex(), clientTrace == null);
+    }
+
+    private CallToolResult run(ToolDefinition def, CallToolRequest request, Map<String, Object> meta,
+            TraceContext trace, String traceProblem, Span span) {
+        ToolArguments args = new ToolArguments(request.arguments());
         String step = meta.get(META_REASONING_STEP) instanceof String s && !s.isBlank() ? s : def.step.name();
         String rationale = args.raw(CLINICAL_RATIONALE) instanceof String s ? s : null;
         String evidence = args.raw(EVIDENCE_REFERENCE) instanceof String s ? s : null;
+        span.setAttribute(ATTR_REASONING_STEP, step);
 
         McpAuditEntry entry;
         try {
@@ -123,8 +224,10 @@ public class McpToolFactory {
                     entityId == null ? null : def.entityType, entityId);
         } catch (Exception e) {
             log.error("MCP audit trail unavailable; refusing to run tool {}", def.name, e);
+            markOutcome(span, Outcome.ERROR);
             return error(trace, null, Outcome.ERROR, "The audit trail could not be written, so the tool was not run.");
         }
+        span.setAttribute(ATTR_AUDIT_ENTRY_ID, entry.getId());
 
         Outcome outcome;
         Object result = null;
@@ -152,13 +255,18 @@ public class McpToolFactory {
         }
 
         String resultJson = outcome == Outcome.SUCCESS ? toJson(result) : null;
+        Integer createdId = def.entityType != null && result instanceof Map<?, ?> m
+                ? entityId(m.get(def.entityIdField)) : null;
         try {
-            Integer createdId = def.entityType != null && result instanceof Map<?, ?> m
-                    ? entityId(m.get(def.entityIdField)) : null;
             audit.finish(entry, outcome, resultJson, message, createdId == null ? null : def.entityType, createdId);
         } catch (Exception e) {
             // The action already happened and its STARTED row is on record; do not hide the result.
             log.error("Could not record outcome {} of MCP audit entry {}", outcome, entry.getId(), e);
+        }
+        markOutcome(span, outcome);
+        if (entry.getEntityType() != null) {
+            span.setAttribute(ATTR_ENTITY_TYPE, entry.getEntityType().name());
+            span.setAttribute(ATTR_ENTITY_ID, entry.getEntityId().longValue());
         }
 
         if (outcome != Outcome.SUCCESS) {
@@ -169,6 +277,18 @@ public class McpToolFactory {
                 .isError(false)
                 .meta(resultMeta(trace, entry.getId(), step))
                 .build();
+    }
+
+    /**
+     * Outcome on the span. Only the outcome is recorded: arguments, rationale and error messages stay in the
+     * audit log, which has per-artifact access control, and out of the tracing backend, which does not.
+     */
+    private static void markOutcome(Span span, Outcome outcome) {
+        span.setAttribute(ATTR_OUTCOME, outcome.name());
+        if (outcome != Outcome.SUCCESS) {
+            span.setAttribute(ATTR_ERROR_TYPE, "tool_error");
+            span.setStatus(StatusCode.ERROR, outcome.name());
+        }
     }
 
     private static Integer entityId(Object value) {

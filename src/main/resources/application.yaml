@@ -142,6 +142,19 @@ security:
         middlenameAttr: initials
         usernameAttr: cn
 
+    assertion: # Trusted assertion: a signed JWT header added by an authenticating reverse proxy
+      enabled: false
+      header: sso-assertion
+      jwk-set-uri: "" # e.g. https://host/auth/.well-known/jwks.json (required when enabled)
+      issuer: "" # exact iss (required when enabled)
+      audience: "" # value aud must contain (required when enabled)
+      algorithms: ES256
+      clock-skew: 30s
+      auto-provision: true
+      # Also require a matching assertion on every request made with a WebAPI session token
+      enforce-on-every-request: true
+      provider-name: Single Sign-On
+      logout-url: ""
     cas: # Central Authentication Security (CAS)
       enabled: false
       callbackUrl: ""

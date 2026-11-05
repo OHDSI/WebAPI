@@ -3,7 +3,7 @@ package org.ohdsi.webapi.security.authc;
 import org.ohdsi.webapi.security.provisioning.model.LdapProviderType;
 
 public enum UserOrigin {
-    SYSTEM, AD, LDAP, WINDOWS, KERBEROS, GOOGLE, FACEBOOK, DATABASE, OIDC;
+    SYSTEM, AD, LDAP, WINDOWS, KERBEROS, GOOGLE, FACEBOOK, DATABASE, OIDC, ASSERTION;
 
     public static UserOrigin getFrom(LdapProviderType ldapProviderType) {
         switch (ldapProviderType) {

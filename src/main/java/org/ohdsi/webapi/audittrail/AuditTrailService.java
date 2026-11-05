@@ -12,6 +12,9 @@ public interface AuditTrailService {
 
     void logRestCall(AuditTrailEntry entry, boolean success);
 
+    void logApiKeyRevokedByAdmin(String adminLogin, String keyIdentifier, String ownerLogin);
+    void logApiKeyDeletedByAdmin(String adminLogin, String keyIdentifier, String ownerLogin);
+
     void logJobStart(JobExecution jobExecution);
     void logJobCompleted(JobExecution jobExecution);
     void logJobFailed(JobExecution jobExecution);

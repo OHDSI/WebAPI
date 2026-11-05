@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.security.apikey;
 
 import org.ohdsi.webapi.security.authz.UserEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +18,7 @@ public interface ApiKeyRepository extends JpaRepository<ApiKeyEntity, Long> {
     Optional<ApiKeyEntity> findByKeyIdentifier(String keyIdentifier);
 
     List<ApiKeyEntity> findByUser(UserEntity user);
+
+    @EntityGraph(attributePaths = "user")
+    List<ApiKeyEntity> findAllByOrderByCreatedAtDesc();
 }

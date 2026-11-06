@@ -23,7 +23,7 @@
     <jna.version>5.5.0</jna.version>
     <hibernate.version>6.5.3.Final</hibernate.version>
     <postgresql.version>42.7.4</postgresql.version>
-    <bouncycastle.version>1.83</bouncycastle.version>
+    <bouncycastle.version>1.85</bouncycastle.version>
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
     <circe.version>1.14.2</circe.version>
     <featureExtraction.version>3.8.0</featureExtraction.version>

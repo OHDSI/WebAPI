@@ -29,6 +29,7 @@ public final class ConnectionParamsParser {
             case PDW:
             case SNOWFLAKE:
             case SYNAPSE:
+            case TREXSQL:
                 return new GenericParser();
             case REDSHIFT:
                 return new RedshiftParser();

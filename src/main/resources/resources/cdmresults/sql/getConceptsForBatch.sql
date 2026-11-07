@@ -1,6 +1,8 @@
 select group_id, min(concept_id) as min_concept, max(concept_id) as max_concept FROM
 (
-	select concept_id, ordinal / @batch_size as group_id 
+	-- floor() keeps the group id integral on dialects where '/' is not integer division
+	-- (Snowflake, Spark, BigQuery); without it every concept ends up in its own batch
+	select concept_id, floor(ordinal / @batch_size) as group_id
   FROM ( 
 		select concept_id, row_number() over (order by concept_id) as ordinal
 		FROM @resultTableQualifier.achilles_result_concept_count c

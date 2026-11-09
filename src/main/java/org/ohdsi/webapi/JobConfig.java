@@ -8,6 +8,7 @@ import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
 import org.ohdsi.webapi.job.JdbcSearchableJobExecutionDao;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.SearchableJobExecutionDao;
+import org.ohdsi.webapi.job.TracingJobLauncher;
 import org.ohdsi.webapi.security.authz.AuthorizationService;
 import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
@@ -124,11 +125,12 @@ public class JobConfig {
         return taskExecutor;
     }
     
-    // Spring Batch 5: Custom JobLauncher for async execution
+    // Spring Batch 5: Custom JobLauncher for async execution. Each job runs in its own
+    // OpenTelemetry trace, linked to the request that launched it (no-op without an agent).
     @Bean
     @Primary
     public JobLauncher asyncJobLauncher(JobRepository jobRepository, @Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) throws Exception {
-        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
+        TaskExecutorJobLauncher jobLauncher = new TracingJobLauncher();
         jobLauncher.setJobRepository(jobRepository);
         jobLauncher.setTaskExecutor(batchTaskExecutor);
         jobLauncher.afterPropertiesSet();

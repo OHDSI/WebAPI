@@ -55,17 +55,23 @@ public interface OneTimeCodeRepository extends JpaRepository<OneTimeCodeEntity, 
     void deleteByRevoked();
 
     /**
-     * Mark a one-time code as revoked (consumed).
-     * 
-     * @param code the OTC UUID to revoke
+     * Atomically mark a one-time code as revoked (consumed), but only if it is
+     * still unrevoked and unexpired. The conditions live in the UPDATE itself so
+     * that concurrent redemptions of the same code cannot both succeed.
+     *
+     * @param code the OTC UUID to consume
+     * @param now current instant for expiration comparison
+     * @return number of rows updated: 1 if this call consumed the code, 0 otherwise
      */
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update OneTimeCode otc
             set otc.revoked = true
             where otc.code = :code
+              and otc.revoked = false
+              and otc.expiresAt >= :now
       """)
-    void revokeByCode(@Param("code") UUID code);
+    int consumeByCode(@Param("code") UUID code, @Param("now") Instant now);
 
     /**
      * Delete all codes for a specific login (used when user is deleted/disabled).

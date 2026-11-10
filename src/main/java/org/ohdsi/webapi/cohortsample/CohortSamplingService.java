@@ -332,6 +332,22 @@ public class CohortSamplingService extends AbstractDaoService {
 
 	/** Sample elements based on parameters. */
 	private List<SampleElement> sampleElements(SampleParametersDTO sampleParametersDTO, CohortSample sample, JdbcTemplate jdbcTemplate, Source source) {
+		PreparedStatementRenderer renderer = prepareSampleElementsSql(sampleParametersDTO, sample, source);
+
+		jdbcTemplate.setMaxRows(sample.getSize());
+
+		return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), (rs, rowNum) -> {
+			SampleElement element = new SampleElement();
+			element.setRank(rowNum);
+			element.setAge(rs.getInt("age"));
+			element.setGenderConceptId(rs.getInt("gender_concept_id"));
+			element.setPersonId(rs.getLong("person_id"));
+			return element;
+		});
+	}
+
+	/** Render the query that draws sample elements from the cohort, filtered by the sample's age and gender. */
+	PreparedStatementRenderer prepareSampleElementsSql(SampleParametersDTO sampleParametersDTO, CohortSample sample, Source source) {
 		StringBuilder expressionBuilder = new StringBuilder();
 		Map<String, Object> sqlVariables = new LinkedHashMap<>();
 
@@ -367,7 +383,7 @@ public class CohortSamplingService extends AbstractDaoService {
 					sqlVariables.put("age_max", sample.getAgeMax());
 					break;
 				case NOT_BETWEEN:
-					expressionBuilder.append(" AND age > @age_max OR age < @age_min");
+					expressionBuilder.append(" AND (age > @age_max OR age < @age_min)");
 					sqlVariables.put("age_min", sample.getAgeMin());
 					sqlVariables.put("age_max", sample.getAgeMax());
 					break;
@@ -418,22 +434,11 @@ public class CohortSamplingService extends AbstractDaoService {
 				.map(sqlVariables::get)
 				.toArray(Object[]::new);
 
-		PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/generateSample.sql",
+		return new PreparedStatementRenderer(source, "/resources/cohortsample/sql/generateSample.sql",
 				parameterKeys,
 				parameterValues,
 				sqlVariableKeys,
 				sqlVariableValues);
-
-		jdbcTemplate.setMaxRows(sample.getSize());
-
-		return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), (rs, rowNum) -> {
-			SampleElement element = new SampleElement();
-			element.setRank(rowNum);
-			element.setAge(rs.getInt("age"));
-			element.setGenderConceptId(rs.getInt("gender_concept_id"));
-			element.setPersonId(rs.getLong("person_id"));
-			return element;
-		});
 	}
 
 	/** Delete a sample and its elements. */

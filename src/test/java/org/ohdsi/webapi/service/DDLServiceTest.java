@@ -27,6 +27,8 @@ public class DDLServiceTest extends AbstractDatabaseTest {
     private static final int ATC_4TH = 21604303;
     private static final int ATC_2ND = 21604253;
     private static final int ATC_1ST = 21604180;
+    private static final int APPENDECTOMY = 4336464;
+    private static final int CUSTOM_PROCEDURE = 2000000001;
 
     @Before
     public void setUp() {
@@ -69,9 +71,21 @@ public class DDLServiceTest extends AbstractDatabaseTest {
 
     private void insertConcept(int conceptId, String name, String vocabularyId, String conceptClassId, String standard) {
 
+        insertConcept(conceptId, name, "Drug", vocabularyId, conceptClassId, standard, null);
+    }
+
+    private void insertConcept(int conceptId, String name, String domainId, String vocabularyId, String conceptClassId,
+                               String standard, String conceptCode) {
+
         jdbcTemplate.update(String.format("INSERT INTO %s.concept (concept_id, concept_name, domain_id, vocabulary_id, "
-                + "concept_class_id, standard_concept) VALUES (?, ?, 'Drug', ?, ?, ?)", VOCAB_SCHEMA),
-                conceptId, name, vocabularyId, conceptClassId, standard);
+                + "concept_class_id, standard_concept, concept_code) VALUES (?, ?, ?, ?, ?, ?, ?)", VOCAB_SCHEMA),
+                conceptId, name, domainId, vocabularyId, conceptClassId, standard, conceptCode);
+    }
+
+    private void insertVocabulary(String vocabularyId, String vocabularyName) {
+
+        jdbcTemplate.update(String.format("INSERT INTO %s.vocabulary (vocabulary_id, vocabulary_name) VALUES (?, ?)",
+                VOCAB_SCHEMA), vocabularyId, vocabularyName);
     }
 
     private void insertAncestor(int ancestorId, int descendantId, int levels) {
@@ -81,8 +95,7 @@ public class DDLServiceTest extends AbstractDatabaseTest {
                 ancestorId, descendantId, levels, levels);
     }
 
-    @Test
-    public void initConceptHierarchy_drugHierarchyUsesStandardIngredientsOnly() {
+    private void runInitConceptHierarchy() {
 
         for (String path : DDLService.INIT_CONCEPT_HIERARCHY_FILE_PATHS) {
             String sql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(path),
@@ -90,6 +103,12 @@ public class DDLServiceTest extends AbstractDatabaseTest {
                     new String[]{VOCAB_SCHEMA, RESULTS_SCHEMA});
             jdbcTemplate.execute(SqlTranslate.translateSql(sql, "postgresql"));
         }
+    }
+
+    @Test
+    public void initConceptHierarchy_drugHierarchyUsesStandardIngredientsOnly() {
+
+        runInitConceptHierarchy();
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(String.format("SELECT concept_id, "
                 + "level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name "
@@ -104,5 +123,26 @@ public class DDLServiceTest extends AbstractDatabaseTest {
         }
         assertEquals(ACETAMINOPHEN, rows.get(0).get("concept_id"));
         assertEquals(ACETAMINOPHEN_TABLET, rows.get(1).get("concept_id"));
+    }
+
+    @Test
+    public void initConceptHierarchy_procedureHierarchyKeepsConceptsWithoutVocabularyRow() {
+
+        insertVocabulary("SNOMED", "Systematic Nomenclature of Medicine - Clinical Terms (IHTSDO)");
+        insertConcept(APPENDECTOMY, "Appendectomy", "Procedure", "SNOMED", "Procedure", "S", "80146002");
+        // site-specific concept whose vocabulary_id has no row in the vocabulary table
+        insertConcept(CUSTOM_PROCEDURE, "Local procedure", "Procedure", "Local", "Procedure", null, "LP-1");
+
+        runInitConceptHierarchy();
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(String.format("SELECT concept_id, concept_name "
+                + "FROM %s.concept_hierarchy WHERE treemap = 'Procedure' ORDER BY concept_id", RESULTS_SCHEMA));
+
+        assertEquals(2, rows.size());
+        assertEquals(APPENDECTOMY, rows.get(0).get("concept_id"));
+        assertEquals("Systematic Nomenclature of Medicine - Clinical Terms (IHTSDO) 80146002: Appendectomy",
+                rows.get(0).get("concept_name"));
+        assertEquals(CUSTOM_PROCEDURE, rows.get(1).get("concept_id"));
+        assertEquals("Local LP-1: Local procedure", rows.get(1).get("concept_name"));
     }
 }

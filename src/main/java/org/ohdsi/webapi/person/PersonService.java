@@ -135,9 +135,12 @@ public class PersonService extends AbstractDaoService {
     LocalDateTime cohortStartDate = null;
     Optional<CohortPerson> cohort = cohortId > 0 ? profile.cohorts.stream().filter(c -> c.cohortDefinitionId.equals(cohortId)).findFirst() :
             Optional.empty();
+    // index on the cohort start, else the first record, else (for a person without records) the first observation period
     cohortStartDate = cohort.map(c -> c.startDate.toLocalDateTime()).orElseGet(() ->
       profile.records.stream().min(Comparator.comparing(c -> c.startDate))
-        .map(r -> r.startDate.toLocalDateTime()).orElse(null));
+        .map(r -> r.startDate.toLocalDateTime()).orElseGet(() ->
+          profile.observationPeriods.stream().min(Comparator.comparing(p -> p.startDate))
+            .map(p -> p.startDate.toLocalDateTime()).orElse(null)));
 
 		if (cohortStartDate != null && profile.yearOfBirth > 0) {
 			profile.ageAtIndex = cohortStartDate.getYear() - profile.yearOfBirth;

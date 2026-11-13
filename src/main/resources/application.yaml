@@ -104,6 +104,11 @@ logging:
         orm: info
         web: info
     root: info
+mcp:
+  # Refuse MCP tool calls that do not carry _meta.traceparent (otherwise a new trace is started).
+  requireTraceparent: false
+  # Minimum length of clinical_rationale on tools that require one.
+  minRationaleLength: 20
 organization:
   name: OHDSI
 person:
@@ -336,6 +341,24 @@ sparql:
   endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=
 
 spring:
+  ai:
+    mcp:
+      server:
+        # MCP server for AI agents (tools for vocabulary search, concept sets, cohort definitions,
+        # SQL validation and generation; every call is recorded in mcp_audit_log).
+        # Served at the streamable-http endpoint below, behind the same authentication as the REST API.
+        enabled: false
+        protocol: STATELESS
+        name: ohdsi-webapi
+        # WebAPI's tools are plain tool specifications; the annotation scanner is not needed.
+        annotation-scanner:
+          enabled: false
+        capabilities:
+          resource: false
+          prompt: false
+          completion: false
+        streamable-http:
+          mcp-endpoint: /mcp
   main:
     lazy-initialization: true
   autoconfigure:

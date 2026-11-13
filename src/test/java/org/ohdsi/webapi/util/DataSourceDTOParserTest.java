@@ -30,7 +30,7 @@ public class DataSourceDTOParserTest {
     public static final String ORACLE_WITH_PWD_CONN_STR = "jdbc:oracle:thin:scott/tiger@myhost:1521:orcl";
     public static final String HIVE_CONN_STR = "jdbc:hive2://sandbox-hdp.hortonworks.com:2181/synpuf_531_orc;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2";
     public static final String IRIS_CONN_STR = "jdbc:IRIS://localhost:1972/USER";
-    public static final String TREXSQL_CONN_STR = "jdbc:trexsql://trex.example.com:9494";
+    public static final String TREXDB_CONN_STR = "jdbc:trexsql://trex.example.com:9494";
 
     @Test
     public void parseDTO() {
@@ -113,9 +113,9 @@ public class DataSourceDTOParserTest {
         assertThat(dto.getUsername(), is(nullValue()));
         assertThat(dto.getPassword(), is(nullValue()));
 
-        dto = DataSourceDTOParser.parseDTO(getTrexsqlSource());
-        assertThat(dto.getType(), is(DBMSType.TREXSQL));
-        assertThat(dto.getConnectionString(), is(TREXSQL_CONN_STR));
+        dto = DataSourceDTOParser.parseDTO(getTrexdbSource());
+        assertThat(dto.getType(), is(DBMSType.TREXDB));
+        assertThat(dto.getConnectionString(), is(TREXDB_CONN_STR));
         assertThat(dto.getUsername(), is("webapi"));
         assertThat(dto.getPassword(), is("access-token"));
 
@@ -227,10 +227,10 @@ public class DataSourceDTOParserTest {
         return source;
     }
 
-    private Source getTrexsqlSource() {
+    private Source getTrexdbSource() {
         Source source = new Source();
-        source.setSourceDialect("trexsql");
-        source.setSourceConnection(TREXSQL_CONN_STR);
+        source.setSourceDialect("trexdb");
+        source.setSourceConnection(TREXDB_CONN_STR);
         source.setUsername("webapi");
         source.setPassword("access-token");
         return source;

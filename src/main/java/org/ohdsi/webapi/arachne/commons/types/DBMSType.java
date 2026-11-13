@@ -36,7 +36,7 @@ public enum DBMSType {
     SPARK("Spark", "spark"),
     SNOWFLAKE("Snowflake", "snowflake"),
     SYNAPSE("Azure Synapse", "synapse"),
-    TREXSQL("TrexSQL", "trexsql");
+    TREXDB("TrexDB", "trexdb");
 
     private String label;
     // For further pass into SqlRender.translateSql as "targetDialect" and DatabaseConnector as "dbms"

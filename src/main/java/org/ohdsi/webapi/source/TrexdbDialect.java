@@ -20,23 +20,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Registers "trexsql" as a SqlRender target dialect.
+ * Registers "trexdb" as a SqlRender target dialect.
  *
- * SqlRender has no trexsql target of its own, so its patterns for the engine
- * trexsql is built on are copied under the trexsql name. SqlTranslate keeps a
- * single JVM-wide pattern table, so this also covers libraries that translate
- * internally (cohort and characterization SQL).
+ * TrexDB runs DuckDB, so the duckdb patterns are copied under the trexdb name.
+ * SqlTranslate keeps a single JVM-wide pattern table, so this also covers
+ * libraries that translate internally (cohort and characterization SQL).
+ * A SqlRender release that ships trexdb itself makes this a no-op.
  */
 @Component
-public class TrexsqlDialect {
+public class TrexdbDialect {
 
-    public static final String NAME = DBMSType.TREXSQL.getOhdsiDB();
+    public static final String NAME = DBMSType.TREXDB.getOhdsiDB();
 
-    // The SqlRender target whose patterns trexsql reuses.
+    // The SqlRender target whose patterns trexdb reuses.
     static final String BASE_DIALECT = "duckdb";
 
     private static final String PATTERNS_RESOURCE = "/inst/csv/replacementPatterns.csv";
-    private static final Logger log = LoggerFactory.getLogger(TrexsqlDialect.class);
+    private static final Logger log = LoggerFactory.getLogger(TrexdbDialect.class);
 
     private static volatile boolean registered;
 
@@ -50,6 +50,11 @@ public class TrexsqlDialect {
             return;
         }
         List<String> lines = readBundledPatterns();
+        if (lines.stream().anyMatch(line -> line.startsWith(NAME + ","))) {
+            registered = true;
+            log.info("SqlRender already ships the {} dialect", NAME);
+            return;
+        }
         List<String> merged = new ArrayList<>(lines);
         String prefix = BASE_DIALECT + ",";
         for (String line : lines) {

@@ -7,7 +7,7 @@ import org.ohdsi.sql.SqlTranslate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class TrexsqlDialectTest {
+public class TrexdbDialectTest {
 
     private static final String SQL =
             "SELECT TOP 10 person_id, DATEADD(day, 30, observation_period_start_date) AS d "
@@ -15,28 +15,28 @@ public class TrexsqlDialectTest {
 
     @BeforeClass
     public static void registerDialect() {
-        TrexsqlDialect.register();
+        TrexdbDialect.register();
     }
 
     @Test
     public void translatesLikeItsBaseDialect() {
-        String trexsql = SqlTranslate.translateSql(SQL, TrexsqlDialect.NAME);
-        assertEquals(SqlTranslate.translateSql(SQL, TrexsqlDialect.BASE_DIALECT), trexsql);
-        assertNotEquals(SQL, trexsql);
+        String trexdb = SqlTranslate.translateSql(SQL, TrexdbDialect.NAME);
+        assertEquals(SqlTranslate.translateSql(SQL, TrexdbDialect.BASE_DIALECT), trexdb);
+        assertNotEquals(SQL, trexdb);
     }
 
     @Test
     public void registerIsIdempotent() {
-        TrexsqlDialect.register();
+        TrexdbDialect.register();
         assertEquals(
-                SqlTranslate.translateSql(SQL, TrexsqlDialect.BASE_DIALECT),
-                SqlTranslate.translateSql(SQL, TrexsqlDialect.NAME));
+                SqlTranslate.translateSql(SQL, TrexdbDialect.BASE_DIALECT),
+                SqlTranslate.translateSql(SQL, TrexdbDialect.NAME));
     }
 
     @Test
     public void otherDialectsAreUnchanged() {
         assertNotEquals(
                 SqlTranslate.translateSql(SQL, "postgresql"),
-                SqlTranslate.translateSql(SQL, TrexsqlDialect.NAME));
+                SqlTranslate.translateSql(SQL, TrexdbDialect.NAME));
     }
 }

@@ -83,32 +83,17 @@ public class OneTimeCodeService {
    * @return Optional containing the OTC entity if valid, empty if invalid/expired/already revoked
    */
   public Optional<OneTimeCodeEntity> validateAndConsume(UUID code) {
+    // Consume first with a single conditional UPDATE. Checking the revoked/expired
+    // flags in Java and then updating would let two concurrent requests both read
+    // revoked=false and both receive the JWT, breaking the single-use guarantee.
+    if (repo.consumeByCode(code, Instant.now()) != 1) {
+      log.debug("OTC: {} not found, expired, or already consumed", code);
+      return Optional.empty();
+    }
+
     Optional<OneTimeCodeEntity> otcOpt = repo.findById(code);
-
-    if (otcOpt.isEmpty()) {
-      log.debug("OTC: {} not found", code);
-      return Optional.empty();
-    }
-
-    OneTimeCodeEntity otc = otcOpt.get();
-
-    // Check expiration
-    if (otc.getExpiresAt().isBefore(Instant.now())) {
-      log.debug("OTC: {} expired", code);
-      return Optional.empty();
-    }
-
-    // Check revocation (already used)
-    if (otc.isRevoked()) {
-      log.debug("OTC: {} already revoked (single-use)", code);
-      return Optional.empty();
-    }
-
-    // Mark as revoked (consumed) - single use
-    repo.revokeByCode(code);
-    log.debug("OTC: {} consumed for user: {}", code, otc.getLogin());
-
-    return Optional.of(otc);
+    otcOpt.ifPresent(otc -> log.debug("OTC: {} consumed for user: {}", code, otc.getLogin()));
+    return otcOpt;
   }
 
   /**

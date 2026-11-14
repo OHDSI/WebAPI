@@ -170,7 +170,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             "threshold_level",
             "analysis_ids", "cohort_ids", "vocabulary_schema" };
     private static final String[] PARAMETERS_COUNT = { "cohort_characterization_generation_id", "vocabulary_schema" };
-    private static final String[] PREVALENCE_STATS_PARAMS = { "cdm_database_schema", "cdm_results_schema",
+    private static final String[] PREVALENCE_STATS_PARAMS = { "cdm_results_schema",
             "cc_generation_id", "analysis_id", "cohort_id", "covariate_id" };
     private final String QUERY_RESULTS = ResourceHelper
             .GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
@@ -1200,12 +1200,13 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, id)));
         final Source source = generationEntity.getSource();
-        final String cdmSchema = SourceUtils.getCdmQualifier(source);
         final String resultSchema = SourceUtils.getResultsQualifier(source);
         final String tempSchema = SourceUtils.getTempQualifier(source);
+        // concept and concept_ancestor are read through @vocabulary_database_schema, which SourceAwareSqlRender
+        // fills from the Vocabulary daimon (or the CDM daimon when the source has no Vocabulary daimon)
         String prevalenceStats = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_PREVALENCE_STATS,
                 PREVALENCE_STATS_PARAMS,
-                new String[] { cdmSchema, resultSchema, String.valueOf(id), String.valueOf(analysisId),
+                new String[] { resultSchema, String.valueOf(id), String.valueOf(analysisId),
                         String.valueOf(cohortId), String.valueOf(covariateId) });
         String translatedSql = SqlTranslate.translateSql(prevalenceStats, source.getSourceDialect(),
                 SessionUtils.sessionId(), tempSchema);

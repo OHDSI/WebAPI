@@ -79,10 +79,7 @@ public class ConceptSetConcurrentSaveTest extends AbstractDatabaseTest {
         }
     }
 
-    /**
-     * Several users rename the same concept set while another request replaces its items. This passes
-     * without the row lock as well. It checks that the lock does not deadlock or fail concurrent saves.
-     */
+    /** Concurrent renames and item saves on one concept set must not deadlock or fail. */
     @Test
     public void concurrentRenameAndItemSave() throws Exception {
         ConceptSetDTO base = create("base");
@@ -100,10 +97,7 @@ public class ConceptSetConcurrentSaveTest extends AbstractDatabaseTest {
         assertTrue("errors: " + errors.size(), errors.isEmpty());
     }
 
-    /**
-     * One request deletes the concept set while another one renames it. The rename either wins or fails
-     * with 404, it must not fail while saving the version of a concept set that was just deleted.
-     */
+    /** A rename racing a delete either succeeds or fails with 404, nothing else. */
     @Test
     public void renameWhileDeleting() throws Exception {
         List<Throwable> unexpected = new CopyOnWriteArrayList<>();

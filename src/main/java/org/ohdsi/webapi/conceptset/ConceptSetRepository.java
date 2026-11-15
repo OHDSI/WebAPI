@@ -52,10 +52,7 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   
   Optional<ConceptSet> findByName(String name);
 
-  /**
-   * Loads the concept set and locks its row until the current transaction ends, so a concurrent
-   * delete waits instead of removing the row between the load and the version insert.
-   */
+  /** Loads the concept set and locks its row until the transaction ends. */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.id = :conceptSetId")
   Optional<ConceptSet> findByIdForUpdate(@Param("conceptSetId") Integer conceptSetId);

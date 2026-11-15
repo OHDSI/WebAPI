@@ -15,8 +15,10 @@
  */
 package org.ohdsi.webapi.conceptset;
 
+import jakarta.persistence.LockModeType;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -49,6 +51,14 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   List<ConceptSet> findAllByNameStartsWith(String pattern);
   
   Optional<ConceptSet> findByName(String name);
+
+  /**
+   * Loads the concept set and locks its row until the current transaction ends, so a concurrent
+   * delete waits instead of removing the row between the load and the version insert.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT cs FROM ConceptSet cs WHERE cs.id = :conceptSetId")
+  Optional<ConceptSet> findByIdForUpdate(@Param("conceptSetId") Integer conceptSetId);
   
   @Query("SELECT DISTINCT cs FROM ConceptSet cs JOIN FETCH cs.tags t WHERE lower(t.name) in :tagNames")
   List<ConceptSet> findByTags(@Param("tagNames") List<String> tagNames);

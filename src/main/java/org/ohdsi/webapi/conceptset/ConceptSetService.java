@@ -576,7 +576,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             @PathVariable("id") final int id,
             @RequestBody ConceptSetDTO conceptSetDTO) {
 
-        ConceptSet updated = getConceptSetRepository().findById(id)
+        ConceptSet updated = getConceptSetRepository().findByIdForUpdate(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         String.format("Concept Set with id = %d does not exist.", id)));
 

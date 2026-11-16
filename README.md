@@ -133,6 +133,7 @@ Sample IdP and SP metadata configuration files for Okta:
 The following parameters enable or disable authentication providers:
 
 - `security.auth.ad.enabled`
+- `security.auth.assertion.enabled` (signed assertion from an authenticating reverse proxy; see [articles/TrustedAssertion_HOWTO.md](articles/TrustedAssertion_HOWTO.md))
 - `security.auth.cas.enabled`
 - `security.auth.jdbc.enabled`
 - `security.auth.kerberos.enabled`

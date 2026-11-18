@@ -322,6 +322,14 @@ public void handleSuccess(OAuth2User user, ...) {
 6. Handler builds `AuthenticatedLogin` with `origin=OIDC` and mapped roles
 7. Returns JSON with new JWT (refreshed expiration)
 
+### Trusted Assertion (Authenticating Reverse Proxy)
+1. The proxy signs the user in and adds a signed JWT (`sso-assertion` header) to each request
+2. Atlas calls `GET /user/login/assertion`
+3. `AssertionVerifier` validates signature (JWKS), `alg`, `iss`, `aud` and `exp`
+4. Handler builds `AuthenticatedLogin` with `origin=ASSERTION`
+5. No groups (assertions carry no roles); roles come from default roles only
+6. Later requests must carry a matching assertion (`AssertionBindingFilter`), see [TrustedAssertion_HOWTO.md](TrustedAssertion_HOWTO.md)
+
 ## UserOrigin Tracking
 
 Each user's authentication history is tracked via `UserOrigin` enum:
@@ -336,7 +344,8 @@ enum UserOrigin {
     GOOGLE,        // OAuth2 Google
     FACEBOOK,      // OAuth2 Facebook
     DATABASE,      // Local database credentials
-    OIDC           // Generic OIDC provider
+    OIDC,          // Generic OIDC provider
+    ASSERTION      // Signed assertion from an authenticating reverse proxy
 }
 ```
 

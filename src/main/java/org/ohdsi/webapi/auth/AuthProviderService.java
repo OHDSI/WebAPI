@@ -68,6 +68,15 @@ public class AuthProviderService {
     @Value("${security.auth.oidc.logoutUrl:}")
     private String oidcLogoutUrl;
 
+    @Value("${security.auth.assertion.enabled:false}")
+    private boolean assertionAuthEnabled;
+
+    @Value("${security.auth.assertion.provider-name:Single Sign-On}")
+    private String assertionProviderName;
+
+    @Value("${security.auth.assertion.logout-url:}")
+    private String assertionLogoutUrl;
+
     /**
      * Get the list of enabled authentication providers.
      * This endpoint is publicly accessible (no auth required).
@@ -75,6 +84,18 @@ public class AuthProviderService {
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AuthProviderInfo> getProviders() {
         List<AuthProviderInfo> providers = new ArrayList<>();
+
+        // Trusted assertion from an authenticating reverse proxy (no credentials form)
+        if (assertionAuthEnabled) {
+            providers.add(new AuthProviderInfo(
+                assertionProviderName,
+                "user/login/assertion",
+                true,
+                "mdi-shield-account",
+                false,
+                assertionLogoutUrl != null && !assertionLogoutUrl.isEmpty() ? assertionLogoutUrl : null
+            ));
+        }
 
         // OpenID Connect (e.g., Logto, Keycloak, Okta)
         if (openidAuthEnabled) {

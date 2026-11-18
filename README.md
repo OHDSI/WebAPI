@@ -147,6 +147,41 @@ Acceptable values are `true` and `false`.
 
 Default parameters for each authentication provider are provided as examples in the embedded `application.yaml` file. All providers are disabled by default.
 
+## MCP server for AI agents
+
+WebAPI can expose a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents can search vocabularies, build concept sets and cohort definitions, validate the cohort SQL and generate cohorts. It is off by default. To turn it on:
+
+```yaml
+spring:
+  ai:
+    mcp:
+      server:
+        enabled: true
+```
+
+The server listens at `POST /mcp` (stateless Streamable HTTP; set the path with `spring.ai.mcp.server.streamable-http.mcp-endpoint`). It uses the same authentication as the REST API, so clients send a WebAPI JWT (`Authorization: Bearer ...`) or a personal API key (`X-API-KEY: ...`). Each tool runs with that user's permissions. For example, with Claude Code:
+
+```bash
+claude mcp add --transport http webapi https://your-host/WebAPI/mcp --header "X-API-KEY: <key>"
+```
+
+| Step | Tools |
+|------|-------|
+| 1 Concept exploration | `list_sources`, `search_concepts`, `get_concept_details`, `get_concept_hierarchy` |
+| 2 Concept sets | `create_concept_set`, `get_concept_set`, `add_concept_to_set`, `remove_concept_from_set`, `count_concept_set_concepts` |
+| 3 Cohort criteria | `create_cohort_definition`, `update_cohort_definition`, `get_cohort_definition` |
+| 4 SQL validation | `validate_cohort_definition` (Circe checks, concept verification, SqlRender translation; the SQL is not run) |
+| 5 Generation | `generate_cohort`, `get_cohort_generation_status` (status, counts, inclusion-rule attrition) |
+| Audit | `get_audit_trail` |
+
+Traceability rules the server enforces:
+
+- **Rationale.** Tools that change concept sets or cohort definitions require `clinical_rationale` (at least `mcp.minRationaleLength` characters, default 20) and `evidence_reference`. A call that leaves them out is refused.
+- **Verified concepts.** `add_concept_to_set`, `create_cohort_definition` and `update_cohort_definition` look up every concept id in the source vocabulary. If an id does not exist, or the name the caller gave does not match the vocabulary's name, the call is refused and nothing is saved.
+- **Tracing.** Send a W3C `traceparent` in the call's `_meta`, plus an optional `reasoning_step`. Each tool call is a span that follows the [OpenTelemetry semantic conventions for MCP](https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/): its parent is the `_meta` traceparent, and it links the HTTP request's span. WebAPI returns that span in the result's `_meta.traceparent`, along with `_meta.audit_entry_id`. A call without a traceparent starts a new trace, unless `mcp.requireTraceparent: true`. When WebAPI runs with the OpenTelemetry Java agent, the span is exported together with the SQL it ran, and the audit log records the exported span's ids. An audit row can then be found in the tracing backend by its trace id, and a span by its `ohdsi.mcp.audit_entry_id`. Spans carry the tool, step and outcome, but never the arguments, rationale or error messages. Those stay in the audit log. Without the agent, WebAPI allocates the ids itself.
+- **Audit.** Every call is written to `mcp_audit_log` before it runs, then completed with its outcome: `SUCCESS`, `ERROR`, `REJECTED` or `DENIED`. A database trigger makes the table append-only. `get_audit_trail` returns a trace's entries in order, as the decision log for an audit manifest.
+- **Provenance.** Calls that create, change, validate or generate a cohort definition or concept set are also recorded against that artifact. `GET /cohortdefinition/{id}/mcp-provenance` and `GET /conceptset/{id}/mcp-provenance` return that history (tool, reasoning step, rationale, evidence, outcome, user, time and trace id; not the argument or result payloads) to anyone who can read the artifact, so Atlas can show why an agent built it that way. These endpoints stay available when the MCP server is turned off.
+
 ## Geospatial support
 
 Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatial)

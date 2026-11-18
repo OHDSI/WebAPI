@@ -84,6 +84,19 @@ public class ApiKeyService {
             Instant lastUsedAt) {
     }
 
+    /** Key metadata plus its owner, for administrators. Never exposes the hash or the secret. */
+    public record AdminApiKeyInfo(
+            String name,
+            String description,
+            String keyIdentifier,
+            String ownerLogin,
+            String ownerName,
+            Instant createdAt,
+            Instant expiresAt,
+            boolean disabled,
+            Instant lastUsedAt) {
+    }
+
     // -------------------------------------------------------------------------
     // Operations
     // -------------------------------------------------------------------------
@@ -208,6 +221,50 @@ public class ApiKeyService {
         }
         apiKeyRepository.delete(key);
         log.info("API key permanently deleted: identifier={}, by user={}", keyIdentifier, ownerLogin);
+    }
+
+    /** Returns metadata for every user's API keys, newest first. */
+    @Transactional(readOnly = true)
+    public List<AdminApiKeyInfo> listAll() {
+        return apiKeyRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(k -> new AdminApiKeyInfo(
+                        k.getName(), k.getDescription(), k.getKeyIdentifier(),
+                        k.getUser().getLogin(), k.getUser().getName(),
+                        k.getCreatedAt(), k.getExpiresAt(), k.isDisabled(), k.getLastUsedAt()))
+                .toList();
+    }
+
+    /**
+     * Disables any user's API key.
+     *
+     * @return the login of the key's owner
+     * @throws IllegalArgumentException if the key is not found.
+     */
+    @Transactional
+    public String revokeAny(String keyIdentifier, String adminLogin) {
+        ApiKeyEntity key = apiKeyRepository.findByKeyIdentifier(keyIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("API key not found: " + keyIdentifier));
+        key.setDisabled(true);
+        apiKeyRepository.save(key);
+        String owner = key.getUser().getLogin();
+        log.info("API key revoked by administrator: identifier={}, owner={}, by user={}", keyIdentifier, owner, adminLogin);
+        return owner;
+    }
+
+    /**
+     * Permanently deletes any user's API key.
+     *
+     * @return the login of the key's owner
+     * @throws IllegalArgumentException if the key is not found.
+     */
+    @Transactional
+    public String deleteAny(String keyIdentifier, String adminLogin) {
+        ApiKeyEntity key = apiKeyRepository.findByKeyIdentifier(keyIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("API key not found: " + keyIdentifier));
+        String owner = key.getUser().getLogin();
+        apiKeyRepository.delete(key);
+        log.info("API key permanently deleted by administrator: identifier={}, owner={}, by user={}", keyIdentifier, owner, adminLogin);
+        return owner;
     }
 
     // -------------------------------------------------------------------------

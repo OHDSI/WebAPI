@@ -33,6 +33,9 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String USER_LOGOUT_SUCCESS_TEMPLATE = "User successfully logged out: %s";
     private static final String USER_LOGOUT_FAILURE_TEMPLATE = "User logout failed: %s";
 
+    private static final String API_KEY_REVOKED_TEMPLATE = "API key %s of user %s revoked by administrator %s";
+    private static final String API_KEY_DELETED_TEMPLATE = "API key %s of user %s deleted by administrator %s";
+
     private static final String JOB_STARTED_TEMPLATE = "%s - Job %s execution started: %s";
     private static final String JOB_COMPLETED_TEMPLATE = "%s - Job %s execution completed successfully: %s";
     private static final String JOB_FAILED_TEMPLATE = "%s - Job %s execution failed: %s";
@@ -71,6 +74,16 @@ class AuditTrailServiceImpl implements AuditTrailService {
     @Override
     public void logFailedLogout(final String login) {
         log(String.format(USER_LOGOUT_FAILURE_TEMPLATE, login));
+    }
+
+    @Override
+    public void logApiKeyRevokedByAdmin(final String adminLogin, final String keyIdentifier, final String ownerLogin) {
+        log(String.format(API_KEY_REVOKED_TEMPLATE, keyIdentifier, ownerLogin, adminLogin));
+    }
+
+    @Override
+    public void logApiKeyDeletedByAdmin(final String adminLogin, final String keyIdentifier, final String ownerLogin) {
+        log(String.format(API_KEY_DELETED_TEMPLATE, keyIdentifier, ownerLogin, adminLogin));
     }
 
     @Override

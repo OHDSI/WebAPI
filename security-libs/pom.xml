@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.ohdsi.webapi.security</groupId>
+  <artifactId>security-libs</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.version>1.8</java.version>
+    <spring.version>4.3.25.RELEASE</spring.version>
+    <commons.io.version>2.22.0</commons.io.version>
+    <commons.lang.version>3.22.0</commons.lang.version>
+    <slf4j.version>1.7.36</slf4j.version>
+    <bouncycastle.version>1.87</bouncycastle.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.odysseusinc.arachne</groupId><artifactId>arachne-common-utils</artifactId><version>1.17.4-webapi1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.odysseusinc</groupId><artifactId>data-source-manager</artifactId><version>1.17.4-webapi1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <repositories>
+    <repository><id>ohdsi</id><url>https://repo.ohdsi.org/nexus/content/groups/public</url></repository>
+  </repositories>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

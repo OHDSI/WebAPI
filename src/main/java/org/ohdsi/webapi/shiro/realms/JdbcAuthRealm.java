@@ -26,21 +26,25 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
-import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class JdbcAuthRealm extends JdbcRealm {
 
     private static final Logger log = LoggerFactory.getLogger(JdbcAuthRealm.class);
-    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private static final Pattern BCRYPT_HASH = Pattern.compile("\\$2[aby]\\$[0-9]{2}\\$[./A-Za-z0-9]{53}");
 
     public JdbcAuthRealm(DataSource dataSource, String authenticationQuery) {
 
@@ -68,13 +72,45 @@ public class JdbcAuthRealm extends JdbcRealm {
             UserPrincipal userPrincipal = this.getUser(username);
 
             if (userPrincipal == null || userPrincipal.getPassword() == null ||
-                    !bCryptPasswordEncoder.matches(new String(upToken.getPassword()), userPrincipal.getPassword())) {
+                    !passwordMatches(upToken.getPassword(), userPrincipal.getPassword())) {
                 throw new AuthenticationException("Incorrect username or password");
             } else {
                 info = new SimpleAuthenticationInfo(userPrincipal, upToken.getPassword(), this.getName());
             }
         }
         return info;
+    }
+
+    private boolean passwordMatches(char[] password, String hash) {
+        if (password == null || hash == null || hash.length() != 60 || !BCRYPT_HASH.matcher(hash).matches()) {
+            return false;
+        }
+        // Each UTF-16 code unit requires at least one UTF-8 byte. Bound allocation
+        // before encoding; the byte check below also covers multibyte passwords.
+        if (password.length > 72) {
+            return false;
+        }
+        ByteBuffer encoded = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password));
+        byte[] bytes = null;
+        try {
+            // BCrypt otherwise silently truncates input, accepting a matching
+            // 72-byte prefix even when an attacker supplies a different suffix.
+            if (encoded.remaining() > 72) {
+                return false;
+            }
+            bytes = new byte[encoded.remaining()];
+            encoded.get(bytes);
+            return OpenBSDBCrypt.checkPassword(hash, bytes);
+        } catch (IllegalArgumentException malformedHash) {
+            return false;
+        } finally {
+            if (bytes != null) {
+                Arrays.fill(bytes, (byte) 0);
+            }
+            if (encoded.hasArray()) {
+                Arrays.fill(encoded.array(), (byte) 0);
+            }
+        }
     }
 
     @Override

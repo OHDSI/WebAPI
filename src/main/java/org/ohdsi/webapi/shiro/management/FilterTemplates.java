@@ -28,8 +28,6 @@ public enum FilterTemplates {
     UPDATE_TOKEN("updateToken"),
     JDBC_FILTER("jdbcFilter"),
     KERBEROS_FILTER("kerberosFilter"),
-    LDAP_FILTER("ldapFilter"),
-    AD_FILTER("adFilter"),
     OIDC_AUTH("oidcAuth"),
     OIDC_DIRECT_AUTH("oidcDirectAuth"),
     OAUTH_CALLBACK("oauthCallback"),

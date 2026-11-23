@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.ohdsi.webapi.security</groupId><artifactId>security-libs</artifactId><version>1.0.0</version><relativePath>../pom.xml</relativePath>
+  </parent>
+  <groupId>org.ohdsi</groupId><artifactId>atlasgis</artifactId><version>1.0.1-webapi1</version>
+  <name>Atlas GIS - Java 8 security maintenance</name>
+  <properties><mapstruct.version>1.3.0.Final</mapstruct.version><lombok.version>1.18.8</lombok.version></properties>
+  <dependencies>
+    <dependency><groupId>org.glassfish.jersey.core</groupId><artifactId>jersey-server</artifactId><version>2.25.1</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.springframework</groupId><artifactId>spring-context</artifactId><version>${spring.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.springframework</groupId><artifactId>spring-jdbc</artifactId><version>${spring.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.springframework</groupId><artifactId>spring-tx</artifactId><version>${spring.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>javax.persistence</groupId><artifactId>javax.persistence-api</artifactId><version>2.2</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.hibernate</groupId><artifactId>hibernate-core</artifactId><version>5.4.33.Final</version><scope>provided</scope></dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.18.12</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.glassfish.jersey.media</groupId><artifactId>jersey-media-multipart</artifactId><version>2.25.1</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>33.8.0-jre</version><scope>provided</scope></dependency>
+    <dependency><groupId>com.odysseusinc.arachne</groupId><artifactId>execution-engine-commons</artifactId><version>1.17.4</version><scope>provided</scope></dependency>
+    <dependency><groupId>com.odysseusinc.arachne</groupId><artifactId>arachne-common-utils</artifactId><scope>provided</scope></dependency>
+    <dependency><groupId>com.odysseusinc</groupId><artifactId>data-source-manager</artifactId><scope>provided</scope></dependency>
+    <dependency><groupId>org.ohdsi.sql</groupId><artifactId>SqlRender</artifactId><version>1.19.1</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId><version>${commons.lang.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>commons-io</groupId><artifactId>commons-io</artifactId><version>${commons.io.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>${slf4j.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.2</version><scope>test</scope></dependency>
+    <dependency><groupId>org.mockito</groupId><artifactId>mockito-core</artifactId><version>1.10.19</version><scope>test</scope></dependency>
+  </dependencies>
+  <repositories><repository><id>ohdsi</id><url>https://repo.ohdsi.org/nexus/content/groups/public</url></repository></repositories>
+  <build><plugins><plugin>
+    <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId>
+    <configuration><annotationProcessorPaths>
+      <path><groupId>org.mapstruct</groupId><artifactId>mapstruct-processor</artifactId><version>${mapstruct.version}</version></path>
+      <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
+    </annotationProcessorPaths></configuration>
+  </plugin></plugins></build>
+</project>

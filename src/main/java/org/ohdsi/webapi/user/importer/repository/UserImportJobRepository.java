@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 public interface UserImportJobRepository extends ArachneJobRepository<UserImportJob> {
 
+  long countByEnabledTrueAndIsClosedFalse();
+
   UserImportJob findByProviderType(LdapProviderType providerType);
 
   Stream<UserImportJob> findUserImportJobsBy();

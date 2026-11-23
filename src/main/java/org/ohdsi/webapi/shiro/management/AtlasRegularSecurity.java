@@ -6,29 +6,19 @@ import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
-import org.apache.shiro.realm.ldap.DefaultLdapRealm;
-import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.*;
-import org.ohdsi.webapi.shiro.filters.auth.ActiveDirectoryAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.AtlasJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.JdbcAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.filters.auth.LdapAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.SamlHandleFilter;
-import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
-import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
-import org.ohdsi.webapi.shiro.realms.ADRealm;
 import org.ohdsi.webapi.shiro.realms.JdbcAuthRealm;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
-import org.ohdsi.webapi.shiro.realms.LdapRealm;
-import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.util.ResourceUtils;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.pac4j.cas.client.CasClient;
@@ -56,13 +46,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
-import javax.naming.Context;
 import javax.servlet.Filter;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
@@ -70,7 +58,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
@@ -116,44 +103,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.kerberos.keytabPath}")
     private String kerberosKeytabPath;
 
-    @Value("${security.ldap.dn}")
-    private String userDnTemplate;
-
-    @Value("${security.ldap.url}")
-    private String ldapUrl;
-
-    @Value("${security.ldap.searchString}")
-    private String ldapSearchString;
-
-    @Value("${security.ldap.searchBase}")
-    private String ldapSearchBase;
-
-    @Value("${security.ad.url}")
-    private String adUrl;
-
-    @Value("${security.ad.searchBase}")
-    private String adSearchBase;
-
-    @Value("${security.ad.principalSuffix}")
-    private String adPrincipalSuffix;
-
-    @Value("${security.ad.system.username}")
-    private String adSystemUsername;
-
-    @Value("${security.ad.system.password}")
-    private String adSystemPassword;
-
     @Value("${security.db.datasource.authenticationQuery}")
     private String jdbcAuthenticationQuery;
-
-    @Value("${security.ad.searchFilter}")
-    private String adSearchFilter;
-
-    @Value("${security.ad.searchString}")
-    private String adSearchString;
-
-    @Value("${security.ad.ignore.partial.result.exception}")
-    private Boolean adIgnorePartialResultException;
 
     @Value("${security.google.accessToken.enabled}")
     private Boolean googleAccessTokenEnabled;
@@ -186,10 +137,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     private int maximumAuthenticationLifetime;
 
     @Autowired
-    @Qualifier("activeDirectoryProvider")
-    private LdapProvider adLdapProvider;
-
-    @Autowired
     @Qualifier("authDataSource")
     private DataSource jdbcDataSource;
 
@@ -198,12 +145,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    private ADUserMapper adUserMapper;
-
-    @Autowired
-    private LdapUserMapper ldapUserMapper;
 
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
@@ -234,12 +175,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.auth.jdbc.enabled}")
     private boolean jdbcAuthEnabled;
-
-    @Value("${security.auth.ldap.enabled}")
-    private boolean ldapAuthEnabled;
-
-    @Value("${security.auth.ad.enabled}")
-    private boolean adAuthEnabled;
 
     @Value("${security.auth.cas.enabled}")
     private boolean casAuthEnabled;
@@ -285,12 +220,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
         if (this.kerberosAuthEnabled) {
             filters.put(KERBEROS_FILTER, new KerberosAuthFilter());
-        }
-        if (this.ldapAuthEnabled) {
-            filters.put(LDAP_FILTER, new LdapAuthFilter(eventPublisher));
-        }
-        if (this.adAuthEnabled) {
-            filters.put(AD_FILTER, new ActiveDirectoryAuthFilter(eventPublisher));
         }
         if (this.windowsAuthEnabled) {
             filters.put(NEGOTIATE_AUTHC, new NegotiateAuthenticationFilter());
@@ -457,14 +386,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             filterChainBuilder.addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
         }
 
-        if (this.ldapAuthEnabled) {
-            filterChainBuilder.addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
-        }
-
-        if (this.adAuthEnabled) {
-            filterChainBuilder.addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
-        }
-
         if (this.casAuthEnabled) {
             filterChainBuilder
                     .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
@@ -498,12 +419,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
         if (this.kerberosAuthEnabled) {
             realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
-        }
-        if (this.ldapAuthEnabled) {
-            realms.add(ldapRealm());
-        }
-        if (this.adAuthEnabled) {
-            realms.add(activeDirectoryRealm());
         }
 
         return realms;
@@ -580,39 +495,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
         googleClient.setScope(Google2Client.Google2Scope.EMAIL);
         return googleClient;
-    }
-
-    private DefaultLdapRealm ldapRealm() {
-        DefaultLdapRealm realm = new LdapRealm(ldapSearchString, ldapSearchBase, ldapUserMapper);
-
-        JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
-        contextFactory.setUrl(dequote(ldapUrl));
-        contextFactory.setPoolingEnabled(false);
-        contextFactory.getEnvironment().put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-
-        realm.setContextFactory(contextFactory);
-        if (StringUtils.isNotEmpty(userDnTemplate)) {
-            realm.setUserDnTemplate(dequote(userDnTemplate));
-        }
-        return realm;
-    }
-
-    private ActiveDirectoryRealm activeDirectoryRealm() {
-        ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter, adSearchString, adUserMapper);
-        realm.setUrl(dequote(adUrl));
-        realm.setSearchBase(dequote(adSearchBase));
-        realm.setPrincipalSuffix(dequote(adPrincipalSuffix));
-        realm.setSystemUsername(dequote(adSystemUsername));
-        realm.setSystemPassword(dequote(adSystemPassword));
-        return realm;
-    }
-
-    private LdapTemplate getLdapTemplate() {
-
-        if (StringUtils.isNotBlank(adSearchFilter)) {
-            return adLdapProvider.getLdapTemplate();
-        }
-        return null;
     }
 
     private void setUpCAS(Map<FilterTemplates, Filter> filters) {

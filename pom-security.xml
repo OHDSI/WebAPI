@@ -7,6 +7,9 @@
   <artifactId>webapi-security-reactor</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
+  <!-- This alternate POM shares the application directory. Its final clean
+       must never delete the WAR already built by the WebAPI reactor module. -->
+  <build><directory>${project.basedir}/security-libs/target/reactor</directory></build>
   <modules>
     <module>security-libs</module>
     <module>security-libs/common-utils</module>

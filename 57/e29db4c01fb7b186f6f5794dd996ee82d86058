@@ -1,0 +1,19 @@
+pom-security.xml
+  s_c9adca26d0ea43::t_863dc41525d347 10-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "57e29db4c01fb7b186f6f5794dd996ee82d86058",
+  "prompts": {},
+  "sessions": {
+    "s_c9adca26d0ea43": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a9dc-83bf-7442-bb03-49bf8f93d121",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "konstjar <user@example.com>"
+    }
+  }
+}

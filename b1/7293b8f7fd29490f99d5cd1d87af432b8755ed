@@ -1,0 +1,224 @@
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/CommandBuilder.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-52
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/utils/DateUtils.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-22
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/utils/GisHttpClient.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-17,19,21-24,26-55
+  s_c9adca26d0ea43::t_6d7e3820ea4a70 18,20,25
+security-libs/.gitignore
+  s_c9adca26d0ea43::t_2552bcac070b58 1
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/service/GisCohortService.java
+  s_c9adca26d0ea43::t_03ccd1c6a03f46 116-117
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-115,118-186
+security-libs/atlasgis/src/main/resources/bounds/getCohortBounds.sql
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-13
+src/test/java/org/ohdsi/webapi/JerseyOnlyStartupTest.java
+  s_c9adca26d0ea43::t_b489540076ced5 1-3,6-19,26-41
+  s_c9adca26d0ea43::t_de848ee4f2d702 4-5,20-25
+security-libs/pom.xml
+  s_c9adca26d0ea43::t_91687ebe1db618 20-29
+  s_c9adca26d0ea43::t_e6fe0cbfa05027 30-32
+  s_c9adca26d0ea43::t_513907b960b918 1-19,33-49
+security-libs/common-utils/src/test/java/com/odysseusinc/arachne/commons/utils/CommonFilenameUtilsTest.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-25
+  s_c9adca26d0ea43::t_6ca5614659e4d3 26
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/TemplateUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-28,30-32,38,50,52-54
+  s_c9adca26d0ea43::t_d5b6499eb5c257 29,33-37,39-49,51
+pom-security.xml
+  s_c9adca26d0ea43::t_513907b960b918 1-22
+security-libs/data-source-manager/src/main/resources/templates/krb5ConfHeader.mustache
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-5
+  s_c9adca26d0ea43::t_6ca5614659e4d3 6
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/jdbc/DataSourceJdbcExecutor.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-68
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/converter/GeoBoundingBoxMapper.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-20
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/jdbc/JdbcTemplateConsumer.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-9
+src/test/java/org/ohdsi/webapi/shiro/realms/JdbcAuthRealmTest.java
+  s_c9adca26d0ea43::t_46a3d540d3396b 66-74,86-88
+  s_c9adca26d0ea43::t_b86146f376a54d 1-65,75-85,89-127
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/converter/DataSourceMapper.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-15
+security-libs/data-source-manager/pom.xml
+  s_f1e49db63ea49e::t_b2908f77541d5e 1-97
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/encryption/NotEncrypted.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-21
+security-libs/data-source-manager/src/test/java/com/odysseusinc/datasourcemanager/krblogin/KerberosTemplateTest.java
+  s_c9adca26d0ea43::t_332c79ddd19b57 15,29,45
+  s_c9adca26d0ea43::t_85fcce3ef19730 1-14,16-28,30-44,46-48
+src/test/java/org/ohdsi/webapi/JerseyOnlySecurityStartupTest.java
+  s_c9adca26d0ea43::t_e2f33701421c19 1-18
+security-libs/data-source-manager/README.md
+  s_f1e49db63ea49e::t_cb0a87742fbed1 1-56
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/controller/GisCohortController.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-75
+security-libs/README.md
+  s_c9adca26d0ea43::t_f6658e1e739c1b 1-28,30-40
+  s_c9adca26d0ea43::t_2552bcac070b58 29
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/service/GisPersonService.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-66
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/CommonFilenameUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-35
+security-libs/data-source-manager/src/main/resources/templates/krb5ConfRealm.mustache
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-5
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/encryption/EncryptionDecryptionService.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-20
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/jdbc/auth/KerberosAuthResolver.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-42
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/KerberosService.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-32
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/KrbConfig.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-100
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/model/Source.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-25
+security-libs/atlasgis/src/main/resources/sql/getSource.sql
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-19
+security-libs/atlasgis/src/test/java/org/ohdsi/atlasgis/service/GisTemplateRegressionTest.java
+  s_c9adca26d0ea43::t_03ccd1c6a03f46 1-58,62-102
+  s_c9adca26d0ea43::t_80260d716a81c8 59-61
+pom.xml
+  s_c9adca26d0ea43::t_3943ef04b82b26 1177
+  s_c9adca26d0ea43::t_91687ebe1db618 182-183,643,645-652,1217,1273,2066
+  s_c9adca26d0ea43::t_df13e85c0b913b 16,21-22,24,39,803,931,955,970,1704
+  s_c9adca26d0ea43::t_32ce52775f1f53 688,1013
+  s_c9adca26d0ea43::t_b0c8db4f4856c4 805-806
+  s_c9adca26d0ea43::t_f67bfc03ee6a42 1373
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/dto/GeoBoundingBox.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-14
+security-libs/common-utils/README.md
+  s_f1e49db63ea49e::t_cb0a87742fbed1 1-22,25-55
+  s_c9adca26d0ea43::t_fdd505029c55fd 23-24
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/UUIDGenerator.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-37
+security-libs/data-source-manager/src/main/resources/krb5.conf
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-8
+  s_c9adca26d0ea43::t_6ca5614659e4d3 9
+src/main/java/org/ohdsi/webapi/user/importer/repository/UserImportJobRepository.java
+  s_c9adca26d0ea43::t_a8a438b17240e7 11-12
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/jdbc/auth/BigQueryAuthResolver.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-44
+src/test/java/org/ohdsi/webapi/user/importer/RemovedDirectoryProvidersGuardTest.java
+  s_c9adca26d0ea43::t_a8a438b17240e7 1-4,7-11,14-16,46-82
+  s_c9adca26d0ea43::t_be4674bbb708f1 5-6,12-13,17-45
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/ZipUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-85
+security-libs/data-source-manager/src/test/java/com/odysseusinc/datasourcemanager/encryption/EncryptorUtilsTest.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-62
+  s_c9adca26d0ea43::t_6ca5614659e4d3 63
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/dto/PersonLocation.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-16
+security-libs/common-utils/pom.xml
+  s_f1e49db63ea49e::t_b2908f77541d5e 1-40
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/jdbc/auth/DataSourceAuthResolver.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-12
+src/test/java/org/ohdsi/webapi/i18n/LocaleFilterTest.java
+  s_c9adca26d0ea43::t_650c74fb9b658b 1-59
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/RuntimeServiceMode.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-27
+src/test/java/org/ohdsi/webapi/MinimalWebDependenciesTest.java
+  s_c9adca26d0ea43::t_650c74fb9b658b 1-15,18-19
+  s_c9adca26d0ea43::t_f6658e1e739c1b 16-17
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/dto/PersonLocationHistory.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-15
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/ScalarTemplate.java
+  s_c9adca26d0ea43::t_fdd505029c55fd 56,59,61-67,71
+  s_c9adca26d0ea43::t_d5b6499eb5c257 1-55,57-58,60,68-70,72-93
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/QuoteUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-16
+security-libs/common-utils/src/test/resources/unicode.mustache
+  s_c9adca26d0ea43::t_3d83684bdb25d1 1
+security-libs/common-utils/LICENSE
+  s_f1e49db63ea49e::t_cb0a87742fbed1 1-201
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/controller/GisPersonController.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-39
+security-libs/atlasgis/LICENSE
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-201
+src/main/java/org/ohdsi/webapi/user/importer/RemovedDirectoryProvidersGuard.java
+  s_c9adca26d0ea43::t_a8a438b17240e7 1-35
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/config/GisConfig.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1,3-7,9,11,14-18,20-26
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/TempHolder.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-31,33-38,40-59,61-68
+  s_c9adca26d0ea43::t_6d7e3820ea4a70 32,39,60
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/service/GisSourceService.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-113
+security-libs/atlasgis/src/main/resources/density/calculateContours.R
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-173
+security-libs/atlasgis/src/main/resources/sql/checkGeodata.sql
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-10
+security-libs/common-utils/src/test/java/com/odysseusinc/arachne/commons/utils/ScalarTemplateTest.java
+  s_c9adca26d0ea43::t_3d83684bdb25d1 1-38,40,42,55-57,59-78,80-90
+  s_c9adca26d0ea43::t_85fcce3ef19730 79
+  s_c9adca26d0ea43::t_fdd505029c55fd 39,41,43-54,58
+security-libs/atlasgis/pom.xml
+  s_c9adca26d0ea43::t_91687ebe1db618 1-16,18-41
+  s_c9adca26d0ea43::t_03ccd1c6a03f46 17
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/utils/DbmsUtils.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-26
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/encryption/EncryptorUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-61
+security-libs/atlasgis/src/main/resources/cluster/calculateClusters.R
+  s_c9adca26d0ea43::t_6d7e3820ea4a70 16
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-15,17-59
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/KinitComponents.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-95
+security-libs/atlasgis/src/main/resources/bounds/getPersonLocations.sql
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-11
+security-libs/common-utils/src/test/resources/test.handlebars
+  s_c9adca26d0ea43::t_6ca5614659e4d3 1
+security-libs/data-source-manager/LICENSE
+  s_f1e49db63ea49e::t_cb0a87742fbed1 1-201
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/controller/GisSourceController.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-31
+src/main/java/org/ohdsi/webapi/shiro/realms/JdbcAuthRealm.java
+  s_c9adca26d0ea43::t_9c89e68b4dc6ac 42,47,85
+  s_c9adca26d0ea43::t_b0c8db4f4856c4 31,38-41,75,84,86-113
+  s_c9adca26d0ea43::t_3519432d1fcfb7 114-115
+security-libs/common-utils/src/main/java/com/odysseusinc/arachne/commons/utils/AnnotationReflectionUtils.java
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-27
+security-libs/data-source-manager/src/main/java/com/odysseusinc/datasourcemanager/krblogin/KerberosServiceImpl.java
+  s_c9adca26d0ea43::t_d5b6499eb5c257 25,268
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-24,26-267,269-295
+security-libs/atlasgis/src/main/java/org/ohdsi/atlasgis/service/EncryptionService.java
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-15
+security-libs/common-utils/src/test/java/com/odysseusinc/arachne/commons/utils/TemplateUtilsTest.java
+  s_c9adca26d0ea43::t_d5b6499eb5c257 21
+  s_c9adca26d0ea43::t_332c79ddd19b57 25,27
+  s_f1e49db63ea49e::t_f72c5a591889ab 1-20,22-24,26
+security-libs/atlasgis/src/main/resources/sql/getLocation.sql
+  s_c9adca26d0ea43::t_91714eeff2a5a7 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b17293b8f7fd29490f99d5cd1d87af432b8755ed",
+  "prompts": {},
+  "humans": {
+    "h_2cf7f46272c8c9": {
+      "author": "User <user@example.com>"
+    },
+    "h_e8f313570bc386": {
+      "author": "konstjar <user@example.com>"
+    }
+  },
+  "sessions": {
+    "s_c9adca26d0ea43": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a9dc-83bf-7442-bb03-49bf8f93d121",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "konstjar <user@example.com>"
+    },
+    "s_f1e49db63ea49e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a0a9dc-83bf-7442-bb03-49bf8f93d121",
+        "model": "unknown"
+      },
+      "human_author": "konstjar <user@example.com>"
+    }
+  }
+}

@@ -605,7 +605,7 @@
     <dependency> <!-- TODO: get rid of external JSON libraries -->
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20231013</version>
+      <version>20260719</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>

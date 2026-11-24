@@ -104,6 +104,13 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         return assetVersion;
     }
 
+    /** Saves the next version in the caller's transaction; the caller must hold the asset row lock (#2430). */
+    public T createInCurrentTransaction(VersionType type, T assetVersion) {
+        Integer latestVersion = getRepository(type).getLatestVersion(assetVersion.getAssetId());
+        assetVersion.setVersion(Objects.nonNull(latestVersion) ? latestVersion + 1 : 1);
+        return getRepository(type).saveAndFlush(assetVersion);
+    }
+
     public T update(VersionType type, VersionUpdateDTO updateDTO) {
         T currentVersion = getRepository(type).findById(updateDTO.getVersionPk()).orElse(null);
         if (Objects.isNull(currentVersion)) {

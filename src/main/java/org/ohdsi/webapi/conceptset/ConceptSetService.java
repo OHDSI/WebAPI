@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
 import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
 
@@ -124,6 +126,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     @Autowired
     private SourceService sourceService;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     private UserRepository userRepository;
@@ -576,14 +581,23 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             @PathVariable("id") final int id,
             @RequestBody ConceptSetDTO conceptSetDTO) {
 
-        ConceptSet updated = getConceptSetRepository().findByIdForUpdate(id)
+        ConceptSet updated = getConceptSetRepository().findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         String.format("Concept Set with id = %d does not exist.", id)));
 
-        saveVersion(id);
+        ConceptSetVersion version = buildVersion(updated);
 
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
-        return conversionService.convert(updateConceptSetInternal(updated, conceptSet), ConceptSetDTO.class);
+        ConceptSet saved = updateConceptSetInternal(updated, conceptSet);
+        try {
+            // The UPDATE locks the row until commit; zero rows means a concurrent delete won (#2430).
+            entityManager.flush();
+        } catch (OptimisticLockException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    String.format("Concept Set with id = %d does not exist.", id));
+        }
+        versionService.createInCurrentTransaction(VersionType.CONCEPT_SET, version);
+        return conversionService.convert(saved, ConceptSetDTO.class);
     }
 
     private ConceptSet updateConceptSetInternal(ConceptSet dst, ConceptSet src) {
@@ -918,15 +932,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 String.format("There is no concept set version with id = %d.", version));
     }
 
-    private ConceptSetVersion saveVersion(int id) {
-        ConceptSet def = getConceptSetRepository().findById(id).orElse(null);
+    private ConceptSetVersion buildVersion(ConceptSet def) {
         ConceptSetVersion version = conversionService.convert(def, ConceptSetVersion.class);
 
         UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
         Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
-        return versionService.create(VersionType.CONCEPT_SET, version);
+        return version;
     }
 
     /**

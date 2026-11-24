@@ -20,6 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ConceptSetConcurrentSaveTest extends AbstractDatabaseTest {
@@ -79,7 +80,7 @@ public class ConceptSetConcurrentSaveTest extends AbstractDatabaseTest {
         }
     }
 
-    /** Concurrent renames and item saves on one concept set must not deadlock or fail. */
+    /** Concurrent renames and item saves on one concept set must not deadlock or fail, and each rename keeps its version. */
     @Test
     public void concurrentRenameAndItemSave() throws Exception {
         ConceptSetDTO base = create("base");
@@ -95,6 +96,11 @@ public class ConceptSetConcurrentSaveTest extends AbstractDatabaseTest {
         });
         errors.forEach(Throwable::printStackTrace);
         assertTrue("errors: " + errors.size(), errors.isEmpty());
+        // Every rename wrote exactly one version, none lost or duplicated.
+        Integer versions = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM " + ohdsiSchema + ".concept_set_version WHERE asset_id = ?",
+                Integer.class, base.getId());
+        assertEquals(Integer.valueOf(3 * 50), versions);
     }
 
     /** A rename racing a delete either succeeds or fails with 404, nothing else. */

@@ -397,6 +397,13 @@
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
 
+    <!-- OpenTelemetry API only (version from the Spring Boot BOM). A no-op unless an
+         OpenTelemetry Java agent or SDK is present; used to give each batch job its own trace. -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
@@ -756,6 +763,11 @@
           <artifactId>android-json</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-testing</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>

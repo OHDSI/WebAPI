@@ -29,6 +29,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.vocabulary.SearchProviderConfig;
+import org.ohdsi.webapi.common.DBMSType;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
@@ -451,8 +452,12 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   protected PreparedStatementRenderer prepareExecuteSearch(ConceptSearch search, Source source) {
-    // escape for bracket
-    search.query = search.query.replace("[", "[[]");
+    // escape for bracket: in a SQL Server LIKE pattern [ starts a character class, while the
+    // other dialects match it as a literal character
+    if (Arrays.asList(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB(), DBMSType.SYNAPSE.getOhdsiDB())
+        .contains(source.getSourceDialect())) {
+      search.query = search.query.replace("[", "[[]");
+    }
 
     String resourcePath = search.isLexical ? "/resources/vocabulary/sql/searchLexical.sql" : "/resources/vocabulary/sql/search.sql";
     String searchSql = ResourceHelper.GetResourceAsString(resourcePath);

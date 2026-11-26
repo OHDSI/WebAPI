@@ -570,7 +570,9 @@ public class VocabularyService extends AbstractDaoService {
     } else {
       if (!search.query.isEmpty()) {
         String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
-        if (StringUtils.isNumeric(search.query)) {
+        // concept_id is an INT, so only a query that fits in one can match it; casting a longer
+        // number (an 11-digit NDC code, for example) fails the whole search
+        if (StringUtils.isNumeric(search.query) && fitsInInt(search.query)) {
           queryFilter += " or CONCEPT_ID = CAST(@query as int)";
         }
         filters += " AND (" + queryFilter + ")";
@@ -590,6 +592,15 @@ public class VocabularyService extends AbstractDaoService {
     String debugSql = renderer.generateDebugSql(searchSql, searchNames, replacementNames, variableNames, variableValues);
     return renderer;
 
+  }
+
+  private static boolean fitsInInt(String number) {
+    try {
+      Integer.parseInt(number);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
   }
 
   /**
